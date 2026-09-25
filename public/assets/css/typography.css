@@ -1,0 +1,151 @@
+/**
+ * SPS Bilingual Editorial Typography
+ */
+
+/* Google Fonts Imports */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap');
+
+/* Default English Body */
+html {
+  font-family: var(--font-en-sans);
+  font-size: 16px;
+}
+
+/* Bangla Locale Font Overrides */
+html[lang="bn"] {
+  font-family: var(--font-bn-sans);
+  font-size: 16.5px; /* Slightly adjusted optical sizing for Bengali glyph clarity */
+}
+
+html[lang="bn"] h1,
+html[lang="bn"] h2,
+html[lang="bn"] h3,
+html[lang="bn"] h4,
+html[lang="bn"] .font-serif,
+html[lang="bn"] .editorial-title,
+html[lang="bn"] .scripture-quote {
+  font-family: var(--font-bn-serif);
+}
+
+html[lang="en"] h1,
+html[lang="en"] h2,
+html[lang="en"] h3,
+html[lang="en"] .editorial-title {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+html[lang="en"] h4,
+html[lang="en"] h5,
+html[lang="en"] h6,
+html[lang="en"] .font-serif,
+html[lang="en"] .prose-reading {
+  font-family: var(--font-en-serif);
+}
+
+/* Sanskrit Typography */
+.sanskrit-verse {
+  font-family: var(--font-sanskrit);
+  font-size: 1.25rem;
+  line-height: 1.85;
+  color: var(--accent-saffron);
+  letter-spacing: 0.01em;
+  white-space: pre-line;
+}
+
+.sanskrit-bengali {
+  font-family: var(--font-bn-serif);
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--text-main);
+  white-space: pre-line;
+}
+
+/* Headings Hierarchy */
+h1, .h1 {
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: var(--space-md);
+}
+
+h2, .h2 {
+  font-size: clamp(1.6rem, 2.8vw, 2.25rem);
+  line-height: 1.28;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: var(--space-sm);
+}
+
+h3, .h3 {
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: var(--space-xs);
+}
+
+h4, .h4 {
+  font-size: 1.15rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+p {
+  margin-bottom: var(--space-md);
+  color: var(--text-body);
+}
+
+p.lead {
+  font-size: 1.18rem;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+
+/* Eyebrows / Section Tags */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent-saffron);
+  margin-bottom: var(--space-xs);
+}
+
+.section-tag::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 1.5px;
+  background-color: var(--accent-saffron);
+}
+
+/* Editorial Blockquote */
+.editorial-quote {
+  position: relative;
+  padding: var(--space-lg) var(--space-xl);
+  margin: var(--space-xl) 0;
+  border-left: 3px solid var(--accent-gold);
+  background-color: var(--bg-warm-tint);
+  font-style: italic;
+}
+
+.editorial-quote p {
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  margin-bottom: var(--space-xs);
+}
+
+.editorial-quote cite {
+  display: block;
+  font-size: 0.9rem;
+  font-style: normal;
+  color: var(--text-muted);
+  font-weight: 500;
+}

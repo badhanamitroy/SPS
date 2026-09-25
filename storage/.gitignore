@@ -1,0 +1,4 @@
+# Keep directory in git
+*
+!.gitignore
+!.gitkeep

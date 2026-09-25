@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+  <!-- SPS Minimal Architectural Brand Mark -->
+  <!-- Outer Sacred Geometry Ring -->
+  <circle cx="50" cy="50" r="46" stroke="#C65A1E" stroke-width="1.5" stroke-opacity="0.4" />
+  <circle cx="50" cy="50" r="42" stroke="#A37E36" stroke-width="1" stroke-dasharray="2 3" />
+  
+  <!-- Subtle 8-Point Lotus Geometry Line-art -->
+  <path d="M50 12 C54 26, 68 34, 88 50 C68 66, 54 74, 50 88 C46 74, 32 66, 12 50 C32 34, 46 26, 50 12 Z" 
+        stroke="#A37E36" stroke-width="1.2" fill="#FAF6F0" fill-opacity="0.8" />
+  <path d="M23 23 C38 31, 46 45, 50 50 C46 55, 38 69, 23 77 C31 62, 45 54, 50 50 C45 46, 31 38, 23 23 Z" 
+        stroke="#C65A1E" stroke-width="0.8" stroke-opacity="0.5" />
+  <path d="M77 23 C62 31, 54 45, 50 50 C54 55, 62 69, 77 77 C69 62, 55 54, 50 50 C55 46, 69 38, 77 23 Z" 
+        stroke="#C65A1E" stroke-width="0.8" stroke-opacity="0.5" />
+
+  <!-- Central Manuscript Diamond & Binding Node -->
+  <polygon points="50,34 62,50 50,66 38,50" stroke="#C65A1E" stroke-width="1.5" fill="#FFFFFF" />
+  <circle cx="50" cy="50" r="3.5" fill="#A37E36" />
+</svg>
