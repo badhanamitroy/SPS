@@ -198,7 +198,7 @@ $success = \App\Core\Session::getFlash('success');
     <div class="login-card">
         <!-- Header -->
         <div class="login-header">
-            <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Logo" class="login-brand-logo">
+            <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS Logo" class="login-brand-logo">
             <h1 class="login-title"><?= $isBn ? 'এসপিএস প্রশাসনিক প্রবেশদ্বার' : 'SPS Administrative Portal' ?></h1>
             <p class="login-subtitle"><?= $isBn ? 'সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল।' : 'Steadfast in Sanatan Unity, Propagation & Welfare' ?></p>
         </div>

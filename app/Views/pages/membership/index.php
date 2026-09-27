@@ -344,7 +344,7 @@ $isBn = $currentLocale === 'bn';
 
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS" style="height: 38px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
+                            <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS" style="height: 38px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
                             <div>
                                 <div style="font-size: 0.92rem; font-weight: 800; letter-spacing: 0.5px; color: #f8fafc;">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div>
                                 <div style="font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.8px;">SANATAN PHILOSOPHY & SCRIPTURE</div>
