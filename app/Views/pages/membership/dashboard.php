@@ -190,16 +190,12 @@ $allMembers = $allMembers ?? [];
                                 </div>
                             </div>
 
-                            <!-- Live Safe QR Code Link -->
+                            <!-- Live Authentic QR Code Link with Center SPS Logo -->
                             <div style="text-align: right;">
-                                <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" style="display: inline-block; background: #ffffff; padding: 6px; border-radius: 6px;" title="<?= $isBn ? 'অনলাইন কিউআর যাচাই পেজ' : 'Live QR Verify' ?>">
-                                    <div style="width: 44px; height: 44px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;">
-                                        <div style="background: #0f172a;"></div><div style="background: #0f172a;"></div><div style="background: #0f172a;"></div>
-                                        <div style="background: #0f172a;"></div><div style="background: #ffffff;"></div><div style="background: #0f172a;"></div>
-                                        <div style="background: #0f172a;"></div><div style="background: #0f172a;"></div><div style="background: #0f172a;"></div>
-                                    </div>
+                                <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; background: #ffffff; padding: 4px; border-radius: 8px; width: 50px; height: 50px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.25); text-decoration: none;" title="<?= $isBn ? 'অনলাইন কিউআর যাচাই পেজ (স্ক্যান করুন)' : 'Scan for live online verification' ?>">
+                                    <img id="dashboardCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR" style="width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 4px;">
                                 </a>
-                                <div style="font-size: 0.62rem; color: #94a3b8; margin-top: 2px;">QR Code Verify</div>
+                                <div style="font-size: 0.62rem; color: #94a3b8; margin-top: 3px; font-weight: 700;">QR VERIFY</div>
                             </div>
                         </div>
                     </div>
@@ -804,7 +800,15 @@ $allMembers = $allMembers ?? [];
     </div>
 </div>
 
+<script src="<?= asset('assets/js/qrcode.min.js') ?>"></script>
+<script src="<?= asset('assets/js/sps-qr.js') ?>"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const verifyUrl = "<?= \App\Services\QrCodeService::getVerificationUrl($member['member_code'], $currentLocale) ?>";
+    const logoUrl = "<?= asset('assets/images/brand/sps-logo.png') ?>";
+    renderSpsQrCode('dashboardCardQrImg', verifyUrl, logoUrl);
+});
+
 function previewAvatar(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];

@@ -225,14 +225,24 @@ $plan = $plan ?? [];
         }
         .qr-box {
             background: #ffffff;
-            padding: 5px;
-            border-radius: 6px;
-            width: 48px;
-            height: 48px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            padding: 4px;
+            border-radius: 8px;
+            width: 52px;
+            height: 52px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .qr-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            border-radius: 4px;
         }
 
         /* Back Card */
@@ -411,11 +421,9 @@ $plan = $plan ?? [];
                     </div>
                 </div>
 
-                <!-- Verified QR Code -->
-                <div class="qr-box" title="Online Verification QR">
-                    <svg viewBox="0 0 24 24" width="38" height="38" fill="#0f172a">
-                        <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14 0h2v2h-2v-2zm-4 0h2v2h-2v-2zm2 2h2v2h-2v-2zm2 2h2v2h-2v-2zm-4 2h2v2h-2v-2zm4-4h2v2h-2v-2zm0-2h2v2h-2v-2zm-2 2h2v2h-2v-2z"/>
-                    </svg>
+                <!-- Verified Authentic Scannable QR Code with Center SPS Logo -->
+                <div class="qr-box" title="<?= $isBn ? 'অনলাইন সদস্য ভেরিফিকেশন কিউআর কোড (ক্যামেরা দিয়ে স্ক্যান করুন)' : 'Scan with camera for live online verification' ?>">
+                    <img id="printCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR Code" style="width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 4px;">
                 </div>
             </div>
         </div>
@@ -459,5 +467,14 @@ $plan = $plan ?? [];
             : 'You can print and laminate this card for official physical use. Scanning the QR code links directly to authentic online verification.' ?>
     </div>
 
+    <script src="<?= asset('assets/js/qrcode.min.js') ?>"></script>
+    <script src="<?= asset('assets/js/sps-qr.js') ?>"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const verifyUrl = "<?= \App\Services\QrCodeService::getVerificationUrl($member['member_code'], $currentLocale) ?>";
+            const logoUrl = "<?= asset('assets/images/brand/sps-logo.png') ?>";
+            renderSpsQrCode('printCardQrImg', verifyUrl, logoUrl);
+        });
+    </script>
 </body>
 </html>

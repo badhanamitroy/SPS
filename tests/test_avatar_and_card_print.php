@@ -85,6 +85,25 @@ assertCondition(str_contains($dashBody, '/membership/card/print?code='), "Dashbo
 assertCondition(str_contains($dashBody, 'name="avatar_file"'), "Dashboard profile form contains avatar file upload input");
 assertCondition(str_contains($dashBody, 'previewAvatar'), "Dashboard contains live avatar preview script");
 
+// 4. Test Authentic QR Code Service & Verification Link with Center Logo
+echo "\n4. Testing Authentic Scannable QR Code Service & Integration:\n";
+$verifyUrl = \App\Services\QrCodeService::getVerificationUrl($targetMemberCode, 'bn');
+assertCondition(str_contains($verifyUrl, '/bn/membership/verify?code=' . $targetMemberCode), "QrCodeService produces valid canonical verify URL");
+
+$qrConfig = \App\Services\QrCodeService::getQrConfig($targetMemberCode, 'bn');
+assertCondition($qrConfig['level'] === 'H', "QR Error Correction Level is H (30% tolerance for center logo)");
+assertCondition(str_contains($qrConfig['logo'], 'sps-logo.png'), "QR config references official SPS brand logo");
+
+assertCondition(str_contains($printBody, 'printCardQrImg'), "Print card contains printCardQrImg container");
+assertCondition(str_contains($printBody, 'qrcode.min.js'), "Print card imports qrcode.min.js");
+assertCondition(str_contains($printBody, 'sps-qr.js'), "Print card imports sps-qr.js");
+assertCondition(str_contains($printBody, 'renderSpsQrCode'), "Print card executes renderSpsQrCode");
+
+assertCondition(str_contains($dashBody, 'dashboardCardQrImg'), "Dashboard card contains dashboardCardQrImg");
+assertCondition(str_contains($dashBody, 'qrcode.min.js'), "Dashboard imports qrcode.min.js");
+assertCondition(str_contains($dashBody, 'sps-qr.js'), "Dashboard imports sps-qr.js");
+assertCondition(str_contains($dashBody, 'renderSpsQrCode'), "Dashboard executes renderSpsQrCode");
+
 echo "\n============================================\n";
 echo "SUMMARY: {$passedTests} / {$totalTests} tests passed.\n";
 if ($passedTests === $totalTests) {
