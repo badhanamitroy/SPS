@@ -184,6 +184,59 @@ class MembershipService
     }
 
     /**
+     * Smart Member Lookup for Login:
+     * Accepts Member Code (e.g. SPS-000872 or 872), Email, or Mobile Number.
+     */
+    public static function findMemberForLogin(string $identifier): ?array
+    {
+        $identifier = trim($identifier);
+        if ($identifier === '') {
+            return null;
+        }
+
+        $data = self::loadData();
+        $members = $data['members'] ?? [];
+
+        // 1. Direct match by member_code (case-insensitive) or internal id
+        foreach ($members as $m) {
+            if (strcasecmp((string)($m['member_code'] ?? ''), $identifier) === 0 || ($m['id'] ?? '') === $identifier) {
+                return $m;
+            }
+        }
+
+        // 2. If user entered just numeric digits like "872" or "000872", match "SPS-000872"
+        $digitsOnly = preg_replace('/[^\d]/', '', $identifier);
+        if ($digitsOnly !== '') {
+            $normalizedCode = 'SPS-' . str_pad($digitsOnly, 6, '0', STR_PAD_LEFT);
+            foreach ($members as $m) {
+                if (strcasecmp((string)($m['member_code'] ?? ''), $normalizedCode) === 0) {
+                    return $m;
+                }
+            }
+        }
+
+        // 3. Match by email (case-insensitive)
+        $cleanEmail = mb_strtolower($identifier);
+        foreach ($members as $m) {
+            if (mb_strtolower(trim($m['email'] ?? '')) === $cleanEmail) {
+                return $m;
+            }
+        }
+
+        // 4. Match by phone number (last 10-11 digits)
+        if (strlen($digitsOnly) >= 10) {
+            foreach ($members as $m) {
+                $memberPhone = preg_replace('/[^\d]/', '', (string)($m['phone'] ?? ''));
+                if ($memberPhone && (str_ends_with($memberPhone, substr($digitsOnly, -10)) || str_ends_with($digitsOnly, substr($memberPhone, -10)))) {
+                    return $m;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Generate unique lifetime Member ID (e.g. SPS-000873).
      * Retains numerical consistency even if category transitions later.
      */

@@ -1,5 +1,6 @@
 <?php
 $currentLocale = current_locale();
+$isBn = $currentLocale === 'bn';
 ?>
 <!-- Search Modal -->
 <div id="search-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
@@ -56,11 +57,25 @@ $currentLocale = current_locale();
     </nav>
 
     <div style="margin-top:auto; padding-top:var(--space-lg); border-top:1px solid var(--border-medium); display:flex; flex-direction:column; gap:var(--space-sm);">
-        <a href="<?= e(url('/auth/google', $currentLocale)) ?>" class="btn btn-secondary" style="width:100%;">
-            <?= e(__('common.actions.login')) ?>
-        </a>
-        <a href="<?= e(url('/get-involved', $currentLocale)) ?>" class="btn btn-primary" style="width:100%;">
-            <?= e(__('common.actions.become_member')) ?>
-        </a>
+        <?php
+        $drawerMemberCode = \App\Core\Session::get('current_member_code');
+        $isDrawerMemberLoggedIn = !empty($drawerMemberCode) && !\App\Core\Session::get('member_logged_out');
+        ?>
+        <?php if ($isDrawerMemberLoggedIn): ?>
+            <a href="<?= e(url('/membership/dashboard', $currentLocale)) ?>" class="btn btn-secondary" style="width:100%; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <span>👤</span>
+                <span><?= $isBn ? 'সদস্য ড্যাশবোর্ড (' . e($drawerMemberCode) . ')' : 'Member Dashboard (' . e($drawerMemberCode) . ')' ?></span>
+            </a>
+            <a href="<?= e(url('/membership/logout', $currentLocale)) ?>" class="btn btn-ghost" style="width:100%; text-align:center; color:#b91c1c;">
+                <?= $isBn ? 'লগআউট' : 'Logout' ?>
+            </a>
+        <?php else: ?>
+            <a href="<?= e(url('/membership/login', $currentLocale)) ?>" class="btn btn-secondary" style="width:100%; text-align:center;">
+                🔑 <?= $isBn ? 'সদস্য লগইন' : 'Member Login' ?>
+            </a>
+            <a href="<?= e(url('/membership/apply', $currentLocale)) ?>" class="btn btn-primary" style="width:100%; text-align:center;">
+                ✨ <?= $isBn ? 'সদস্যপদের আবেদন' : 'Apply for Membership' ?>
+            </a>
+        <?php endif; ?>
     </div>
 </div>

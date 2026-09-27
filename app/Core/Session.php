@@ -64,6 +64,11 @@ class Session
         unset($_SESSION[$key]);
     }
 
+    public static function forget(string $key): void
+    {
+        self::remove($key);
+    }
+
     public static function setFlash(string $key, $value): void
     {
         self::start();

@@ -380,6 +380,50 @@ assertCondition(str_contains(\App\Core\Session::getFlash('success') ?? '', 'অ�
 $approvedDipto = MembershipService::getMemberById($diptoMem['id']);
 assertCondition($approvedDipto['status'] === 'Active', "Member activated via Finance Officer POST approve");
 
+echo "\n11. Testing Member Self-Service Login & Logout Portal:\n";
+// Clear any test session state
+\App\Core\Session::forget('current_member_code');
+\App\Core\Session::forget('member_logged_out');
+
+// 11.1 GET /bn/membership/login
+$resMemLogin = $router->dispatch(new \App\Core\Request('GET', '/bn/membership/login'));
+assertCondition($resMemLogin->getStatusCode() === 200, "GET /bn/membership/login returns HTTP 200");
+$contentMemLogin = $resMemLogin->getContent();
+assertCondition(str_contains($contentMemLogin, 'সদস্য লগইন পোর্টাল'), "Login page contains Member Login Portal title");
+assertCondition(str_contains($contentMemLogin, 'আপনি কি এখনো সদস্য নন?'), "Login page contains non-member prompt");
+assertCondition(str_contains($contentMemLogin, '/membership/apply'), "Login page provides direct link to apply form");
+
+// 11.2 POST /bn/membership/login with invalid input
+$resBadLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/login', [], ['identifier' => 'INVALID-9999']));
+assertCondition($resBadLogin->getStatusCode() === 302, "Invalid member login returns redirect");
+assertCondition(str_contains(\App\Core\Session::getFlash('error') ?? '', 'কোনো সদস্য রেকর্ড পাওয়া যায়নি'), "Invalid member login returns descriptive error flash");
+
+// 11.3 POST /bn/membership/login with valid Member Code
+$resGoodCodeLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/login', [], ['identifier' => 'SPS-000872']));
+assertCondition($resGoodCodeLogin->getStatusCode() === 302, "Valid Member Code login redirects to dashboard");
+assertCondition(\App\Core\Session::get('current_member_code') === 'SPS-000872', "Session current_member_code is set to SPS-000872");
+assertCondition(str_contains(\App\Core\Session::getFlash('success') ?? '', 'অমিত সেন'), "Login flash acknowledges member by name");
+
+// 11.4 POST /bn/membership/login with valid Email
+$resGoodEmailLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/login', [], ['identifier' => 'amit.sen@example.com']));
+assertCondition($resGoodEmailLogin->getStatusCode() === 302, "Valid Email login redirects to dashboard");
+assertCondition(\App\Core\Session::get('current_member_code') === 'SPS-000872', "Email login sets correct member session");
+
+// 11.5 Member Logout
+$resLogout = $router->dispatch(new \App\Core\Request('GET', '/bn/membership/logout'));
+assertCondition($resLogout->getStatusCode() === 302, "Member logout returns redirect");
+assertCondition(\App\Core\Session::get('current_member_code') === null, "Logout clears current_member_code from session");
+assertCondition(\App\Core\Session::get('member_logged_out') === true, "Logout marks member_logged_out flag");
+
+// 11.6 Accessing dashboard after logout redirects to login
+$resDashAfterLogout = $router->dispatch(new \App\Core\Request('GET', '/bn/membership/dashboard'));
+assertCondition($resDashAfterLogout->getStatusCode() === 302, "Accessing dashboard after logout redirects");
+assertCondition(str_contains($resDashAfterLogout->getHeader('Location') ?? '', '/membership/login'), "Redirect targets /membership/login");
+
+// Reset session cleanly for future requests
+\App\Core\Session::forget('member_logged_out');
+\App\Core\Session::set('current_member_code', 'SPS-000872');
+
 // Summary
 echo "\n============================================\n";
 echo "SUMMARY: {$testsPassed} / {$totalTests} tests passed.\n";

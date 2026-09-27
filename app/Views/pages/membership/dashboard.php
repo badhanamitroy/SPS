@@ -28,16 +28,22 @@ $allMembers = $allMembers ?? [];
                 </div>
             </div>
 
-            <form method="GET" action="<?= url('/membership/dashboard', $currentLocale) ?>" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                <select name="as" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-medium); font-size: 0.85rem; background: #f8fafc; font-weight: 600;">
-                    <?php foreach ($allMembers as $m): ?>
-                        <option value="<?= e($m['member_code']) ?>" <?= ($member['member_code'] ?? '') === $m['member_code'] ? 'selected' : '' ?>>
-                            <?= e($m['member_code']) ?> — <?= e($m['name_bn']) ?> (<?= e($m['category_id']) ?>, <?= e($m['status']) ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-                <noscript><button type="submit" class="btn btn-sm btn-secondary"><?= $isBn ? 'পরিবর্তন' : 'Switch' ?></button></noscript>
-            </form>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <form method="GET" action="<?= url('/membership/dashboard', $currentLocale) ?>" style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <select name="as" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-medium); font-size: 0.85rem; background: #f8fafc; font-weight: 600;">
+                        <?php foreach ($allMembers as $m): ?>
+                            <option value="<?= e($m['member_code']) ?>" <?= ($member['member_code'] ?? '') === $m['member_code'] ? 'selected' : '' ?>>
+                                <?= e($m['member_code']) ?> — <?= e($m['name_bn']) ?> (<?= e($m['category_id']) ?>, <?= e($m['status']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <noscript><button type="submit" class="btn btn-sm btn-secondary"><?= $isBn ? 'পরিবর্তন' : 'Switch' ?></button></noscript>
+                </form>
+                <a href="<?= url('/membership/logout', $currentLocale) ?>" class="btn btn-sm btn-secondary" style="border-color:#fca5a5; color:#b91c1c; background:#fff1f2; font-weight:700; padding:6px 12px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="<?= $isBn ? 'সদস্য সেশন থেকে লগআউট করুন' : 'Logout of member session' ?>">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span><?= $isBn ? 'লগআউট' : 'Logout' ?></span>
+                </a>
+            </div>
         </div>
 
         <!-- Flash alerts -->

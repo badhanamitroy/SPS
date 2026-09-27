@@ -60,10 +60,14 @@ $router->get('/{lang}/blog/{slug}', 'BlogController@show', 'blog.show');
 $router->post('/{lang}/blog/{slug}/like', 'BlogController@toggleLike', 'blog.like');
 $router->post('/{lang}/blog/{slug}/comment', 'BlogController@addComment', 'blog.comment');
 
-// SPS Membership System (Public Hub, Application, Dashboard, Digital Card)
+// SPS Membership System (Public Hub, Application, Login, Dashboard, Digital Card)
 $router->get('/{lang}/membership', 'MembershipController@index', 'membership');
 $router->get('/{lang}/membership/apply', 'MembershipController@applyForm', 'membership.apply');
 $router->post('/{lang}/membership/apply', 'MembershipController@submitApplication', 'membership.apply.submit');
+$router->get('/{lang}/membership/login', 'MembershipController@loginPage', 'membership.login');
+$router->post('/{lang}/membership/login', 'MembershipController@loginProcess', 'membership.login.process');
+$router->get('/{lang}/membership/logout', 'MembershipController@logout', 'membership.logout');
+$router->post('/{lang}/membership/logout', 'MembershipController@logout', 'membership.logout.post');
 $router->get('/{lang}/membership/dashboard', 'MembershipController@dashboard', 'membership.dashboard');
 $router->get('/{lang}/membership/verify', 'MembershipController@verifyCard', 'membership.verify');
 $router->post('/{lang}/membership/payment', 'MembershipController@makePayment', 'membership.payment');

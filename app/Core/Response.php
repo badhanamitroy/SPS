@@ -53,6 +53,16 @@ class Response
         return $this->headers;
     }
 
+    public function getHeader(string $name): ?string
+    {
+        foreach ($this->headers as $key => $val) {
+            if (strcasecmp($key, $name) === 0) {
+                return $val;
+            }
+        }
+        return null;
+    }
+
     public function redirect(string $url, int $statusCode = 302): void
     {
         $this->statusCode = $statusCode;

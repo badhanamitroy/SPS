@@ -220,6 +220,94 @@ class MembershipController extends BaseController
     }
 
     /**
+     * Member Login Portal (GET)
+     */
+    public function loginPage(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        // If member is already logged in, redirect straight to dashboard
+        $currentMemberCode = Session::get('current_member_code');
+        if (!empty($currentMemberCode) && !Session::get('member_logged_out')) {
+            return $this->redirect(url('/membership/dashboard', $locale));
+        }
+
+        $title = $isBn 
+            ? 'সদস্য লগইন পোর্টাল | সনাতন ফিলোসফি এন্ড স্ক্রিপচার' 
+            : 'Member Login Portal | SPS';
+
+        return $this->render('membership/login', [
+            'metaTitle' => $title,
+            'activeNav' => 'membership',
+            'demoMembers' => [
+                ['code' => 'SPS-000872', 'name' => 'অমিত সেন (Amit Sen)', 'role' => 'শিক্ষার্থী সদস্য • বাৎসরিক'],
+                ['code' => 'SPS-000124', 'name' => 'প্রিয়াঙ্কা সরকার (Priyanka Sarkar)', 'role' => 'উপার্জনশীল সদস্য • আজীবন'],
+                ['code' => 'SPS-000455', 'name' => 'সুমিত্রা পাল (Sumitra Paul)', 'role' => 'শিক্ষার্থী সদস্য • মাসিক'],
+            ],
+            'canonicalUrl' => url('/membership/login', $locale),
+            'alternateBn' => url('/membership/login', 'bn'),
+            'alternateEn' => url('/membership/login', 'en'),
+        ]);
+    }
+
+    /**
+     * Process Member Login (POST)
+     */
+    public function loginProcess(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        $identifier = trim((string)$request->getPost('identifier', ''));
+
+        if (empty($identifier)) {
+            Session::setFlash('error', $isBn 
+                ? 'অনুগ্রহ করে আপনার মেম্বার আইডি (যেমন: SPS-000872), নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন।' 
+                : 'Please enter your Member ID, Email, or Phone number.');
+            return $this->redirect(url('/membership/login', $locale));
+        }
+
+        $member = MembershipService::findMemberForLogin($identifier);
+
+        if (!$member) {
+            Session::setFlash('error', $isBn 
+                ? 'প্রদত্ত তথ্য অনুযায়ী কোনো সদস্য রেকর্ড পাওয়া যায়নি। অনুগ্রহ করে আপনার সঠিক মেম্বার আইডি (উদাঃ SPS-000872), নিবন্ধিত ইমেইল বা ফোন নম্বর দিন।' 
+                : 'No registered member found matching your input. Please verify your Member ID, email or phone.');
+            return $this->redirect(url('/membership/login', $locale));
+        }
+
+        // Successfully authenticated!
+        Session::set('current_member_code', $member['member_code']);
+        Session::forget('member_logged_out');
+
+        $memberName = $isBn ? ($member['name_bn'] ?? $member['name_en']) : ($member['name_en'] ?? $member['name_bn']);
+        Session::setFlash('success', $isBn 
+            ? "স্বাগতম, {$memberName}! আপনি সফলভাবে সদস্য ড্যাশবোর্ডে প্রবেশ করেছেন।" 
+            : "Welcome, {$memberName}! You have successfully logged in to your member portal.");
+
+        return $this->redirect(url('/membership/dashboard', $locale));
+    }
+
+    /**
+     * Member Logout (GET / POST)
+     */
+    public function logout(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        Session::forget('current_member_code');
+        Session::set('member_logged_out', true);
+
+        Session::setFlash('success', $isBn 
+            ? 'সদস্য সেশন থেকে সফলভাবে লগআউট সম্পন্ন হয়েছে।' 
+            : 'You have been successfully logged out of your member session.');
+
+        return $this->redirect(url('/membership/login', $locale));
+    }
+
+    /**
      * Member Dashboard & Self-Service Portal
      */
     public function dashboard(Request $request, string $lang = ''): Response
@@ -231,9 +319,25 @@ class MembershipController extends BaseController
         $switchCode = (string)$request->getParam('as', '');
         if ($switchCode && MembershipService::getMemberById($switchCode)) {
             Session::set('current_member_code', $switchCode);
+            Session::forget('member_logged_out');
         }
 
-        $currentCode = Session::get('current_member_code') ?? 'SPS-000872'; // Default to Amit Sen
+        $currentCode = Session::get('current_member_code');
+
+        // If user explicitly logged out and no specific switch was made, redirect to login
+        if (Session::get('member_logged_out') && empty($currentCode) && empty($switchCode)) {
+            Session::setFlash('info', $isBn 
+                ? 'ড্যাশবোর্ডে প্রবেশ করতে অনুগ্রহ করে আপনার মেম্বার আইডি বা ইমেইল দিয়ে লগইন করুন।' 
+                : 'Please log in with your Member ID or email to access your dashboard.');
+            return $this->redirect(url('/membership/login', $locale));
+        }
+
+        // Default fallback for preview / automated test runs
+        if (empty($currentCode)) {
+            $currentCode = 'SPS-000872';
+            Session::set('current_member_code', $currentCode);
+        }
+
         $member = MembershipService::getMemberById($currentCode);
 
         if (!$member) {
