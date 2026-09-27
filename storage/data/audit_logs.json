@@ -1,5 +1,24 @@
 [
     {
+        "id": "audit_1401_88dd7c",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "auth.login_success",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "role": "super_admin",
+            "login_at": "2026-09-28 01:05:47"
+        },
+        "notes": "Admin 'Anik Kumar Saha' successfully logged into SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/153.0.0.0 Safari\/537.36",
+        "created_at": "2026-09-28 01:05:47"
+    },
+    {
         "id": "audit_1400_262c6f",
         "user_id": "usr_pranto",
         "user_name": "প্রান্ত সাহা",
