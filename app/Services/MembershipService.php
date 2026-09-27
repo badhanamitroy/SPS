@@ -283,6 +283,9 @@ class MembershipService
         if (isset($profileData['blood_group'])) {
             $current['blood_group'] = trim((string)$profileData['blood_group']);
         }
+        if (isset($profileData['avatar']) && trim((string)$profileData['avatar']) !== '') {
+            $current['avatar'] = trim((string)$profileData['avatar']);
+        }
         if (isset($profileData['bio'])) {
             $current['bio'] = trim((string)$profileData['bio']);
         }

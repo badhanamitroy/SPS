@@ -593,17 +593,83 @@ class MembershipController extends BaseController
             'bio' => (string)$request->getPost('bio', ''),
         ];
 
+        $avatarPath = null;
+        if (!empty($_FILES['avatar_file']['tmp_name']) && is_uploaded_file($_FILES['avatar_file']['tmp_name'])) {
+            $file = $_FILES['avatar_file'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg']) || str_starts_with($file['type'] ?? '', 'image/')) {
+                $targetDir = dirname(__DIR__, 2) . '/public/assets/images/members';
+                if (!is_dir($targetDir)) {
+                    @mkdir($targetDir, 0755, true);
+                }
+                $safeCode = preg_replace('/[^A-Za-z0-9]/', '_', $member['member_code']);
+                $newFileName = 'member_' . $safeCode . '_' . time() . '.' . ($ext ?: 'jpg');
+                $targetPath = $targetDir . '/' . $newFileName;
+                if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+                    $avatarPath = 'assets/images/members/' . $newFileName;
+                }
+            }
+        }
+
+        if (!$avatarPath) {
+            $presetAvatar = trim((string)$request->getPost('avatar', ''));
+            if (!empty($presetAvatar)) {
+                $avatarPath = $presetAvatar;
+            }
+        }
+
+        if ($avatarPath) {
+            $profileData['avatar'] = $avatarPath;
+        }
+
         $result = MembershipService::updateMemberProfile($member['member_code'], $profileData);
 
         if ($result['success'] ?? false) {
             Session::setFlash('success', $isBn 
-                ? 'আপনার সদস্য প্রোফাইলের তথ্যসমূহ সফলভাবে হালনাগাদ করা হয়েছে।' 
-                : 'Your member profile information has been successfully updated.');
+                ? 'আপনার সদস্য প্রোফাইল ও ছবি সফলভাবে হালনাগাদ করা হয়েছে।' 
+                : 'Your member profile and photo have been successfully updated.');
         } else {
             Session::setFlash('error', $result['message'] ?? ($isBn ? 'প্রোফাইল আপডেট ব্যর্থ হয়েছে।' : 'Profile update failed.'));
         }
 
         return $this->redirect(url('/membership/dashboard', $locale));
+    }
+
+    /**
+     * Dedicated Printable Digital Membership Card View (Print / PDF Ready)
+     */
+    public function printCard(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        $code = (string)$request->getParam('code', '');
+        if (empty($code)) {
+            $code = (string)Session::get('current_member_code', '');
+        }
+        if (empty($code)) {
+            $code = 'SPS-000872';
+        }
+
+        $member = MembershipService::getMemberById($code);
+        if (!$member) {
+            Session::setFlash('error', $isBn ? 'সদস্য রেকর্ড খুঁজে পাওয়া যায়নি।' : 'Member not found.');
+            return $this->redirect(url('/membership/dashboard', $locale));
+        }
+
+        $category = MembershipService::getCategory($member['category_id']);
+        $plan = MembershipService::getPlan($member['plan_id']);
+
+        $title = $isBn 
+            ? 'ডিজিটাল সদস্য কার্ড প্রিন্ট | ' . e($member['member_code'])
+            : 'Digital Member Card Print | ' . e($member['member_code']);
+
+        return $this->render('membership/card_print', [
+            'metaTitle' => $title,
+            'member' => $member,
+            'category' => $category,
+            'plan' => $plan,
+        ]);
     }
 }
 

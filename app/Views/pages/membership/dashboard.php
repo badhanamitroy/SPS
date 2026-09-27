@@ -73,8 +73,12 @@ $allMembers = $allMembers ?? [];
             <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-lg);">
                     <div style="display: flex; gap: var(--space-lg); align-items: center;">
-                        <div style="width: 76px; height: 76px; border-radius: var(--radius-lg); background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; border: 2px solid var(--border-medium);">
-                            <?= $member['category_id'] === 'STUDENT' ? '🎓' : '💼' ?>
+                        <div style="width: 76px; height: 76px; border-radius: var(--radius-lg); background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; border: 2px solid var(--border-medium); overflow: hidden; flex-shrink: 0;">
+                            <?php if (!empty($member['avatar'])): ?>
+                                <img src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
+                            <?php else: ?>
+                                <?= $member['category_id'] === 'STUDENT' ? '🎓' : '💼' ?>
+                            <?php endif; ?>
                         </div>
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
@@ -146,8 +150,12 @@ $allMembers = $allMembers ?? [];
 
                         <!-- Card Body -->
                         <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px;">
-                            <div style="width: 60px; height: 60px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid rgba(255,255,255,0.2);">
-                                👤
+                            <div style="width: 60px; height: 60px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid rgba(255,255,255,0.2); overflow: hidden; flex-shrink: 0;">
+                                <?php if (!empty($member['avatar'])): ?>
+                                    <img src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
+                                <?php else: ?>
+                                    👤
+                                <?php endif; ?>
                             </div>
                             <div>
                                 <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; line-height: 1.2;">
@@ -198,11 +206,11 @@ $allMembers = $allMembers ?? [];
 
                     <!-- Card Action Buttons -->
                     <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-xl);">
-                        <button onclick="window.print()" class="btn btn-secondary btn-sm" style="flex: 1;">
-                            🖨️ <?= $isBn ? 'কার্ড প্রিন্ট / সংরক্ষণ' : 'Print Card' ?>
-                        </button>
-                        <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-outline btn-sm" style="flex: 1;">
-                            🔗 <?= $isBn ? 'কিউআর প্রিভিউ' : 'QR Link' ?>
+                        <a href="<?= url('/membership/card/print?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            🖨️ <?= $isBn ? 'কার্ড প্রিন্ট / ডাউনলোড' : 'Print / Download Card' ?>
+                        </a>
+                        <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            🔗 <?= $isBn ? 'কিউআর যাচাই' : 'QR Verify' ?>
                         </a>
                     </div>
 
@@ -501,9 +509,34 @@ $allMembers = $allMembers ?? [];
                             </span>
                         </div>
 
-                        <form action="<?= url('/membership/profile/update', $currentLocale) ?>" method="POST" id="memberProfileForm">
+                        <form action="<?= url('/membership/profile/update', $currentLocale) ?>" method="POST" id="memberProfileForm" enctype="multipart/form-data">
                             <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
                             <input type="hidden" name="member_code" value="<?= e($member['member_code']) ?>">
+
+                            <!-- Photo / Avatar Upload Section -->
+                            <div style="background: #f8fafc; border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg); display: flex; gap: var(--space-lg); align-items: center; flex-wrap: wrap;">
+                                <div style="position: relative; width: 84px; height: 84px; border-radius: var(--radius-md); background: #e2e8f0; border: 2px dashed #94a3b8; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" id="avatarPreviewContainer">
+                                    <?php if (!empty($member['avatar'])): ?>
+                                        <img id="avatarPreviewImg" src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
+                                        <span id="avatarPreviewPlaceholder" style="font-size: 2.2rem; display: none;">👤</span>
+                                    <?php else: ?>
+                                        <img id="avatarPreviewImg" src="" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                                        <span id="avatarPreviewPlaceholder" style="font-size: 2.2rem;">👤</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="flex: 1; min-width: 240px;">
+                                    <label for="mem_avatar_file" style="display: block; font-size: 0.88rem; font-weight: 800; color: var(--primary-deep); margin-bottom: 4px;">
+                                        📷 <?= $isBn ? 'সদস্য ছবি / আইডি কার্ডের ফটো আপলোড' : 'Upload Member Photo / ID Picture' ?>
+                                    </label>
+                                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
+                                        <?= $isBn ? 'পাসপোর্ট সাইজ বা স্পষ্ট ছবি দিন (JPG, PNG, WebP — সর্বোচ্চ ৫MB)। এই ছবিটি ডিজিটাল সদস্য কার্ড ও প্রিন্ট কপিতে প্রদর্শিত হবে।' : 'Passport size or portrait photo (JPG, PNG, WebP — max 5MB). Featured on your official ID card.' ?>
+                                    </p>
+                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                        <input type="file" id="mem_avatar_file" name="avatar_file" accept="image/png, image/jpeg, image/webp" style="font-size: 0.85rem;" onchange="previewAvatar(this)">
+                                        <input type="hidden" id="mem_avatar_preset" name="avatar" value="<?= e($member['avatar'] ?? '') ?>">
+                                    </div>
+                                </div>
+                            </div>
 
                             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
                                 <div>
@@ -772,6 +805,25 @@ $allMembers = $allMembers ?? [];
 </div>
 
 <script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewImg = document.getElementById('avatarPreviewImg');
+            const placeholder = document.getElementById('avatarPreviewPlaceholder');
+            if (previewImg) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+            }
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
 function openReceiptZoomModal(src, id) {
     document.getElementById('receiptModalImg').src = src;
     document.getElementById('receiptModalTitle').textContent = 'Trx: ' + id;

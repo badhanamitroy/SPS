@@ -1,5 +1,312 @@
 [
     {
+        "id": "audit_1412_627908",
+        "user_id": "usr_joy",
+        "user_name": "জয় চক্রবর্তী",
+        "role": "finance_officer",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_6ab97d6960086",
+        "target_name": "Soumen Chakraborty",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000951",
+            "updated_fields": [
+                "name_bn",
+                "name_en",
+                "phone",
+                "email",
+                "district",
+                "upazila",
+                "address",
+                "blood_group",
+                "institution",
+                "department",
+                "class_year",
+                "profession_institution",
+                "designation",
+                "bio",
+                "avatar"
+            ]
+        },
+        "notes": "Member SPS-000951 (সৌমেন চক্রবর্তী) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/153.0.0.0 Safari\/537.36",
+        "created_at": "2026-09-28 02:34:23"
+    },
+    {
+        "id": "audit_1411_37151c",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "avatar"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:55"
+    },
+    {
+        "id": "audit_1410_01479a",
+        "user_id": "usr_anik",
+        "user_name": "অনিক মুখার্জী",
+        "role": "super_admin",
+        "action": "user.profile_updated",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Mukherjee",
+        "old_values": [],
+        "new_values": {
+            "user_id": "usr_anik",
+            "updated_fields": [
+                "name_bn",
+                "name_en",
+                "email",
+                "phone",
+                "bio"
+            ]
+        },
+        "notes": "Admin user usr_anik (Anik Mukherjee) updated their account profile details.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:55"
+    },
+    {
+        "id": "audit_1409_79326f",
+        "user_id": "usr_anik",
+        "user_name": "অনিক মুখার্জী (সুপার অ্যাডমিন)",
+        "role": "super_admin",
+        "action": "user.profile_updated",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Mukherjee",
+        "old_values": [],
+        "new_values": {
+            "user_id": "usr_anik",
+            "updated_fields": [
+                "name_bn",
+                "phone",
+                "bio",
+                "new_password",
+                "role",
+                "id"
+            ]
+        },
+        "notes": "Admin user usr_anik (Anik Mukherjee) updated their account profile details.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:55"
+    },
+    {
+        "id": "audit_1408_d4662d",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "name_bn",
+                "name_en",
+                "phone",
+                "email",
+                "district",
+                "upazila",
+                "address",
+                "blood_group",
+                "institution",
+                "department",
+                "class_year",
+                "profession_institution",
+                "designation",
+                "bio"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:55"
+    },
+    {
+        "id": "audit_1407_39535e",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "name_bn",
+                "phone",
+                "district",
+                "blood_group",
+                "institution",
+                "designation",
+                "bio",
+                "member_code",
+                "status",
+                "category_id"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন শর্মা) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:55"
+    },
+    {
+        "id": "audit_1406_3a1e9a",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "avatar"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:33:36"
+    },
+    {
+        "id": "audit_1405_332448",
+        "user_id": "usr_anik",
+        "user_name": "অনিক মুখার্জী",
+        "role": "super_admin",
+        "action": "user.profile_updated",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Mukherjee",
+        "old_values": [],
+        "new_values": {
+            "user_id": "usr_anik",
+            "updated_fields": [
+                "name_bn",
+                "name_en",
+                "email",
+                "phone",
+                "bio"
+            ]
+        },
+        "notes": "Admin user usr_anik (Anik Mukherjee) updated their account profile details.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:32:51"
+    },
+    {
+        "id": "audit_1404_998161",
+        "user_id": "usr_anik",
+        "user_name": "অনিক মুখার্জী (সুপার অ্যাডমিন)",
+        "role": "super_admin",
+        "action": "user.profile_updated",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "user_id": "usr_anik",
+            "updated_fields": [
+                "name_bn",
+                "phone",
+                "bio",
+                "new_password",
+                "role",
+                "id"
+            ]
+        },
+        "notes": "Admin user usr_anik (Anik Kumar Saha) updated their account profile details.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:32:51"
+    },
+    {
+        "id": "audit_1403_a80328",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "name_bn",
+                "name_en",
+                "phone",
+                "email",
+                "district",
+                "upazila",
+                "address",
+                "blood_group",
+                "institution",
+                "department",
+                "class_year",
+                "profession_institution",
+                "designation",
+                "bio"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:32:51"
+    },
+    {
+        "id": "audit_1402_c56301",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "member.profile_updated",
+        "resource": "membership",
+        "target_id": "mem_001",
+        "target_name": "Amit Sen",
+        "old_values": [],
+        "new_values": {
+            "member_code": "SPS-000872",
+            "updated_fields": [
+                "name_bn",
+                "phone",
+                "district",
+                "blood_group",
+                "institution",
+                "designation",
+                "bio",
+                "member_code",
+                "status",
+                "category_id"
+            ]
+        },
+        "notes": "Member SPS-000872 (অমিত সেন শর্মা) updated their profile information.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 02:32:51"
+    },
+    {
         "id": "audit_1401_88dd7c",
         "user_id": "usr_anik",
         "user_name": "অনিক কুমার সাহা",

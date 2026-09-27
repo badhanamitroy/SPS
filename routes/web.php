@@ -75,6 +75,7 @@ $router->get('/{lang}/membership/verify', 'MembershipController@verifyCard', 'me
 $router->post('/{lang}/membership/payment', 'MembershipController@makePayment', 'membership.payment');
 $router->post('/{lang}/membership/transition', 'MembershipController@requestTransition', 'membership.transition');
 $router->post('/{lang}/membership/profile/update', 'MembershipController@updateProfile', 'membership.profile.update');
+$router->get('/{lang}/membership/card/print', 'MembershipController@printCard', 'membership.card.print');
 
 // Admin Membership Administration (Super Admin, Admin, Membership Officer)
 $router->get('/{lang}/admin/members', 'AdminController@members', 'admin.members');

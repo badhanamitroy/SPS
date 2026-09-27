@@ -748,11 +748,11 @@
         {
             "id": "usr_anik",
             "google_id": "google_sps_01",
-            "name_bn": "অনিক কুমার সাহা",
-            "name_en": "Anik Kumar Saha",
+            "name_bn": "অনিক মুখার্জী",
+            "name_en": "Anik Mukherjee",
             "designation_bn": "সভাপতি",
             "designation_en": "President",
-            "email": "president@sps.org",
+            "email": "anik@sps.org",
             "avatar": "assets\/images\/executives\/anik-kumar-saha.png",
             "role": "super_admin",
             "adminship": "Super-Admin",
@@ -761,7 +761,10 @@
             "assigned_by": "Constitution",
             "created_at": "2026-01-01 10:00:00",
             "username": "anik",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "phone": "+8801711112233",
+            "bio": "সিস্টেম আর্কিটেক্ট ও চিফ এডমিনিস্ট্রেটর।",
+            "updated_at": "2026-09-28 02:33:55"
         },
         {
             "id": "usr_robin",
