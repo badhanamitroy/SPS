@@ -179,7 +179,7 @@ $isBn = $currentLocale === 'bn';
 
                 <p style="font-size:0.95rem; line-height:1.7; color:var(--text-body);">
                     <?= $isBn 
-                        ? 'এই প্রকাশনাটি সনাতন দর্শন ও শাস্ত্র প্রতিষ্ঠানের ডিজিটাল সংরক্ষণ কর্মসূচির অংশ হিসেবে অন্তর্ভুক্ত করা হয়েছে। মূল মুদ্রণ থেকে উচ্চমানের রেজল্যুশনে ডিজিটাল আর্কাইভে সাজানো হয়েছে যাতে গবেষক ও আগ্রহী পাঠকগণ মূল তথ্যসূত্রের প্রত্যক্ষ নির্যাস গ্রহণ করতে পারেন।' 
+                        ? 'এই প্রকাশনাটি সনাতন ফিলোসফি এন্ড স্ক্রিপচার প্রতিষ্ঠানের ডিজিটাল সংরক্ষণ কর্মসূচির অংশ হিসেবে অন্তর্ভুক্ত করা হয়েছে। মূল মুদ্রণ থেকে উচ্চমানের রেজল্যুশনে ডিজিটাল আর্কাইভে সাজানো হয়েছে যাতে গবেষক ও আগ্রহী পাঠকগণ মূল তথ্যসূত্রের প্রত্যক্ষ নির্যাস গ্রহণ করতে পারেন।' 
                         : 'This volume is preserved under the SPS Archival Digitization Initiative. Direct facsimile scans ensure scholarly authenticity, allowing researchers to study source materials directly.' ?>
                 </p>
             </div>

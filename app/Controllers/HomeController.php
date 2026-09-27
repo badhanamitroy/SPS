@@ -14,7 +14,7 @@ class HomeController extends BaseController
         $isBn = $locale === 'bn';
 
         $title = $isBn 
-            ? 'সনাতন দর্শন ও শাস্ত্র (SPS) — সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল'
+            ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS) — সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল'
             : 'Sanatan Philosophy and Scripture (SPS) — Steadfast in Sanatan Unity, Propagation & Welfare';
 
         $description = $isBn

@@ -19,7 +19,7 @@ abstract class BaseController
             'isBn' => $isBn,
             'metaTitle' => config('app.name') . ' — ' . ($isBn ? config('app.motto_bn') : config('app.motto')),
             'metaDescription' => $isBn 
-                ? 'সনাতন দর্শন ও শাস্ত্র (SPS) একটি প্রামাণিক আধ্যাত্মিক, শিক্ষামূলক ও মানবিক সেবামঞ্চ।' 
+                ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS) একটি প্রামাণিক আধ্যাত্মিক, শিক্ষামূলক ও মানবিক সেবামঞ্চ।' 
                 : 'Sanatan Philosophy and Scripture (SPS) is an authentic scholarly, educational, and humanitarian institution.',
             'activeNav' => '',
         ];

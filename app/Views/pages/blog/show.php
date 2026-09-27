@@ -142,7 +142,7 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                     <div class="single-post-body sps-protected-content" id="singlePostBody">
                         <!-- Dynamic Security Watermark Mesh -->
                         <div class="sps-watermark-mesh" aria-hidden="true">
-                            <span>সনাতন দর্শন ও শাস্ত্র (SPS) • কপিরাইট সংরক্ষিত • অননুমোদিত অনুলিপি নিষিদ্ধ • COPYRIGHT SPS • DO NOT REPRODUCE • </span>
+                            <span>সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS) • কপিরাইট সংরক্ষিত • অননুমোদিত অনুলিপি নিষিদ্ধ • COPYRIGHT SPS • DO NOT REPRODUCE • </span>
                         </div>
                         <div class="article-inner-content">
                             <?= $postContent ?>
@@ -426,7 +426,7 @@ $viewsCount = (int)($post['views_count'] ?? 0);
         </h3>
         <p style="font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0;">
             <?= $isBn 
-                ? 'সনাতন দর্শন ও শাস্ত্র (SPS)-এর প্রকাশনা ও বৌদ্ধিক সম্পত্তি সংরক্ষিত। কোনো লেখক, সদস্য বা দর্শনার্থীর এই লেখা অনুলিপি বা স্ক্রিনশট নেওয়ার অনুমতি নেই।' 
+                ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)-এর প্রকাশনা ও বৌদ্ধিক সম্পত্তি সংরক্ষিত। কোনো লেখক, সদস্য বা দর্শনার্থীর এই লেখা অনুলিপি বা স্ক্রিনশট নেওয়ার অনুমতি নেই।' 
                 : 'SPS published treatises and manuscripts are strictly copyright-protected. Screen capture and duplication are strictly forbidden.' ?>
         </p>
     </div>
@@ -443,7 +443,7 @@ $viewsCount = (int)($post['views_count'] ?? 0);
 <!-- DRM Protection Toast -->
 <div id="drmProtectionToast" class="sps-drm-toast" style="display:none;">
     <span>🛡️</span>
-    <span id="drmToastMsg">⚠️ <?= $isBn ? 'সনাতন দর্শন ও শাস্ত্র (SPS): ব্লগের বিষয়বস্তু কপিরাইট সংরক্ষিত। অননুমোদিত অনুলিপি বা স্ক্রিনশট নেওয়া নিষেধ।' : 'Copyright Protected: Content is protected. Copying and screenshots prohibited.' ?></span>
+    <span id="drmToastMsg">⚠️ <?= $isBn ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS): ব্লগের বিষয়বস্তু কপিরাইট সংরক্ষিত। অননুমোদিত অনুলিপি বা স্ক্রিনশট নেওয়া নিষেধ।' : 'Copyright Protected: Content is protected. Copying and screenshots prohibited.' ?></span>
 </div>
 
 <script>

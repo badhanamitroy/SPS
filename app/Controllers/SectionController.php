@@ -17,7 +17,7 @@ class SectionController extends BaseController
         return $this->render('about', [
             'metaTitle' => $title . ' — ' . config('app.short_name'),
             'metaDescription' => $isBn 
-                ? 'সনাতন দর্শন ও শাস্ত্র (SPS)-এর প্রাতিষ্ঠানিক রূপরেখা, মূল আদর্শ ও কেন্দ্রীয় কার্যনির্বাহী পরিষদ।' 
+                ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)-এর প্রাতিষ্ঠানিক রূপরেখা, মূল আদর্শ ও কেন্দ্রীয় কার্যনির্বাহী পরিষদ।' 
                 : 'Institutional framework, core ideals, and the Central Executive Committee of SPS.',
             'activeNav' => 'about',
             'executives' => \App\Services\ExecutiveService::getExecutives(),

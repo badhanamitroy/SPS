@@ -65,7 +65,7 @@ $isBn = $currentLocale === 'bn';
         <div class="grid-2">
             <div class="card">
                 <span class="badge badge-scholarly" style="margin-bottom:var(--space-sm);">বাংলা টাইপোগ্রাফি (Bengali)</span>
-                <h1 style="font-size:1.8rem; margin-bottom:var(--space-xs);">হেডিং ১: সনাতন দর্শন ও শাস্ত্র</h1>
+                <h1 style="font-size:1.8rem; margin-bottom:var(--space-xs);">হেডিং ১: সনাতন ফিলোসফি এন্ড স্ক্রিপচার</h1>
                 <h2 style="font-size:1.4rem; margin-bottom:var(--space-xs);">হেডিং ২: জ্ঞানের প্রামাণিক সংরক্ষণ</h2>
                 <h3 style="font-size:1.15rem; margin-bottom:var(--space-xs);">হেডিং ৩: নিষ্কাম কর্মযোগ ও মানবিক সেবা</h3>
                 <p style="font-size:0.95rem; line-height:1.7; color:var(--text-body);">

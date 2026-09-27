@@ -26,7 +26,7 @@ class MembershipController extends BaseController
         $stats = MembershipService::getMemberStats();
 
         $title = $isBn 
-            ? 'সদস্যপদ ও সনাতনী পরিবারে অন্তর্ভুক্তি | সনাতন দর্শন ও শাস্ত্র'
+            ? 'সদস্যপদ ও সনাতনী পরিবারে অন্তর্ভুক্তি | সনাতন ফিলোসফি এন্ড স্ক্রিপচার'
             : 'Membership & Dharmic Brotherhood | SPS';
 
         return $this->render('membership/index', [
@@ -53,7 +53,7 @@ class MembershipController extends BaseController
         $selectedPlan = (string)$request->getParam('plan', 'STUDENT_MONTHLY');
 
         $title = $isBn 
-            ? 'সদস্যপদ আবেদন ফরম | সনাতন দর্শন ও শাস্ত্র'
+            ? 'সদস্যপদ আবেদন ফরম | সনাতন ফিলোসফি এন্ড স্ক্রিপচার'
             : 'Apply for Membership | SPS';
 
         return $this->render('membership/apply', [

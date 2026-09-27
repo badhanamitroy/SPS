@@ -424,7 +424,7 @@ $isBn = $currentLocale === 'bn';
 <!-- SPS DRM Protection Toast -->
 <div id="drmProtectionToast" class="sps-drm-toast" style="display:none;">
     <span>🛡️</span>
-    <span id="drmToastMsg">⚠️ <?= $isBn ? 'সনাতন দর্শন ও শাস্ত্র (SPS): ব্লগের বিষয়বস্তু কপিরাইট সংরক্ষিত। অননুমোদিত অনুলিপি বা স্ক্রিনশট নেওয়া নিষেধ।' : 'Copyright Protected: Content is protected. Copying and screenshots prohibited.' ?></span>
+    <span id="drmToastMsg">⚠️ <?= $isBn ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS): ব্লগের বিষয়বস্তু কপিরাইট সংরক্ষিত। অননুমোদিত অনুলিপি বা স্ক্রিনশট নেওয়া নিষেধ।' : 'Copyright Protected: Content is protected. Copying and screenshots prohibited.' ?></span>
 </div>
 
 <script>

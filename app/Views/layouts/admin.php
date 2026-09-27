@@ -264,7 +264,7 @@ $allUsers = \App\Services\RbacService::getUsers();
             <a href="<?= url('/admin', $currentLocale) ?>" style="display:flex; align-items:center; gap:var(--space-sm); text-decoration:none;">
                 <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Logo" class="admin-brand-logo">
                 <div>
-                    <h1 class="admin-brand-title"><?= $isBn ? 'সনাতন দর্শন ও শাস্ত্র' : 'Sanatan Philosophy & Scripture' ?></h1>
+                    <h1 class="admin-brand-title"><?= $isBn ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার' : 'Sanatan Philosophy & Scripture' ?></h1>
                     <div class="admin-brand-subtitle"><?= $isBn ? 'প্রশাসনিক নিয়ন্ত্রণকক্ষ (Admin Console)' : 'SPS Administrative Control' ?></div>
                 </div>
             </a>
@@ -449,7 +449,7 @@ $allUsers = \App\Services\RbacService::getUsers();
 
     <footer class="admin-footer">
         <?= $isBn 
-            ? 'সনাতন দর্শন ও শাস্ত্র (SPS) — অভ্যন্তরীণ প্রশাসনিক নিয়ন্ত্রণ ব্যবস্থা • রোল-ভিত্তিক পারমিশন ও ক্রিপ্টোগ্রাফিক অডিট ট্রেইল' 
+            ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS) — অভ্যন্তরীণ প্রশাসনিক নিয়ন্ত্রণ ব্যবস্থা • রোল-ভিত্তিক পারমিশন ও ক্রিপ্টোগ্রাফিক অডিট ট্রেইল' 
             : 'Sanatan Philosophy & Scripture (SPS) — Role-Based Administrative Control System • Cryptographic Audit Trail' ?>
     </footer>
 </body>

@@ -18,7 +18,7 @@ $secretariat = $executivesGrouped['secretariat'] ?? [];
     <!-- Institutional Hero -->
     <div style="text-align:center; max-width:880px; margin:0 auto var(--space-3xl);">
         <div style="display:inline-block; font-size:0.82rem; font-weight:700; color:var(--accent-saffron); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:var(--space-xs); background:var(--bg-subtle); padding:4px 12px; border-radius:var(--radius-full); border:1px solid var(--border-medium);">
-            <?= $isBn ? 'সনাতন দর্শন ও শাস্ত্র (SPS)' : 'Sanatan Philosophy & Scripture' ?>
+            <?= $isBn ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)' : 'Sanatan Philosophy & Scripture' ?>
         </div>
         <h1 style="font-size:2.4rem; font-weight:800; color:var(--primary-deep); margin:0 0 var(--space-sm); line-height:1.25;">
             <?= $isBn ? 'প্রতিষ্ঠানের পরিচিতি ও আদর্শ' : 'Institutional Framework & Purpose' ?>

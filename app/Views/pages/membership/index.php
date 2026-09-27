@@ -22,7 +22,7 @@ $isBn = $currentLocale === 'bn';
         
         <p style="font-size: 1.12rem; color: var(--text-secondary); max-width: 780px; margin: 0 auto var(--space-xl); line-height: 1.65;">
             <?= $isBn 
-                ? 'সনাতন দর্শন ও শাস্ত্র (SPS)-এর জ্ঞানচর্চা, সমাজসেবা ও সনাতনী ঐক্যের মহাযজ্ঞে যুক্ত হোন। ছাত্র বা পেশাজীবী হিসেবে আপনার সামর্থ্য অনুযায়ী ক্যাটাগরি ও প্ল্যান নির্বাচন করুন।'
+                ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)-এর জ্ঞানচর্চা, সমাজসেবা ও সনাতনী ঐক্যের মহাযজ্ঞে যুক্ত হোন। ছাত্র বা পেশাজীবী হিসেবে আপনার সামর্থ্য অনুযায়ী ক্যাটাগরি ও প্ল্যান নির্বাচন করুন।'
                 : 'Join the mission of Sanatan Philosophy and Scripture (SPS). Transparent categories, dynamic plans, lifetime immutable Member IDs, and digital membership cards.' ?>
         </p>
 
@@ -346,7 +346,7 @@ $isBn = $currentLocale === 'bn';
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS" style="height: 38px; width: auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
                             <div>
-                                <div style="font-size: 0.92rem; font-weight: 800; letter-spacing: 0.5px; color: #f8fafc;">সনাতন দর্শন ও শাস্ত্র</div>
+                                <div style="font-size: 0.92rem; font-weight: 800; letter-spacing: 0.5px; color: #f8fafc;">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div>
                                 <div style="font-size: 0.68rem; color: #94a3b8; letter-spacing: 0.8px;">SANATAN PHILOSOPHY & SCRIPTURE</div>
                             </div>
                         </div>

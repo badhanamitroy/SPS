@@ -46,7 +46,7 @@ class AdminController extends BaseController
 
         $isBn = $locale === 'bn';
         $title = $isBn 
-            ? 'প্রশাসনিক লগইন | সনাতন দর্শন ও শাস্ত্র'
+            ? 'প্রশাসনিক লগইন | সনাতন ফিলোসফি এন্ড স্ক্রিপচার'
             : 'Admin Portal Login | SPS';
 
         return $this->render('admin/login', [
@@ -547,7 +547,7 @@ class AdminController extends BaseController
         $rejected = BlogService::getRejectedBlogs();
 
         $title = $isBn 
-            ? 'ব্লগ মডারেশন ও অনুমোদন | সনাতন দর্শন ও শাস্ত্র' 
+            ? 'ব্লগ মডারেশন ও অনুমোদন | সনাতন ফিলোসফি এন্ড স্ক্রিপচার' 
             : 'Blog Editorial Moderation | SPS Admin Console';
 
         return $this->render('admin/blogs', [

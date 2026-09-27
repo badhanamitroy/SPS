@@ -9,7 +9,7 @@ $success = \App\Core\Session::getFlash('success');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $isBn ? 'প্রশাসনিক লগইন | সনাতন দর্শন ও শাস্ত্র (SPS)' : 'Admin Portal Login | Sanatan Philosophy & Scripture (SPS)' ?></title>
+    <title><?= $isBn ? 'প্রশাসনিক লগইন | সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)' : 'Admin Portal Login | Sanatan Philosophy & Scripture (SPS)' ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= asset('favicon.svg') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/tokens.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/reset.css') ?>">

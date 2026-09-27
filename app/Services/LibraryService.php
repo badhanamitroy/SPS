@@ -88,7 +88,7 @@ class LibraryService
                     'pages_count' => 48,
                     'file_size' => '39.0 MB',
                     'access_tier' => 'paid_members',
-                    'synopsis_bn' => 'সনাতন দর্শন ও শাস্ত্র প্রতিষ্ঠানের নিয়মিত প্রাতিষ্ঠানিক মাসিক মুখপত্র। সাংগঠনিক কার্যক্রমের খতিয়ান, মুক্ত পাঠশালা ও বিদ্যাপীঠের হালনাগাদ অগ্রগতি, প্রান্তিক সেবা কার্যক্রমের সচিত্র বিবরণ এবং প্রথিতযশা গবেষকদের তাত্ত্বিক সম্পাদকীয় প্রবন্ধ।',
+                    'synopsis_bn' => 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার প্রতিষ্ঠানের নিয়মিত প্রাতিষ্ঠানিক মাসিক মুখপত্র। সাংগঠনিক কার্যক্রমের খতিয়ান, মুক্ত পাঠশালা ও বিদ্যাপীঠের হালনাগাদ অগ্রগতি, প্রান্তিক সেবা কার্যক্রমের সচিত্র বিবরণ এবং প্রথিতযশা গবেষকদের তাত্ত্বিক সম্পাদকীয় প্রবন্ধ।',
                     'synopsis_en' => 'The official monthly journal of Sanatan Philosophy and Scripture. Features field reports on humanitarian initiatives, free Vidyapeeth schools, cultural seminars, and peer-reviewed scholarly editorials.',
                     'featured' => false,
                     'topics' => ['সাংগঠনিক সংবাদ', 'বিদ্যাপীঠ প্রতিবেদন', 'সমাজসেবা', 'সম্পাদকীয় নিবন্ধ'],

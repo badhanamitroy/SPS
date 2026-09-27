@@ -41,7 +41,7 @@ $isBn = ($locale ?? 'bn') === 'bn';
 
             <p style="font-size: 1.05rem; line-height: 1.65; color: #cbd5e1; margin: 0 0 var(--space-xl);">
                 <?= $isBn 
-                    ? 'সনাতন দর্শন ও শাস্ত্র (SPS)-এর মূল ভিত্তি কেবল তত্ত্বালোচনা নয়, বরং আর্তপীড়িতের পাশে দাঁড়ানো, দেবালয় সংস্কার, মেধা ও প্রযুক্তি বিকাশ, শিশু শিক্ষা এবং প্রকৃতির প্রতি বৈদিক দায়িত্ব পালন। নিচে আমাদের বিগত ৬ বছরের সকল কার্যক্রমের স্বচ্ছ ও প্রামাণ্য হিসাব তুলে ধরা হলো।' 
+                    ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)-এর মূল ভিত্তি কেবল তত্ত্বালোচনা নয়, বরং আর্তপীড়িতের পাশে দাঁড়ানো, দেবালয় সংস্কার, মেধা ও প্রযুক্তি বিকাশ, শিশু শিক্ষা এবং প্রকৃতির প্রতি বৈদিক দায়িত্ব পালন। নিচে আমাদের বিগত ৬ বছরের সকল কার্যক্রমের স্বচ্ছ ও প্রামাণ্য হিসাব তুলে ধরা হলো।' 
                     : 'SPS bridges philosophical study with transformative social seva across Bangladesh—restoring historic shrines, distributing children\'s scriptures, funding university scholars, creating livelihoods, and extending emergency disaster relief.' ?>
             </p>
 

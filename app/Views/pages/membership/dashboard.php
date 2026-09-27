@@ -129,7 +129,7 @@ $allMembers = $allMembers ?? [];
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS" style="height: 36px; width: auto;">
                                 <div>
-                                    <div style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; color: #ffffff;">সনাতন দর্শন ও শাস্ত্র</div>
+                                    <div style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; color: #ffffff;">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div>
                                     <div style="font-size: 0.65rem; color: #94a3b8; letter-spacing: 0.8px;">SANATAN PHILOSOPHY & SCRIPTURE</div>
                                 </div>
                             </div>

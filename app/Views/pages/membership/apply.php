@@ -24,7 +24,7 @@ $selectedPlan = $selectedPlan ?? 'STUDENT_MONTHLY';
             </h1>
             <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 600px; margin: 0 auto;">
                 <?= $isBn 
-                    ? 'আপনার সঠিক তথ্য প্রদান করে সনাতন দর্শন ও শাস্ত্র (SPS)-এর প্রাতিষ্ঠানিক সদস্যপদ গ্রহণ করুন।' 
+                    ? 'আপনার সঠিক তথ্য প্রদান করে সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)-এর প্রাতিষ্ঠানিক সদস্যপদ গ্রহণ করুন।' 
                     : 'Fill in accurate details to register your verified membership in Sanatan Philosophy & Scripture.' ?>
             </p>
         </div>

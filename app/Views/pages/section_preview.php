@@ -18,7 +18,7 @@ $sectionTitle = $sectionTitle ?? __('common.nav.' . $sectionSlug, ucfirst($secti
         
         <p class="lead" style="color:var(--text-body); max-width:680px; margin:0 auto var(--space-xl);">
             <?php if ($isBn): ?>
-                এই বিভাগটি <strong>সনাতন দর্শন ও শাস্ত্র (SPS)</strong> প্ল্যাটফর্মের অন্যতম মূল স্তম্ভ। ফেজ ১-এর ভিত্তি প্রস্তর সফলভাবে সমাপ্ত হয়েছে। মূল ডেটাবেজ, সদস্য মডারেশন ও সার্ভিসেস পরবর্তী ফেজে কার্যকর করা হবে।
+                এই বিভাগটি <strong>সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)</strong> প্ল্যাটফর্মের অন্যতম মূল স্তম্ভ। ফেজ ১-এর ভিত্তি প্রস্তর সফলভাবে সমাপ্ত হয়েছে। মূল ডেটাবেজ, সদস্য মডারেশন ও সার্ভিসেস পরবর্তী ফেজে কার্যকর করা হবে।
             <?php else: ?>
                 This section represents a core module of the <strong>Sanatan Philosophy and Scripture (SPS)</strong> platform. With Phase 1 design foundation active, comprehensive database models and services will be deployed in the upcoming phases according to our master architecture roadmap.
             <?php endif; ?>

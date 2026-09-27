@@ -71,7 +71,7 @@ assert_test("Router: '/bn' returns 200", $resBn->getStatusCode() === 200);
 ob_start();
 $resBn->send();
 $bnHtml = ob_get_clean();
-assert_test("View: '/bn' contains Bengali brand title", str_contains($bnHtml, 'সনাতন দর্শন ও শাস্ত্র'));
+assert_test("View: '/bn' contains Bengali brand title", str_contains($bnHtml, 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার'));
 assert_test("View: '/bn' contains language toggle", str_contains($bnHtml, 'lang-toggle'));
 assert_test("View: '/bn' contains canonical link with /bn", str_contains($bnHtml, 'hreflang="bn"'));
 assert_test("View: '/bn' contains scripture spotlight", str_contains($bnHtml, 'কর্মণ্যেবাধিকারস্তে'));
