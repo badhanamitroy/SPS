@@ -468,11 +468,9 @@
 }
 
 @media print {
-  html, body {
+  .sps-protected-content,
+  .single-post-body {
     display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
   }
 }
 

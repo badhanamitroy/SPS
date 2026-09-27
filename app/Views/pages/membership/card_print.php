@@ -294,25 +294,48 @@ $plan = $plan ?? [];
             text-transform: uppercase;
         }
 
+        @page {
+            size: auto;
+            margin: 10mm;
+        }
+
         /* Strict Print Media Styles */
         @media print {
-            body {
+            html, body {
+                display: block !important;
+                visibility: visible !important;
                 background: #ffffff !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
             }
-            .no-print {
+            .no-print,
+            .print-toolbar {
                 display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
             .cards-container {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
                 gap: 20px !important;
-                margin: 20px auto !important;
-                flex-direction: column !important;
+                margin: 10mm auto !important;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
             .id-card {
                 box-shadow: none !important;
-                border: 1px solid #475569 !important;
+                border: 1px solid #334155 !important;
                 page-break-inside: avoid !important;
+                break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
                 color-adjust: exact !important;

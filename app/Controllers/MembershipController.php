@@ -669,7 +669,7 @@ class MembershipController extends BaseController
             'member' => $member,
             'category' => $category,
             'plan' => $plan,
-        ]);
+        ], '');
     }
 }
 
