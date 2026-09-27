@@ -968,4 +968,88 @@ class AdminController extends BaseController
 
         return $this->redirect(url('/admin/members', $locale));
     }
+
+    /**
+     * Admin Profile Self-Service Page
+     */
+    public function profilePage(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+        $currentUser = AuthService::getCurrentUser();
+        $currentRole = RbacService::getRole($currentUser['role'] ?? '');
+
+        $title = $isBn 
+            ? 'আমার প্রোফাইল | সনাতন ফিলোসফি এন্ড স্ক্রিপচার' 
+            : 'My Admin Profile | SPS';
+
+        return $this->render('admin/profile', [
+            'metaTitle' => $title,
+            'activeNav' => 'admin.profile',
+            'currentUser' => $currentUser,
+            'currentRole' => $currentRole,
+            'roles' => RbacService::getRoles(),
+        ]);
+    }
+
+    /**
+     * Update Admin Profile Details (Self-Service)
+     */
+    public function updateProfile(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+        $currentUser = AuthService::getCurrentUser();
+
+        $nameBn = trim((string)$request->getPost('name_bn', ''));
+        $nameEn = trim((string)$request->getPost('name_en', ''));
+        $email = trim((string)$request->getPost('email', ''));
+        $phone = trim((string)$request->getPost('phone', ''));
+        $bio = trim((string)$request->getPost('bio', ''));
+        $newPassword = (string)$request->getPost('new_password', '');
+        $confirmPassword = (string)$request->getPost('confirm_password', '');
+
+        if (empty($nameBn) && empty($nameEn)) {
+            Session::setFlash('error', $isBn ? 'অনুগ্রহ করে অন্তত একটি ভাষায় আপনার নাম প্রদান করুন।' : 'Please provide your name.');
+            return $this->redirect(url('/admin/profile', $locale));
+        }
+
+        $profileData = [
+            'name_bn' => $nameBn ?: ($currentUser['name_bn'] ?? ''),
+            'name_en' => $nameEn ?: ($currentUser['name_en'] ?? ''),
+            'email' => $email ?: ($currentUser['email'] ?? ''),
+            'phone' => $phone,
+            'bio' => $bio,
+        ];
+
+        // Password change handling (optional)
+        if (!empty($newPassword)) {
+            if (strlen($newPassword) < 6) {
+                Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।' : 'New password must be at least 6 characters.');
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+            if ($newPassword !== $confirmPassword) {
+                Session::setFlash('error', $isBn ? 'পাসওয়ার্ড এবং নিশ্চিতকরণ পাসওয়ার্ড মেলেনি।' : 'New password and confirmation do not match.');
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+            $profileData['password'] = $newPassword;
+        }
+
+        $res = RbacService::updateUserProfile($currentUser['id'], $profileData);
+
+        if ($res['success'] ?? false) {
+            Session::setFlash('success', $isBn 
+                ? 'আপনার অ্যাডমিন প্রোফাইল সফলভাবে হালনাগাদ করা হয়েছে।' 
+                : 'Your admin profile has been successfully updated.');
+        } else {
+            Session::setFlash('error', $res['message'] ?? ($isBn ? 'প্রোফাইল আপডেট ব্যর্থ হয়েছে।' : 'Failed to update profile.'));
+        }
+
+        return $this->redirect(url('/admin/profile', $locale));
+    }
 }
+

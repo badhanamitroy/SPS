@@ -87,6 +87,10 @@ $currentLocale = current_locale();
                 <a href="#!"><?= e(__('common.footer.terms_of_service')) ?></a>
                 <span>•</span>
                 <a href="<?= e(url('/transparency', $currentLocale)) ?>"><?= e(__('common.footer.financial_ethics')) ?></a>
+                <span>•</span>
+                <a href="<?= e(url('/admin/login', $currentLocale)) ?>" style="opacity: 0.75;" title="<?= $currentLocale === 'bn' ? 'প্রশাসনিক লগইন পোর্টাল' : 'Admin Login Portal' ?>">
+                    🔒 <?= $currentLocale === 'bn' ? 'অ্যাডমিন পোর্টাল' : 'Admin Portal' ?>
+                </a>
             </div>
         </div>
     </div>

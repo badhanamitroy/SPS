@@ -482,6 +482,134 @@ $allMembers = $allMembers ?? [];
                         </div>
                     <?php endif; ?>
 
+                    <!-- Member Profile Information & Anytime Self-Update Card -->
+                    <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);" id="member-profile-update-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md); flex-wrap: wrap; gap: 8px;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0 0 4px; display: flex; align-items: center; gap: 8px;">
+                                    <span>👤</span>
+                                    <span><?= $isBn ? 'আমার প্রোফাইল ও তথ্য হালনাগাদ' : 'My Profile & Information Update' ?></span>
+                                </h3>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                                    <?= $isBn 
+                                        ? 'আপনার নাম, মোবাইল, ইমেইল, ঠিকানা ও কর্মবিবরণ যে কোনো সময় হালনাগাদ করতে পারেন।' 
+                                        : 'Update your personal details, contact info, address and career records anytime.' ?>
+                                </p>
+                            </div>
+                            <span style="font-size: 0.76rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: var(--radius-full); font-weight: 700;">
+                                ID: <?= e($member['member_code']) ?> (<?= $isBn ? 'স্থায়ী কোড' : 'Permanent ID' ?>)
+                            </span>
+                        </div>
+
+                        <form action="<?= url('/membership/profile/update', $currentLocale) ?>" method="POST" id="memberProfileForm">
+                            <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+                            <input type="hidden" name="member_code" value="<?= e($member['member_code']) ?>">
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+                                <div>
+                                    <label for="mem_name_bn" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'পূর্ণ নাম (বাংলা) *' : 'Full Name (Bengali) *' ?>
+                                    </label>
+                                    <input type="text" id="mem_name_bn" name="name_bn" value="<?= e($member['name_bn'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+
+                                <div>
+                                    <label for="mem_name_en" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'পূর্ণ নাম (English) *' : 'Full Name (English) *' ?>
+                                    </label>
+                                    <input type="text" id="mem_name_en" name="name_en" value="<?= e($member['name_en'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+                                <div>
+                                    <label for="mem_phone" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'মোবাইল নম্বর *' : 'Mobile Phone *' ?>
+                                    </label>
+                                    <input type="text" id="mem_phone" name="phone" value="<?= e($member['phone'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+
+                                <div>
+                                    <label for="mem_email" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'ইমেইল ঠিকানা *' : 'Email Address *' ?>
+                                    </label>
+                                    <input type="email" id="mem_email" name="email" value="<?= e($member['email'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+                                <div>
+                                    <label for="mem_district" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'জেলা / অঞ্চল' : 'District' ?>
+                                    </label>
+                                    <input type="text" id="mem_district" name="district" value="<?= e($member['district'] ?? '') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+
+                                <div>
+                                    <label for="mem_upazila" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'উপজেলা / এলাকা' : 'Upazila / Area' ?>
+                                    </label>
+                                    <input type="text" id="mem_upazila" name="upazila" value="<?= e($member['upazila'] ?? '') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+
+                                <div>
+                                    <label for="mem_blood_group" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'রক্তের গ্রুপ' : 'Blood Group' ?>
+                                    </label>
+                                    <?php $bg = $member['blood_group'] ?? ''; ?>
+                                    <select id="mem_blood_group" name="blood_group" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box; background: #fff;">
+                                        <option value=""><?= $isBn ? '-- নির্বাচন করুন --' : '-- Select --' ?></option>
+                                        <?php foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $b): ?>
+                                            <option value="<?= $b ?>" <?= $bg === $b ? 'selected' : '' ?>><?= $b ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-md);">
+                                <label for="mem_address" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                    <?= $isBn ? 'বর্তমান পূর্ণ ঠিকানা' : 'Present Address' ?>
+                                </label>
+                                <input type="text" id="mem_address" name="address" value="<?= e($member['address'] ?? '') ?>" placeholder="<?= $isBn ? 'বাড়ি/রোড নং, এলাকা, শহর' : 'House/Road, Area, City' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
+                                <div>
+                                    <label for="mem_institution" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'শিক্ষা প্রতিষ্ঠান / কর্মস্থল' : 'Institution / Workplace' ?>
+                                    </label>
+                                    <?php 
+                                        $instVal = $member['education']['institution'] ?? ($member['profession']['institution'] ?? '');
+                                    ?>
+                                    <input type="text" id="mem_institution" name="institution" value="<?= e($instVal) ?>" placeholder="<?= $isBn ? 'শিক্ষা প্রতিষ্ঠান বা প্রতিষ্ঠানের নাম' : 'Institution or Organization' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+
+                                <div>
+                                    <label for="mem_designation" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                        <?= $isBn ? 'বিভাগ / পদবি' : 'Department / Designation' ?>
+                                    </label>
+                                    <?php 
+                                        $desigVal = $member['education']['department'] ?? ($member['profession']['designation'] ?? '');
+                                    ?>
+                                    <input type="text" id="mem_designation" name="designation" value="<?= e($desigVal) ?>" placeholder="<?= $isBn ? 'বিভাগ, বর্ষ অথবা পদের নাম' : 'Department or Role' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: var(--space-lg);">
+                                <label for="mem_bio" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                    <?= $isBn ? 'সংক্ষিপ্ত পরিচিতি ও সেবামূলক আগ্রহ' : 'Bio & Seva Interests' ?>
+                                </label>
+                                <textarea id="mem_bio" name="bio" rows="2" placeholder="<?= $isBn ? 'এসপিএস কার্যক্রমে আপনার বিশেষ আগ্রহ বা অভিজ্ঞতা...' : 'Your seva interests or experience...' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box; font-family: inherit;"><?= e($member['bio'] ?? ($member['notes'] ?? '')) ?></textarea>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
+                                <button type="submit" class="btn btn-primary" id="saveMemberProfileBtn" style="background-color: var(--accent-saffron, #C65A1E); border-color: var(--accent-saffron-hover, #A64713); font-weight: 800; padding: 9px 20px; box-shadow: 0 2px 8px rgba(198, 90, 30, 0.28);">
+                                    💾 <?= $isBn ? 'প্রোফাইল তথ্য সংরক্ষণ করুন' : 'Save Profile Changes' ?>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
                     <!-- Historical Transition & Status Audit Trail -->
                     <?php if (!empty($history)): ?>
                         <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);">

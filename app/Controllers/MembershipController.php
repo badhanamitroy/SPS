@@ -549,4 +549,61 @@ class MembershipController extends BaseController
 
         return $this->redirect(url('/membership/dashboard', $locale));
     }
+
+    /**
+     * Update Member Profile Details (Self-Service)
+     */
+    public function updateProfile(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        $memberCode = trim((string)$request->getPost('member_code', ''));
+        if (empty($memberCode)) {
+            $memberCode = (string)Session::get('current_member_code', '');
+        }
+
+        if (empty($memberCode)) {
+            Session::setFlash('error', $isBn 
+                ? 'প্রোফাইল আপডেট করতে অনুগ্রহ করে প্রথমে মেম্বার লগইন করুন।' 
+                : 'Please log in as a member to update your profile.');
+            return $this->redirect(url('/membership/login', $locale));
+        }
+
+        $member = MembershipService::getMemberById($memberCode);
+        if (!$member) {
+            Session::setFlash('error', $isBn ? 'সদস্য খুঁজে পাওয়া যায়নি।' : 'Member not found.');
+            return $this->redirect(url('/membership/dashboard', $locale));
+        }
+
+        $profileData = [
+            'name_bn' => (string)$request->getPost('name_bn', ''),
+            'name_en' => (string)$request->getPost('name_en', ''),
+            'phone' => (string)$request->getPost('phone', ''),
+            'email' => (string)$request->getPost('email', ''),
+            'district' => (string)$request->getPost('district', ''),
+            'upazila' => (string)$request->getPost('upazila', ''),
+            'address' => (string)$request->getPost('address', ''),
+            'blood_group' => (string)$request->getPost('blood_group', ''),
+            'institution' => (string)$request->getPost('institution', ''),
+            'department' => (string)$request->getPost('department', ''),
+            'class_year' => (string)$request->getPost('class_year', ''),
+            'profession_institution' => (string)$request->getPost('profession_institution', ''),
+            'designation' => (string)$request->getPost('designation', ''),
+            'bio' => (string)$request->getPost('bio', ''),
+        ];
+
+        $result = MembershipService::updateMemberProfile($member['member_code'], $profileData);
+
+        if ($result['success'] ?? false) {
+            Session::setFlash('success', $isBn 
+                ? 'আপনার সদস্য প্রোফাইলের তথ্যসমূহ সফলভাবে হালনাগাদ করা হয়েছে।' 
+                : 'Your member profile information has been successfully updated.');
+        } else {
+            Session::setFlash('error', $result['message'] ?? ($isBn ? 'প্রোফাইল আপডেট ব্যর্থ হয়েছে।' : 'Profile update failed.'));
+        }
+
+        return $this->redirect(url('/membership/dashboard', $locale));
+    }
 }
+

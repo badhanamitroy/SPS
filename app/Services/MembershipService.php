@@ -237,6 +237,110 @@ class MembershipService
     }
 
     /**
+     * Update Member Profile details anytime (Self-Service or Admin).
+     * Allows updating: name_bn, name_en, email, phone, district, upazila, address, blood_group, education/institution, profession/designation, bio/notes.
+     * Strictly preserves: id, member_code, category_id, plan_id, status, join_date, expiry_date (immutable core identity).
+     */
+    public static function updateMemberProfile(string $memberIdentifier, array $profileData): array
+    {
+        $data = self::loadData();
+        $foundIndex = -1;
+
+        foreach ($data['members'] as $idx => $m) {
+            if (strcasecmp((string)($m['member_code'] ?? ''), $memberIdentifier) === 0 || ($m['id'] ?? '') === $memberIdentifier) {
+                $foundIndex = $idx;
+                break;
+            }
+        }
+
+        if ($foundIndex === -1) {
+            return ['success' => false, 'message' => 'সদস্য প্রোফাইল খুঁজে পাওয়া যায়নি।'];
+        }
+
+        $current = $data['members'][$foundIndex];
+
+        if (isset($profileData['name_bn']) && trim((string)$profileData['name_bn']) !== '') {
+            $current['name_bn'] = trim((string)$profileData['name_bn']);
+        }
+        if (isset($profileData['name_en']) && trim((string)$profileData['name_en']) !== '') {
+            $current['name_en'] = trim((string)$profileData['name_en']);
+        }
+        if (isset($profileData['phone']) && trim((string)$profileData['phone']) !== '') {
+            $current['phone'] = trim((string)$profileData['phone']);
+        }
+        if (isset($profileData['email']) && trim((string)$profileData['email']) !== '') {
+            $current['email'] = trim((string)$profileData['email']);
+        }
+        if (isset($profileData['district'])) {
+            $current['district'] = trim((string)$profileData['district']);
+        }
+        if (isset($profileData['upazila'])) {
+            $current['upazila'] = trim((string)$profileData['upazila']);
+        }
+        if (isset($profileData['address'])) {
+            $current['address'] = trim((string)$profileData['address']);
+        }
+        if (isset($profileData['blood_group'])) {
+            $current['blood_group'] = trim((string)$profileData['blood_group']);
+        }
+        if (isset($profileData['bio'])) {
+            $current['bio'] = trim((string)$profileData['bio']);
+        }
+        if (isset($profileData['notes'])) {
+            $current['notes'] = trim((string)$profileData['notes']);
+        }
+
+        // Education details (for students or academic records)
+        if (isset($profileData['institution']) || isset($profileData['department'])) {
+            if (!isset($current['education']) || !is_array($current['education'])) {
+                $current['education'] = [];
+            }
+            if (isset($profileData['institution'])) {
+                $current['education']['institution'] = trim((string)$profileData['institution']);
+            }
+            if (isset($profileData['department'])) {
+                $current['education']['department'] = trim((string)$profileData['department']);
+            }
+            if (isset($profileData['class_year'])) {
+                $current['education']['class_year'] = trim((string)$profileData['class_year']);
+            }
+        }
+
+        // Profession details (for earning or general professional records)
+        if (isset($profileData['profession_institution']) || isset($profileData['designation'])) {
+            if (!isset($current['profession']) || !is_array($current['profession'])) {
+                $current['profession'] = [];
+            }
+            if (isset($profileData['profession_institution'])) {
+                $current['profession']['institution'] = trim((string)$profileData['profession_institution']);
+            }
+            if (isset($profileData['designation'])) {
+                $current['profession']['designation'] = trim((string)$profileData['designation']);
+            }
+        }
+
+        $current['updated_at'] = date('Y-m-d H:i:s');
+        $data['members'][$foundIndex] = $current;
+        self::saveData($data);
+
+        // Audit Logging
+        AuditService::log(
+            'member.profile_updated',
+            'membership',
+            $current['id'],
+            $current['name_en'] ?? $current['name_bn'],
+            [],
+            [
+                'member_code' => $current['member_code'],
+                'updated_fields' => array_keys($profileData)
+            ],
+            "Member {$current['member_code']} ({$current['name_bn']}) updated their profile information."
+        );
+
+        return ['success' => true, 'member' => $current];
+    }
+
+    /**
      * Generate unique lifetime Member ID (e.g. SPS-000873).
      * Retains numerical consistency even if category transitions later.
      */

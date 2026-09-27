@@ -271,8 +271,8 @@ $allUsers = \App\Services\RbacService::getUsers();
         </div>
 
         <div class="admin-user-bar">
-            <!-- Authenticated Admin User Identity Pill -->
-            <div class="admin-user-pill">
+            <!-- Authenticated Admin User Identity Pill (Links to Profile) -->
+            <a href="<?= url('/admin/profile', $currentLocale) ?>" class="admin-user-pill" style="text-decoration:none; cursor:pointer;" title="<?= $isBn ? 'আমার প্রোফাইল ও নিরাপত্তা সম্পাদন করুন' : 'Edit My Profile & Security' ?>">
                 <?php if (!empty($currentUser['avatar'])): ?>
                     <img src="<?= asset($currentUser['avatar']) ?>" alt="<?= e($currentUser['name_en'] ?? '') ?>" class="admin-user-avatar">
                 <?php else: ?>
@@ -285,7 +285,7 @@ $allUsers = \App\Services\RbacService::getUsers();
                 <span class="role-badge badge-<?= e($currentUser['role'] ?? '') ?>">
                     ★ <?= e($isBn ? ($currentRole['name_bn'] ?? $currentUser['role'] ?? '') : ($currentRole['name_en'] ?? $currentUser['role'] ?? '')) ?>
                 </span>
-            </div>
+            </a>
 
             <!-- Back to Public Site -->
             <a href="<?= url('/', $currentLocale) ?>" class="btn btn-sm btn-ghost" style="border:1px solid var(--border-medium); font-size:0.82rem;" target="_blank" title="<?= $isBn ? 'মূল ওয়েবসাইট' : 'Public Site' ?>">
@@ -312,6 +312,12 @@ $allUsers = \App\Services\RbacService::getUsers();
                     <a href="<?= url('/admin', $currentLocale) ?>">
                         <span class="sidebar-nav-icon">📊</span>
                         <span><?= $isBn ? 'ড্যাশবোর্ড' : 'Dashboard' ?></span>
+                    </a>
+                </li>
+                <li class="sidebar-nav-item <?= ($activeNav ?? '') === 'admin.profile' ? 'active' : '' ?>">
+                    <a href="<?= url('/admin/profile', $currentLocale) ?>">
+                        <span class="sidebar-nav-icon">👤</span>
+                        <span><?= $isBn ? 'আমার প্রোফাইল' : 'My Profile' ?></span>
                     </a>
                 </li>
             </ul>

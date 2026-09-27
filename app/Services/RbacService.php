@@ -302,5 +302,73 @@ class RbacService
             )
         ];
     }
+
+    /**
+     * Update Admin User Profile details (Self-Service or Super Admin).
+     * Allows updating: name_bn, name_en, email, phone, bio, designation_bn, designation_en, password.
+     * Strictly preserves: id, role, adminship, scope, status, permissions (no privilege self-escalation).
+     */
+    public static function updateUserProfile(string $userId, array $profileData): array
+    {
+        $data = self::loadData();
+        $foundIndex = -1;
+
+        foreach ($data['users'] as $idx => $u) {
+            if ($u['id'] === $userId) {
+                $foundIndex = $idx;
+                break;
+            }
+        }
+
+        if ($foundIndex === -1) {
+            return ['success' => false, 'message' => 'অ্যাডমিন ইউজার খুঁজে পাওয়া যায়নি।'];
+        }
+
+        $current = $data['users'][$foundIndex];
+
+        if (isset($profileData['name_bn']) && trim((string)$profileData['name_bn']) !== '') {
+            $current['name_bn'] = trim((string)$profileData['name_bn']);
+        }
+        if (isset($profileData['name_en']) && trim((string)$profileData['name_en']) !== '') {
+            $current['name_en'] = trim((string)$profileData['name_en']);
+        }
+        if (isset($profileData['email']) && trim((string)$profileData['email']) !== '') {
+            $current['email'] = trim((string)$profileData['email']);
+        }
+        if (isset($profileData['phone'])) {
+            $current['phone'] = trim((string)$profileData['phone']);
+        }
+        if (isset($profileData['bio'])) {
+            $current['bio'] = trim((string)$profileData['bio']);
+        }
+        if (isset($profileData['designation_bn']) && trim((string)$profileData['designation_bn']) !== '') {
+            $current['designation_bn'] = trim((string)$profileData['designation_bn']);
+        }
+        if (isset($profileData['designation_en']) && trim((string)$profileData['designation_en']) !== '') {
+            $current['designation_en'] = trim((string)$profileData['designation_en']);
+        }
+        if (!empty($profileData['password'])) {
+            $current['password_hash'] = password_hash($profileData['password'], PASSWORD_BCRYPT);
+        }
+
+        $current['updated_at'] = date('Y-m-d H:i:s');
+        $data['users'][$foundIndex] = $current;
+        self::saveData($data);
+
+        AuditService::log(
+            'user.profile_updated',
+            'security',
+            $userId,
+            $current['name_en'] ?? $current['name_bn'],
+            [],
+            [
+                'user_id' => $userId,
+                'updated_fields' => array_keys($profileData)
+            ],
+            "Admin user {$userId} ({$current['name_en']}) updated their account profile details."
+        );
+
+        return ['success' => true, 'user' => $current];
+    }
 }
 

@@ -37,6 +37,8 @@ $router->post('/{lang}/admin/users/assign-role', 'AdminController@assignRole', '
 $router->get('/{lang}/admin/finance', 'AdminController@finance', 'admin.finance');
 $router->get('/{lang}/admin/audit-logs', 'AdminController@auditLogs', 'admin.audit_logs');
 $router->post('/{lang}/admin/switch-user', 'AdminController@switchUser', 'admin.switch_user');
+$router->get('/{lang}/admin/profile', 'AdminController@profilePage', 'admin.profile');
+$router->post('/{lang}/admin/profile', 'AdminController@updateProfile', 'admin.profile.update');
 $router->get('/{lang}/admin/library', 'AdminController@library', 'admin.library');
 $router->post('/{lang}/admin/request/{id}', 'AdminController@updateRequest', 'admin.request.update');
 
@@ -72,6 +74,7 @@ $router->get('/{lang}/membership/dashboard', 'MembershipController@dashboard', '
 $router->get('/{lang}/membership/verify', 'MembershipController@verifyCard', 'membership.verify');
 $router->post('/{lang}/membership/payment', 'MembershipController@makePayment', 'membership.payment');
 $router->post('/{lang}/membership/transition', 'MembershipController@requestTransition', 'membership.transition');
+$router->post('/{lang}/membership/profile/update', 'MembershipController@updateProfile', 'membership.profile.update');
 
 // Admin Membership Administration (Super Admin, Admin, Membership Officer)
 $router->get('/{lang}/admin/members', 'AdminController@members', 'admin.members');
