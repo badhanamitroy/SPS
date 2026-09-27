@@ -138,8 +138,38 @@ class RbacService
     }
 
     /**
-     * Assign a new role to a target user with strict role escalation protection.
-     * 
+     * Get effective permissions for a specific user (role permissions + custom assigned allowances).
+     */
+    public static function getUserEffectivePermissions(string $userId): array
+    {
+        $user = self::getUser($userId);
+        if (!$user) {
+            return [];
+        }
+        $roleId = $user['role'] ?? 'guest';
+        $rolePerms = self::getRolePermissions($roleId);
+        $customPerms = $user['custom_permissions'] ?? [];
+        if (!is_array($customPerms)) {
+            $customPerms = [];
+        }
+        return array_values(array_unique(array_merge($rolePerms, $customPerms)));
+    }
+
+    /**
+     * Assign a new role to a target user (backwards compatible wrapper).
+     */
+    public static function assignRole(string $targetUserId, string $newRoleId, string $performedByUserId): array
+    {
+        $targetUser = self::getUser($targetUserId);
+        $scope = $targetUser['scope'] ?? '';
+        $customPerms = $targetUser['custom_permissions'] ?? [];
+        return self::assignUserRoleAndAllowances($targetUserId, $newRoleId, $scope, $customPerms, $performedByUserId);
+    }
+
+    /**
+     * Assign Role, Tasks/Scope, and Custom Allowances to a user.
+     * Controlled by Super Administrator with audit logging.
+     *
      * Security Guards:
      * 1. Performer cannot be an unauthorized user.
      * 2. Performer cannot assign 'super_admin' unless they themselves are 'super_admin'.
@@ -147,8 +177,13 @@ class RbacService
      * 4. Performer cannot escalate or change their own role.
      * 5. Action is immutably logged to AuditService.
      */
-    public static function assignRole(string $targetUserId, string $newRoleId, string $performedByUserId): array
-    {
+    public static function assignUserRoleAndAllowances(
+        string $targetUserId,
+        string $newRoleId,
+        string $newScope,
+        array $customPermissions,
+        string $performedByUserId
+    ): array {
         $data = self::loadData();
         $roles = self::getRoles();
 
@@ -174,12 +209,12 @@ class RbacService
         }
 
         // Rule 1: Cannot change your own role
-        if ($targetUserId === $performedByUserId) {
+        if ($targetUserId === $performedByUserId && $targetUser['role'] !== $newRoleId) {
             AuditService::log(
                 'security.escalation_attempt',
                 'users',
                 $targetUserId,
-                $targetUser['name_bn'],
+                $targetUser['name_bn'] ?? $targetUser['name_en'],
                 ['role' => $targetUser['role']],
                 ['attempted_role' => $newRoleId],
                 'User attempted to alter their own role. Blocked by security policy.',
@@ -194,7 +229,7 @@ class RbacService
                 'security.superadmin_escalation_attempt',
                 'users',
                 $targetUserId,
-                $targetUser['name_bn'],
+                $targetUser['name_bn'] ?? $targetUser['name_en'],
                 ['role' => $targetUser['role']],
                 ['attempted_role' => $newRoleId],
                 'Non-SuperAdmin attempted to grant Super Administrator privileges. Blocked by security policy.',
@@ -208,12 +243,20 @@ class RbacService
             return ['success' => false, 'message' => 'Security Violation: You cannot assign a role of equal or higher authority level than your own.'];
         }
 
-        $oldRole = $targetUser['role'];
+        // Sanitize custom permissions against valid permissions list
+        $allPermissions = array_column(self::getPermissions(), 'id');
+        $validCustomPerms = array_values(array_intersect($customPermissions, $allPermissions));
 
-        // Apply update
+        $oldRole = $targetUser['role'];
+        $oldScope = $targetUser['scope'] ?? '';
+        $oldCustom = $targetUser['custom_permissions'] ?? [];
+
+        // Apply update to data
         foreach ($data['users'] as &$u) {
             if ($u['id'] === $targetUserId) {
                 $u['role'] = $newRoleId;
+                $u['scope'] = trim($newScope);
+                $u['custom_permissions'] = $validCustomPerms;
                 $u['assigned_by'] = $performedByUserId;
                 $u['updated_at'] = date('Y-m-d H:i:s');
                 break;
@@ -225,17 +268,27 @@ class RbacService
 
         // Audit the change
         AuditService::log(
-            'role.assign',
+            'role.assign_allowance',
             'users',
             $targetUserId,
             $targetUser['name_bn'] ?? $targetUser['name_en'],
-            ['role' => $oldRole],
-            ['role' => $newRoleId],
+            [
+                'role' => $oldRole,
+                'scope' => $oldScope,
+                'custom_permissions' => $oldCustom,
+            ],
+            [
+                'role' => $newRoleId,
+                'scope' => $newScope,
+                'custom_permissions' => $validCustomPerms,
+            ],
             sprintf(
-                "Role changed from %s to %s by %s",
-                $roles[$oldRole]['name_en'] ?? $oldRole,
+                "Super Admin %s updated role to '%s', scope to '%s', with %d custom allowances for %s",
+                $performer['name_en'],
                 $targetNewRole['name_en'],
-                $performer['name_en']
+                $newScope,
+                count($validCustomPerms),
+                $targetUser['name_en']
             ),
             $performer
         );
@@ -243,9 +296,11 @@ class RbacService
         return [
             'success' => true,
             'message' => sprintf(
-                "Role successfully changed to %s.",
-                $targetNewRole['name_bn']
+                "%s-এর ভূমিকা '%s', দায়িত্ব পরিধি ও কাজের অনুমতি সফলভাবে হালনাগাদ করা হয়েছে।",
+                $targetUser['name_bn'] ?? $targetUser['name_en'],
+                $targetNewRole['name_bn'] ?? $targetNewRole['name_en']
             )
         ];
     }
 }
+

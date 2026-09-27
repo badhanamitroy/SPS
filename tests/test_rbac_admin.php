@@ -243,6 +243,50 @@ $resLogout = $router->dispatch(new Request('POST', '/bn/admin/logout'));
 assert_test("Auth: Logout returns 302 redirect", $resLogout->getStatusCode() === 302);
 assert_test("Auth: Logged out successfully", !AuthService::check());
 
+// 11. Super Admin Role, Task Scope & Custom Allowance Assignment
+AuthService::switchUser('usr_anik'); // Super Admin
+
+// A. Super Admin assigns specific tasks and custom permission allowances to an officer
+$assignmentResult = \App\Services\RbacService::assignUserRoleAndAllowances(
+    'usr_goutam',
+    'content_editor',
+    'শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ',
+    ['blog.publish', 'library.manage'],
+    'usr_anik'
+);
+assert_test("Super Admin: Successfully assigns role, scope, and allowances via RbacService", $assignmentResult['success']);
+
+$goutam = \App\Services\RbacService::getUser('usr_goutam');
+assert_test("Storage: User scope updated to 'শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ'", $goutam['scope'] === 'শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ');
+assert_test("Storage: User has custom permissions ['blog.publish', 'library.manage']", 
+    in_array('blog.publish', $goutam['custom_permissions'] ?? [], true) && 
+    in_array('library.manage', $goutam['custom_permissions'] ?? [], true)
+);
+
+// B. Verify that AuthService honors the Super Admin's custom allowances
+AuthService::switchUser('usr_goutam');
+assert_test("Auth: User now has 'blog.publish' through Super Admin custom allowance", AuthService::can('blog.publish'));
+assert_test("Auth: User now has 'library.manage' through Super Admin custom allowance", AuthService::can('library.manage'));
+assert_test("Auth: User does NOT have unauthorized permission 'finance.approve_expense'", !AuthService::can('finance.approve_expense'));
+
+// C. Test Super Admin assignment via Router HTTP POST
+AuthService::switchUser('usr_anik');
+$postAssign = $router->dispatch(new Request('POST', '/bn/admin/users/assign-role', [], [
+    'target_user_id' => 'usr_rahul',
+    'new_role' => 'project_manager',
+    'scope' => 'সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা',
+    'custom_permissions' => ['activities.create', 'volunteers.assign'],
+]));
+assert_test("Router: Super Admin POST /bn/admin/users/assign-role returns 302", $postAssign->getStatusCode() === 302);
+
+$rahul = \App\Services\RbacService::getUser('usr_rahul');
+assert_test("Storage: Rahul role updated to project_manager", $rahul['role'] === 'project_manager');
+assert_test("Storage: Rahul scope updated to 'সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা'", $rahul['scope'] === 'সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা');
+assert_test("Storage: Rahul granted custom allowances ['activities.create', 'volunteers.assign']",
+    in_array('activities.create', $rahul['custom_permissions'] ?? [], true) &&
+    in_array('volunteers.assign', $rahul['custom_permissions'] ?? [], true)
+);
+
 // Switch back to Super Admin for test completion
 AuthService::switchUser('usr_anik');
 
@@ -251,3 +295,4 @@ echo "Total Tests: " . ($passed + $failed) . " | Passed: {$passed} | Failed: {$f
 echo "====================================================\n";
 
 if ($failed > 0) exit(1);
+

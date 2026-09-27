@@ -164,7 +164,7 @@ class AdminController extends BaseController
     }
 
     /**
-     * Assign role with server-side escalation protection.
+     * Assign role, departmental tasks/scope, and custom allowances (Super Admin Master Authority).
      */
     public function assignRole(Request $request, string $lang = ''): Response
     {
@@ -173,20 +173,45 @@ class AdminController extends BaseController
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
 
-        if (!AuthService::can('users.manage_roles')) {
+        if (!AuthService::can('users.manage_roles') && !AuthService::isSuperAdmin()) {
             return $this->forbidden($request, 'users.manage_roles');
         }
 
         $targetUserId = (string)$request->getPost('target_user_id', '');
         $newRole = (string)$request->getPost('new_role', '');
+        $newScope = (string)$request->getPost('scope', '');
+        $customPerms = $request->getPost('custom_permissions', []);
+        if (!is_array($customPerms)) {
+            $customPerms = [];
+        }
+
         $performer = AuthService::getCurrentUser();
 
-        $result = RbacService::assignRole($targetUserId, $newRole, $performer['id']);
+        $targetUser = RbacService::getUser($targetUserId);
+        if (!$targetUser) {
+            Session::setFlash('error', $isBn ? 'ব্যবহারকারী অ্যাকাউন্ট পাওয়া যায়নি।' : 'User account not found.');
+            return $this->redirect(url('/admin/users', $locale));
+        }
+
+        if (empty($newRole)) {
+            $newRole = $targetUser['role'] ?? 'moderator';
+        }
+        if (empty($newScope) && isset($targetUser['scope'])) {
+            $newScope = $targetUser['scope'];
+        }
+
+        $result = RbacService::assignUserRoleAndAllowances(
+            $targetUserId,
+            $newRole,
+            $newScope,
+            $customPerms,
+            $performer['id']
+        );
 
         if ($result['success']) {
             Session::setFlash('success', $result['message']);
         } else {
-            Session::setFlash('danger', $result['message']);
+            Session::setFlash('error', $result['message']);
         }
 
         return $this->redirect(url('/admin/users', $locale));

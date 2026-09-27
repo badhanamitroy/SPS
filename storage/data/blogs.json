@@ -34,11 +34,12 @@
         "updated_at": "2026-09-18 10:15:00",
         "approved_by": "প্রান্ত সাহা (সাহিত্য বিষয়ক সম্পাদক-১)",
         "approved_at": "2026-09-18 10:00:00",
-        "likes_count": 142,
-        "views_count": 909,
+        "likes_count": 143,
+        "views_count": 911,
         "liked_ips": [
             "192.168.1.10",
-            "usr_anik"
+            "usr_anik",
+            "127.0.0.1"
         ],
         "comments": [
             {
@@ -159,6 +160,16 @@
                 "author_avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=%E0%A6%AC%E0%A6%BF%E0%A6%9C%E0%A7%9F+%E0%A6%95%E0%A7%81%E0%A6%AE%E0%A6%BE%E0%A6%B0+%E0%A6%B8%E0%A6%B0%E0%A6%95%E0%A6%BE%E0%A6%B0+%28%E0%A6%AA%E0%A6%B0%E0%A7%80%E0%A6%95%E0%A7%8D%E0%A6%B7%E0%A6%BE%E0%A6%AE%E0%A7%82%E0%A6%B2%E0%A6%95+%E0%A6%AA%E0%A6%BE%E0%A6%A0%E0%A6%95%29",
                 "content": "এই ব্লগটি পড়ে অত্যন্ত অনুপ্রাণিত হলাম। চমৎকার বিশ্লেষণ!",
                 "created_at": "2026-09-28 00:46:10",
+                "likes": 0
+            },
+            {
+                "id": "cmt-1790535431-665",
+                "author_name": "বিজয় কুমার সরকার (পরীক্ষামূলক পাঠক)",
+                "author_email": "bijoy@test.com",
+                "author_role": "visitor",
+                "author_avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=%E0%A6%AC%E0%A6%BF%E0%A6%9C%E0%A7%9F+%E0%A6%95%E0%A7%81%E0%A6%AE%E0%A6%BE%E0%A6%B0+%E0%A6%B8%E0%A6%B0%E0%A6%95%E0%A6%BE%E0%A6%B0+%28%E0%A6%AA%E0%A6%B0%E0%A7%80%E0%A6%95%E0%A7%8D%E0%A6%B7%E0%A6%BE%E0%A6%AE%E0%A7%82%E0%A6%B2%E0%A6%95+%E0%A6%AA%E0%A6%BE%E0%A6%A0%E0%A6%95%29",
+                "content": "এই ব্লগটি পড়ে অত্যন্ত অনুপ্রাণিত হলাম। চমৎকার বিশ্লেষণ!",
+                "created_at": "2026-09-28 00:57:11",
                 "likes": 0
             }
         ]

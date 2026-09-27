@@ -183,6 +183,15 @@ class AuthService
             return false;
         }
         $roleId = $user['role'] ?? 'guest';
+        if ($roleId === 'super_admin') {
+            return true;
+        }
+        // Discretionary custom allowance granted directly by Super Admin
+        if (!empty($user['custom_permissions']) && is_array($user['custom_permissions'])) {
+            if (in_array($permission, $user['custom_permissions'], true)) {
+                return true;
+            }
+        }
         return RbacService::roleHasPermission($roleId, $permission);
     }
 

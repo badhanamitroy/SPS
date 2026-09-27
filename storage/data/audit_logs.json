@@ -1,5 +1,725 @@
 [
     {
+        "id": "audit_1400_262c6f",
+        "user_id": "usr_pranto",
+        "user_name": "প্রান্ত সাহা",
+        "role": "content_editor",
+        "action": "auth.logout",
+        "resource": "security",
+        "target_id": "usr_pranto",
+        "target_name": "Pranto Saha",
+        "old_values": [],
+        "new_values": {
+            "logout_at": "2026-09-28 00:57:11"
+        },
+        "notes": "Admin 'Pranto Saha' logged out",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:57:11"
+    },
+    {
+        "id": "audit_1399_4feb49",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "blog.deleted",
+        "resource": "blog",
+        "target_id": "blog-9-9256c",
+        "target_name": "blog-9-9256c",
+        "old_values": [],
+        "new_values": {
+            "deleted_by": "Anik Kumar Saha"
+        },
+        "notes": "Blog post blog-9-9256c permanently removed",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:57:11"
+    },
+    {
+        "id": "audit_1398_7d21ae",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "blog.rejected",
+        "resource": "blog",
+        "target_id": "blog-9-9256c",
+        "target_name": "blog-9-9256c",
+        "old_values": {
+            "status": "pending"
+        },
+        "new_values": {
+            "status": "rejected",
+            "reason": "বানান ও তথ্যের সামান্য পরিমার্জন প্রয়োজন।",
+            "reviewer": "রবিন দে (সাধারণ সম্পাদক)"
+        },
+        "notes": "Blog blog-9-9256c rejected by রবিন দে (সাধারণ সম্পাদক): বানান ও তথ্যের সামান্য পরিমার্জন প্রয়োজন।",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:57:11"
+    },
+    {
+        "id": "audit_1397_bc13ba",
+        "user_id": "usr_pranto",
+        "user_name": "প্রান্ত সাহা",
+        "role": "content_editor",
+        "action": "blog.approved",
+        "resource": "blog",
+        "target_id": "blog-9-9256c",
+        "target_name": "blog-9-9256c",
+        "old_values": {
+            "status": "pending"
+        },
+        "new_values": {
+            "status": "published",
+            "approver": "প্রান্ত সাহা (শাস্ত্র বিষয়ক সম্পাদক-১)"
+        },
+        "notes": "Blog blog-9-9256c approved and published by প্রান্ত সাহা (শাস্ত্র বিষয়ক সম্পাদক-১)",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:57:11"
+    },
+    {
+        "id": "audit_1396_e10883",
+        "user_id": "system",
+        "user_name": "ড. শ্যামল দত্ত",
+        "role": "paid_member",
+        "action": "blog.submitted",
+        "resource": "blog",
+        "target_id": "blog-9-9256c",
+        "target_name": "Pancha Maha Yajna and Ecological Ethics in Sanatan Philosophy",
+        "old_values": [],
+        "new_values": {
+            "author": "Dr. Shyamal Dutta",
+            "status": "pending"
+        },
+        "notes": "New blog post submitted by paid member Dr. Shyamal Dutta awaiting moderation",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:57:11"
+    },
+    {
+        "id": "audit_1395_a3942c",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "role.assign_allowance",
+        "resource": "users",
+        "target_id": "usr_rahul",
+        "target_name": "রাহুল কুমার সূত্রধর",
+        "old_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "new_values": {
+            "role": "project_manager",
+            "scope": "সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা",
+            "custom_permissions": [
+                "activities.create",
+                "volunteers.assign"
+            ]
+        },
+        "notes": "Super Admin Anik Kumar Saha updated role to 'Project Manager', scope to 'সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা', with 2 custom allowances for Rahul Kumar Sutradhar",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:38"
+    },
+    {
+        "id": "audit_1394_2c82eb",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "role.assign_allowance",
+        "resource": "users",
+        "target_id": "usr_goutam",
+        "target_name": "গৌতম দণ্ডপাট",
+        "old_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "new_values": {
+            "role": "content_editor",
+            "scope": "শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ",
+            "custom_permissions": [
+                "blog.publish",
+                "library.manage"
+            ]
+        },
+        "notes": "Super Admin Anik Kumar Saha updated role to 'Content Editor', scope to 'শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ', with 2 custom allowances for Goutam Dandapat",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:38"
+    },
+    {
+        "id": "audit_1393_8b8893",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "auth.logout",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "logout_at": "2026-09-28 00:56:37"
+        },
+        "notes": "Admin 'Anik Kumar Saha' logged out",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1392_a2bc80",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "auth.login_success",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "role": "super_admin",
+            "login_at": "2026-09-28 00:56:37"
+        },
+        "notes": "Admin 'Anik Kumar Saha' successfully logged into SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1391_727160",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "auth.login_failed",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "identifier": "anik",
+            "reason": "Invalid password"
+        },
+        "notes": "Failed admin login attempt: invalid password for 'anik'",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1390_6ac944",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "auth.logout",
+        "resource": "security",
+        "target_id": "usr_robin",
+        "target_name": "Robin Dey",
+        "old_values": [],
+        "new_values": {
+            "logout_at": "2026-09-28 00:56:37"
+        },
+        "notes": "Admin 'Robin Dey' logged out",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1389_e1bc23",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "activity.delete",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "হালনাগাদকৃত সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "new_values": null,
+        "notes": "Permanently deleted activity via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1388_0a0604",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "activity.update",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "টেস্ট সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "new_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "হালনাগাদকৃত সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "notes": "Modified activity information via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1387_7bc0e9",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "activity.create",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": null,
+        "new_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "টেস্ট সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "notes": "Created new activity via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1386_a069a1",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "test.verify",
+        "resource": "system",
+        "target_id": "target_001",
+        "target_name": "Test Target",
+        "old_values": null,
+        "new_values": {
+            "status": "verified"
+        },
+        "notes": "Automated test suite entry",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1385_b31e40",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "role.assign_allowance",
+        "resource": "users",
+        "target_id": "usr_pranto",
+        "target_name": "প্রান্ত সাহা",
+        "old_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "new_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "notes": "Super Admin Anik Kumar Saha updated role to 'Content Editor', scope to 'Literature Section', with 0 custom allowances for Pranto Saha",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1384_1b532b",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "security.escalation_attempt",
+        "resource": "users",
+        "target_id": "usr_robin",
+        "target_name": "রবিন দে",
+        "old_values": {
+            "role": "admin"
+        },
+        "new_values": {
+            "attempted_role": "super_admin"
+        },
+        "notes": "User attempted to alter their own role. Blocked by security policy.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1383_7e1942",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "security.superadmin_escalation_attempt",
+        "resource": "users",
+        "target_id": "usr_pranto",
+        "target_name": "প্রান্ত সাহা",
+        "old_values": {
+            "role": "content_editor"
+        },
+        "new_values": {
+            "attempted_role": "super_admin"
+        },
+        "notes": "Non-SuperAdmin attempted to grant Super Administrator privileges. Blocked by security policy.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:37"
+    },
+    {
+        "id": "audit_1382_9a5103",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "auth.logout",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "logout_at": "2026-09-28 00:56:09"
+        },
+        "notes": "Admin 'Anik Kumar Saha' logged out",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1381_4a0a98",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "auth.login_success",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "role": "super_admin",
+            "login_at": "2026-09-28 00:56:09"
+        },
+        "notes": "Admin 'Anik Kumar Saha' successfully logged into SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1380_43c2e1",
+        "user_id": "system",
+        "user_name": "সিস্টেম সার্ভিস",
+        "role": "guest",
+        "action": "auth.login_failed",
+        "resource": "security",
+        "target_id": "usr_anik",
+        "target_name": "Anik Kumar Saha",
+        "old_values": [],
+        "new_values": {
+            "identifier": "anik",
+            "reason": "Invalid password"
+        },
+        "notes": "Failed admin login attempt: invalid password for 'anik'",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1379_a05cb2",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "auth.logout",
+        "resource": "security",
+        "target_id": "usr_robin",
+        "target_name": "Robin Dey",
+        "old_values": [],
+        "new_values": {
+            "logout_at": "2026-09-28 00:56:09"
+        },
+        "notes": "Admin 'Robin Dey' logged out",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1378_2809fe",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "activity.delete",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "হালনাগাদকৃত সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "new_values": null,
+        "notes": "Permanently deleted activity via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1377_2811fe",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "activity.update",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "টেস্ট সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "new_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "হালনাগাদকৃত সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "notes": "Modified activity information via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1376_5a602b",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "activity.create",
+        "resource": "activities",
+        "target_id": "act-2026-test-seva-activity-2026",
+        "target_name": "Test Seva Activity 2026",
+        "old_values": null,
+        "new_values": {
+            "id": "act-2026-test-seva-activity-2026",
+            "year": 2026,
+            "date": "মার্চ ২০২৬",
+            "category": "humanitarian",
+            "category_bn": "মানবিক ও দুর্যোগ ত্রাণ",
+            "category_en": "Humanitarian & Disaster Relief",
+            "title_bn": "টেস্ট সেবামূলক কার্যক্রম ২০২৬",
+            "title_en": "Test Seva Activity 2026",
+            "location_bn": "ঢাকা, বাংলাদেশ",
+            "location_en": "Dhaka, Bangladesh",
+            "status": "completed",
+            "status_bn": "সফলভাবে সমাপ্ত",
+            "status_en": "Completed",
+            "description_bn": "টেস্টিং বিস্তারিত বিবরণ",
+            "description_en": "Testing description details",
+            "highlights_bn": [],
+            "highlights_en": [],
+            "badge": "Special Test",
+            "icon": "🌟"
+        },
+        "notes": "Created new activity via SPS Admin Console",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1375_52e17d",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "test.verify",
+        "resource": "system",
+        "target_id": "target_001",
+        "target_name": "Test Target",
+        "old_values": null,
+        "new_values": {
+            "status": "verified"
+        },
+        "notes": "Automated test suite entry",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1374_3993ae",
+        "user_id": "usr_anik",
+        "user_name": "অনিক কুমার সাহা",
+        "role": "super_admin",
+        "action": "role.assign_allowance",
+        "resource": "users",
+        "target_id": "usr_pranto",
+        "target_name": "প্রান্ত সাহা",
+        "old_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "new_values": {
+            "role": "content_editor",
+            "scope": "Literature Section",
+            "custom_permissions": []
+        },
+        "notes": "Super Admin Anik Kumar Saha updated role to 'Content Editor', scope to 'Literature Section', with 0 custom allowances for Pranto Saha",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1373_75f288",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "security.escalation_attempt",
+        "resource": "users",
+        "target_id": "usr_robin",
+        "target_name": "রবিন দে",
+        "old_values": {
+            "role": "admin"
+        },
+        "new_values": {
+            "attempted_role": "super_admin"
+        },
+        "notes": "User attempted to alter their own role. Blocked by security policy.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
+        "id": "audit_1372_c46fc7",
+        "user_id": "usr_robin",
+        "user_name": "রবিন দে",
+        "role": "admin",
+        "action": "security.superadmin_escalation_attempt",
+        "resource": "users",
+        "target_id": "usr_pranto",
+        "target_name": "প্রান্ত সাহা",
+        "old_values": {
+            "role": "content_editor"
+        },
+        "new_values": {
+            "attempted_role": "super_admin"
+        },
+        "notes": "Non-SuperAdmin attempted to grant Super Administrator privileges. Blocked by security policy.",
+        "ip_address": "127.0.0.1",
+        "user_agent": "Internal Agent\/CLI",
+        "created_at": "2026-09-28 00:56:09"
+    },
+    {
         "id": "audit_1371_c6860a",
         "user_id": "usr_pranto",
         "user_name": "প্রান্ত সাহা",

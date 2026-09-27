@@ -832,9 +832,10 @@
             "status": "active",
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
-            "updated_at": "2026-09-28 00:46:09",
+            "updated_at": "2026-09-28 00:56:37",
             "username": "pranto",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "custom_permissions": []
         },
         {
             "id": "usr_goutam",
@@ -847,12 +848,17 @@
             "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=goutam",
             "role": "content_editor",
             "adminship": "Literature-Admin",
-            "scope": "Literature Section",
+            "scope": "শাস্ত্রীয় সাহিত্য ও ডিজিটাল গবেষণা বিভাগ",
             "status": "active",
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "goutam",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "custom_permissions": [
+                "blog.publish",
+                "library.manage"
+            ],
+            "updated_at": "2026-09-28 00:56:37"
         },
         {
             "id": "usr_rahul",
@@ -863,14 +869,19 @@
             "designation_en": "Scripture Affairs Secretary 3",
             "email": "rahul.sutradhar@sps.org",
             "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=rahul",
-            "role": "content_editor",
+            "role": "project_manager",
             "adminship": "Literature-Admin",
-            "scope": "Literature Section",
+            "scope": "সেবা ও শিক্ষা তহবিল ব্যবস্থাপনা",
             "status": "active",
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "rahul",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "custom_permissions": [
+                "activities.create",
+                "volunteers.assign"
+            ],
+            "updated_at": "2026-09-28 00:56:38"
         },
         {
             "id": "usr_badhan",
