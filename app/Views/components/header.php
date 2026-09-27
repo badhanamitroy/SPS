@@ -44,24 +44,24 @@ $activeNav = $activeNav ?? 'home';
             <?php if ($isMemberLoggedIn && $currentMember): ?>
                 <!-- Logged In Member Badge & Logout -->
                 <div class="header-member-logged-wrap" style="display:inline-flex; align-items:center; gap:6px;">
-                    <a href="<?= e(url('/membership/dashboard', $currentLocale)) ?>" class="btn btn-secondary btn-sm header-login-btn" style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="<?= $isBn ? 'আমার সদস্য ড্যাশবোর্ড' : 'My Member Dashboard' ?>">
-                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e;"></span>
-                        <span style="font-weight:700;"><?= e($currentMember['member_code']) ?></span>
+                    <a href="<?= e(url('/membership/dashboard', $currentLocale)) ?>" class="header-member-badge" title="<?= $isBn ? 'আমার সদস্য ড্যাশবোর্ড' : 'My Member Dashboard' ?>">
+                        <span class="status-dot"></span>
+                        <span><?= e($currentMember['member_code']) ?></span>
                     </a>
-                    <a href="<?= e(url('/membership/logout', $currentLocale)) ?>" class="btn btn-ghost btn-sm" style="color:#b91c1c; padding:4px 8px; font-size:0.8rem; display:inline-flex; align-items:center; gap:4px;" title="<?= $isBn ? 'লগআউট করুন' : 'Logout' ?>">
+                    <a href="<?= e(url('/membership/logout', $currentLocale)) ?>" class="header-logout-btn" title="<?= $isBn ? 'লগআউট করুন' : 'Logout' ?>">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                         <span><?= $isBn ? 'লগআউট' : 'Logout' ?></span>
                     </a>
                 </div>
             <?php else: ?>
-                <!-- Member Login Link -->
-                <a href="<?= e(url('/membership/login', $currentLocale)) ?>" class="btn btn-primary btn-sm header-login-btn" style="display:inline-flex; align-items:center; gap:6px; background:var(--primary-deep); color:#ffffff; font-weight:700; padding:6px 14px; border-radius:var(--radius-full); box-shadow:0 2px 6px rgba(0,0,0,0.15);" title="<?= $isBn ? 'সদস্য লগইন পোর্টাল' : 'Member Login Portal' ?>">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <!-- Member Login Link (High Contrast & Clear) -->
+                <a href="<?= e(url('/membership/login', $currentLocale)) ?>" class="header-login-btn" style="background-color:#c65a1e !important; color:#ffffff !important; text-decoration:none !important;" title="<?= $isBn ? 'সদস্য লগইন পোর্টাল' : 'Member Login Portal' ?>">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                         <polyline points="10 17 15 12 10 7"></polyline>
                         <line x1="15" y1="12" x2="3" y2="12"></line>
                     </svg>
-                    <span><?= $isBn ? 'সদস্য লগইন' : 'Member Login' ?></span>
+                    <span style="color:#ffffff !important; font-weight:700 !important;"><?= $isBn ? 'সদস্য লগইন' : 'Member Login' ?></span>
                 </a>
             <?php endif; ?>
 

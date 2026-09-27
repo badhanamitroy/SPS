@@ -541,6 +541,102 @@
   gap: var(--space-sm);
 }
 
+/* Header Member Login Button (High Contrast & Prominent) */
+.header-login-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background-color: var(--accent-saffron, #C65A1E) !important;
+  color: #FFFFFF !important;
+  border: 1px solid var(--accent-saffron-hover, #A64713) !important;
+  font-weight: 700 !important;
+  font-size: 0.88rem !important;
+  line-height: 1 !important;
+  padding: 8px 16px !important;
+  border-radius: var(--radius-full, 9999px) !important;
+  box-shadow: 0 2px 8px rgba(198, 90, 30, 0.28) !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all var(--transition-fast, 0.15s ease) !important;
+}
+
+.header-login-btn:hover {
+  background-color: var(--accent-saffron-hover, #A64713) !important;
+  color: #FFFFFF !important;
+  border-color: #83350C !important;
+  box-shadow: 0 4px 12px rgba(166, 71, 19, 0.38) !important;
+  transform: translateY(-1px);
+}
+
+.header-login-btn svg {
+  stroke: #FFFFFF !important;
+  color: #FFFFFF !important;
+  flex-shrink: 0;
+}
+
+.header-login-btn span {
+  color: #FFFFFF !important;
+}
+
+/* Header Member Logged-In Badge & Logout Button */
+.header-member-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  background-color: #ECFDF5 !important;
+  border: 1px solid #6EE7B7 !important;
+  color: #065F46 !important;
+  font-weight: 800 !important;
+  font-size: 0.85rem !important;
+  line-height: 1 !important;
+  padding: 7px 14px !important;
+  border-radius: var(--radius-full, 9999px) !important;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.15) !important;
+  text-decoration: none !important;
+  transition: all var(--transition-fast, 0.15s ease) !important;
+}
+
+.header-member-badge:hover {
+  background-color: #D1FAE5 !important;
+  border-color: #34D399 !important;
+  color: #047857 !important;
+}
+
+.header-member-badge .status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
+}
+
+.header-logout-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background-color: #FFF1F2 !important;
+  border: 1px solid #FECDD3 !important;
+  color: #9F1239 !important;
+  font-weight: 700 !important;
+  font-size: 0.82rem !important;
+  line-height: 1 !important;
+  padding: 7px 12px !important;
+  border-radius: var(--radius-full, 9999px) !important;
+  text-decoration: none !important;
+  transition: all var(--transition-fast, 0.15s ease) !important;
+}
+
+.header-logout-btn:hover {
+  background-color: #FFE4E6 !important;
+  border-color: #FDA4AF !important;
+  color: #881337 !important;
+  transform: translateY(-1px);
+}
+
+
 .mobile-menu-btn {
   display: none;
   width: 40px;

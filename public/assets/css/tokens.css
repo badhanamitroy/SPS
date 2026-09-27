@@ -13,6 +13,11 @@
   --bg-dark-card: #242B27;      /* Dark card container */
   --bg-overlay: rgba(26, 31, 28, 0.6);
 
+  /* Primary Brand Aliases */
+  --primary: #C65A1E;
+  --primary-deep: #1A1F1C;
+  --primary-hover: #A64713;
+
   /* Ink & Typography */
   --text-main: #1A1F1C;         /* Deep Charcoal primary text */
   --text-body: #343D37;         /* Readable editorial body text */
