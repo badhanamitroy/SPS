@@ -1,0 +1,28 @@
+[
+    {
+        "id": "req_101",
+        "book_slug": "sps-ramnavami",
+        "user_name": "অশোক ভট্টাচার্য",
+        "user_email": "ashok.bhattacharya@example.com",
+        "user_phone": "+880 1711-223344",
+        "institution": "ঢাকা বিশ্ববিদ্যালয় (দর্শন বিভাগ)",
+        "reason": "রামনবমী সংখ্যার রামকথা ও বেদান্ত দর্শন বিষয়ক তুলনামূলক গবেষণার জন্য গ্রন্থটি পাঠ করতে আগ্রহী।",
+        "status": "pending",
+        "created_at": "2026-09-24 14:32:10",
+        "admin_note": null,
+        "access_until": null
+    },
+    {
+        "id": "req_102",
+        "book_slug": "sps-jagannath-rathyatra",
+        "user_name": "Dr. Subhashish Roy",
+        "user_email": "s.roy@research-institute.org",
+        "user_phone": "+880 1819-887766",
+        "institution": "International Sanskrit Research Centre",
+        "reason": "Reviewing canonical sources on Jagannath theology and Daru-Brahman esoteric literature.",
+        "status": "approved",
+        "created_at": "2026-09-23 09:15:00",
+        "admin_note": "Approved: Verified academic credential. Granted 30-day research pass.",
+        "access_until": "2026-10-23"
+    }
+]

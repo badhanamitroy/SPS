@@ -59,10 +59,14 @@
   /* Typography Stacks */
   --font-bn-sans: 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-bn-serif: 'Noto Serif Bengali', 'SolaimanLipi', Georgia, serif;
-  --font-en-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-en-serif: 'Noto Serif', 'Source Serif Pro', Georgia, serif;
+  --font-en-sans: Arial, Helvetica, sans-serif;
+  --font-en-poppins: 'Poppins', Arial, sans-serif;
+  --font-en-serif: 'Times New Roman', Times, Georgia, serif;
   --font-sanskrit: 'Noto Serif Devanagari', 'Noto Serif Bengali', serif;
-  --font-display: 'Cinzel', 'Noto Serif Bengali', Georgia, serif;
+  --font-display: 'Poppins', Arial, sans-serif;
+  --font-editorial: 'Times New Roman', Times, Georgia, serif;
+  --font-english: Arial, Helvetica, sans-serif;
+  --font-bengali: 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* Spatial Scales */
   --space-2xs: 4px;

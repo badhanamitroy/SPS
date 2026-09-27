@@ -125,7 +125,7 @@ $isBn = $currentLocale === 'bn';
                     <div style="font-size:0.8rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent-gold); margin-bottom:var(--space-sm);">
                         <?= $isBn ? 'প্রতিষ্ঠানিক ব্রতবাক্য' : 'Institutional Credo' ?>
                     </div>
-                    <blockquote style="font-size:1.15rem; font-family:var(--font-bn-serif); line-height:1.7; color:var(--text-main); margin-bottom:var(--space-md);">
+                    <blockquote style="font-size:1.15rem; font-family:<?= $isBn ? 'var(--font-bn-serif)' : 'var(--font-en-serif)' ?>; line-height:1.7; color:var(--text-main); margin-bottom:var(--space-md);">
                         <?= e(__('home.about.quote')) ?>
                     </blockquote>
                     <p style="font-size:0.88rem; color:var(--text-muted); line-height:1.65; margin-bottom:var(--space-md);">
@@ -134,10 +134,7 @@ $isBn = $currentLocale === 'bn';
                             : 'SPS rejects personality cults and dogmatic sectarianism, functioning strictly as an egalitarian sanctuary for timeless wisdom and compassionate service.' ?>
                     </p>
                     <div style="display:flex; align-items:center; gap:var(--space-sm); border-top:1px solid var(--border-medium); padding-top:var(--space-sm);">
-                        <svg width="24" height="24" viewBox="0 0 100 100" fill="none">
-                            <circle cx="50" cy="50" r="46" stroke="#A37E36" stroke-width="2" />
-                            <polygon points="50,34 62,50 50,66 38,50" stroke="#C65A1E" stroke-width="2" fill="#FAF6F0" />
-                        </svg>
+                        <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS" width="34" height="24" style="object-fit:contain;">
                         <span style="font-size:0.82rem; font-weight:600; color:var(--accent-brown);">
                             <?= $isBn ? 'এসপিএস পরিচালনা পরিষদ ও গবেষণা সংসদ' : 'SPS Academic & Governing Council' ?>
                         </span>
@@ -418,7 +415,7 @@ $isBn = $currentLocale === 'bn';
                 <h4 style="font-size:0.88rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent-gold); margin-bottom:var(--space-2xs);">
                     <?= $isBn ? 'সরলার্থ ও প্রামাণ্য অনুবাদ' : 'Authoritative Translation' ?>
                 </h4>
-                <p style="font-size:1.08rem; line-height:1.75; color:var(--text-main); font-family:var(--font-bn-serif);">
+                <p style="font-size:1.08rem; line-height:1.75; color:var(--text-main); font-family:<?= $isBn ? 'var(--font-bn-serif)' : 'var(--font-en-serif)' ?>;">
                     “<?= e(__('home.scripture.translation')) ?>”
                 </p>
             </div>

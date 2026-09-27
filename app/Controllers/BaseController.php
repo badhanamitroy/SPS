@@ -27,4 +27,10 @@ abstract class BaseController
         $viewData = array_merge($defaults, $data);
         return View::render($view, $viewData, $layout);
     }
+
+    protected function redirect(string $url, int $statusCode = 302): Response
+    {
+        $response = new Response('', $statusCode, ['Location' => $url]);
+        return $response;
+    }
 }

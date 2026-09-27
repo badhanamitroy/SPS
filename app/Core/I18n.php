@@ -175,4 +175,20 @@ class I18n
 
         return '/' . $targetLocale . '/' . $trimmed;
     }
+
+    /**
+     * Format numbers into current locale digits (e.g. 123 -> ১২৩ for Bengali)
+     */
+    public static function formatNumber(int|string|float $number): string
+    {
+        $str = (string)$number;
+        if (self::$locale !== 'bn') {
+            return $str;
+        }
+
+        $en = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+        $bn = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+        return str_replace($en, $bn, $str);
+    }
 }

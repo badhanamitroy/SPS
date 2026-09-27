@@ -1,0 +1,948 @@
+{
+    "roles": [
+        {
+            "id": "super_admin",
+            "name_bn": "সুপার অ্যাডমিনিস্ট্রেটর",
+            "name_en": "Super Administrator",
+            "level": 100,
+            "description_bn": "প্ল্যাটফর্মের সর্বোচ্চ নিয়ন্ত্রক। ইউজার রোল, নিরাপত্তা কনফিগারেশন, সিস্টেম অডিট ও সামগ্রিক নীতি নির্ধারণ।",
+            "description_en": "Full system control, administrative account management, security configuration, and audit governance.",
+            "access_level": "সর্বোচ্চ (Full Control)",
+            "badge_class": "badge-danger",
+            "is_system_role": true
+        },
+        {
+            "id": "admin",
+            "name_bn": "অ্যাডমিনিস্ট্রেটর",
+            "name_en": "Administrator",
+            "level": 80,
+            "description_bn": "দৈনন্দিন অপারেশনাল অ্যাডমিন। সদস্য, প্রকল্প, কন্টেন্ট, গ্রন্থাগার ও আর্থিক কার্যক্রমের তত্ত্বাবধান।",
+            "description_en": "Day-to-day operational administrator managing members, projects, content, library, and approvals.",
+            "access_level": "প্রায় পূর্ণ (Operational Admin)",
+            "badge_class": "badge-primary",
+            "is_system_role": true
+        },
+        {
+            "id": "content_editor",
+            "name_bn": "কন্টেন্ট এডিটর",
+            "name_en": "Content Editor",
+            "level": 60,
+            "description_bn": "ওয়েবসাইট কন্টেন্ট, দর্শন ও জ্ঞানপীঠের নিবন্ধ, শাস্ত্রীয় শ্লোক এবং প্রাতিষ্ঠানিক পৃষ্ঠা পরিচালনা।",
+            "description_en": "Website editorial side: Pages, Knowledge base, Scripture repository, and official announcements.",
+            "access_level": "কন্টেন্ট (Editorial)",
+            "badge_class": "badge-info",
+            "is_system_role": true
+        },
+        {
+            "id": "blog_moderator",
+            "name_bn": "ব্লগ মডারেটর",
+            "name_en": "Blog Moderator",
+            "level": 55,
+            "description_bn": "সাধারণ সদস্যদের প্রেরিত ব্লগের পাণ্ডুলিপি পর্যালোচনা, পরিবর্তন অনুরোধ, অনুমোদন ও প্রকাশনা।",
+            "description_en": "Member blog submissions review, changes request, approval, and rejection workflow.",
+            "access_level": "ব্লগ মডারেশন (Community)",
+            "badge_class": "badge-warning",
+            "is_system_role": true
+        },
+        {
+            "id": "project_manager",
+            "name_bn": "প্রজেক্ট ম্যানেজার",
+            "name_en": "Project Manager",
+            "level": 60,
+            "description_bn": "এসপিএস-এর সেবামূলক ও উন্নয়ন প্রকল্প, মাইলফলক, উপকারভোগী তথ্য ও বাজেট ট্র্যাকিং।",
+            "description_en": "Manages SPS social service and development projects, budgets, milestones, and beneficiary tracking.",
+            "access_level": "প্রকল্প (Projects)",
+            "badge_class": "badge-success",
+            "is_system_role": true
+        },
+        {
+            "id": "finance_officer",
+            "name_bn": "ফাইন্যান্স অফিসার (কোষাধ্যক্ষ)",
+            "name_en": "Finance Officer (Treasurer)",
+            "level": 70,
+            "description_bn": "মেম্বারশিপ পেমেন্ট ও স্ক্রিনশট ভেরিফিকেশন, সদস্যপদ সক্রিয়করণ, অনুদান যাচাই ও আর্থিক খতিয়ান পরিচালনা। মেম্বারশিপ যাচাইয়ের একক নির্বাহী ক্ষমতা।",
+            "description_en": "Sole authority for membership payment verification, screenshot audit, donations, expense vouchers, and financial ledgers.",
+            "access_level": "আর্থিক ও মেম্বারশিপ ভেরিফিকেশন (Finance & Membership)",
+            "badge_class": "badge-primary",
+            "is_system_role": true
+        },
+        {
+            "id": "library_manager",
+            "name_bn": "লাইব্রেরি ম্যানেজার",
+            "name_en": "Library Manager",
+            "level": 60,
+            "description_bn": "ডিজিটাল ও মুদ্রিত গ্রন্থাগার, ই-বুক অনুমোদন, কপিরাইট স্ট্যাটাস এবং বইয়ের ইনভেন্টরি স্টক পরিচালনা।",
+            "description_en": "Digital and physical library: Books, e-books, copyright status, reader passes, and stock inventory.",
+            "access_level": "গ্রন্থাগার (Library)",
+            "badge_class": "badge-secondary",
+            "is_system_role": true
+        },
+        {
+            "id": "order_manager",
+            "name_bn": "অর্ডার ম্যানেজার",
+            "name_en": "Order Manager",
+            "level": 50,
+            "description_bn": "মুদ্রিত বইয়ের সেলস অর্ডার, কুরিয়ার ট্র্যাকিং, প্যাকিং ও ডেলিভারি স্ট্যাটাস ব্যবস্থাপনা।",
+            "description_en": "Physical book sales, orders processing, packing, shipping, courier tracking, and fulfillment.",
+            "access_level": "অর্ডার ও ডেলিভারি (Commerce)",
+            "badge_class": "badge-info",
+            "is_system_role": true
+        },
+        {
+            "id": "membership_officer",
+            "name_bn": "মেম্বারশিপ অফিসার",
+            "name_en": "Membership Officer",
+            "level": 55,
+            "description_bn": "সদস্যপদের আবেদন যাচাই, সদস্য প্রোফাইল আপডেট ও সদস্য যোগাযোগ রক্ষা।",
+            "description_en": "Membership applications review, approval, member status updates, and communications.",
+            "access_level": "সদস্যপদ (Membership)",
+            "badge_class": "badge-warning",
+            "is_system_role": true
+        },
+        {
+            "id": "volunteer_coordinator",
+            "name_bn": "ভলান্টিয়ার কোঅর্ডিনেটর",
+            "name_en": "Volunteer Coordinator",
+            "level": 50,
+            "description_bn": "স্বেচ্ছাসেবকদের দক্ষতা, কাজের আগ্রহ ও বিভিন্ন সেবামূলক প্রকল্পে তাদের দায়িত্ব বণ্টন।",
+            "description_en": "Volunteer recruitment, skill profiling, interest mapping, and project event assignment.",
+            "access_level": "স্বেচ্ছাসেবক (Volunteers)",
+            "badge_class": "badge-secondary",
+            "is_system_role": true
+        },
+        {
+            "id": "moderator",
+            "name_bn": "কমিউনিটি মডারেটর",
+            "name_en": "Community Moderator",
+            "level": 40,
+            "description_bn": "পাঠকদের মন্তব্য, আলোচনা ফোরাম ও অপব্যবহার রিপোর্ট মডারেশন। কোনো আর্থিক তথ্যে প্রবেশাধিকার নেই।",
+            "description_en": "Comments moderation, spam prevention, community discussion review, and abuse report filtering.",
+            "access_level": "মডারেশন (Moderation)",
+            "badge_class": "badge-dark",
+            "is_system_role": true
+        },
+        {
+            "id": "auditor",
+            "name_bn": "অডিটর \/ ফাইন্যান্স ভিউয়ার",
+            "name_en": "Auditor \/ Finance Viewer",
+            "level": 45,
+            "description_bn": "কোনো ডেটা পরিবর্তনের সুযোগ নেই; শুধুমাত্র আর্থিক রিপোর্ট, নিরীক্ষা লগ ও স্টেটমেন্ট পর্যবেক্ষণ (Read-only)।",
+            "description_en": "Strictly read-only access to financial reports, donation\/expense summaries, audit logs, and Sheets sync.",
+            "access_level": "শুধুমাত্র দর্শন (Read-Only Audit)",
+            "badge_class": "badge-outline",
+            "is_system_role": true
+        }
+    ],
+    "permissions": [
+        {
+            "id": "users.view",
+            "resource": "users",
+            "action": "view",
+            "name_bn": "ইউজার তালিকা প্রদর্শন",
+            "name_en": "View users"
+        },
+        {
+            "id": "users.create",
+            "resource": "users",
+            "action": "create",
+            "name_bn": "নতুন ইউজার তৈরি",
+            "name_en": "Create user"
+        },
+        {
+            "id": "users.edit",
+            "resource": "users",
+            "action": "edit",
+            "name_bn": "ইউজার তথ্য হালনাগাদ",
+            "name_en": "Edit user"
+        },
+        {
+            "id": "users.delete",
+            "resource": "users",
+            "action": "delete",
+            "name_bn": "ইউজার অ্যাকাউন্ট ডিএক্টিভেট",
+            "name_en": "Deactivate user"
+        },
+        {
+            "id": "users.manage_roles",
+            "resource": "users",
+            "action": "manage_roles",
+            "name_bn": "রোল ও পারমিশন অ্যাসাইন",
+            "name_en": "Assign roles & permissions"
+        },
+        {
+            "id": "roles.view",
+            "resource": "roles",
+            "action": "view",
+            "name_bn": "রোল ও পারমিশন ম্যাট্রিক্স দেখা",
+            "name_en": "View roles & permissions"
+        },
+        {
+            "id": "roles.manage",
+            "resource": "roles",
+            "action": "manage",
+            "name_bn": "রোল কনফিগারেশন",
+            "name_en": "Manage roles configuration"
+        },
+        {
+            "id": "members.view",
+            "resource": "members",
+            "action": "view",
+            "name_bn": "সদস্য তালিকা ও প্রোফাইল দেখা",
+            "name_en": "View members"
+        },
+        {
+            "id": "members.create",
+            "resource": "members",
+            "action": "create",
+            "name_bn": "সদস্য নিবন্ধন এন্ট্রি",
+            "name_en": "Create member"
+        },
+        {
+            "id": "members.edit",
+            "resource": "members",
+            "action": "edit",
+            "name_bn": "সদস্য তথ্য সম্পাদনা",
+            "name_en": "Edit member"
+        },
+        {
+            "id": "members.approve",
+            "resource": "members",
+            "action": "approve",
+            "name_bn": "সদস্যপদ আবেদন অনুমোদন",
+            "name_en": "Approve member application"
+        },
+        {
+            "id": "members.reject",
+            "resource": "members",
+            "action": "reject",
+            "name_bn": "সদস্যপদ আবেদন বাতিল",
+            "name_en": "Reject member application"
+        },
+        {
+            "id": "volunteers.view",
+            "resource": "volunteers",
+            "action": "view",
+            "name_bn": "স্বেচ্ছাসেবক তালিকা দেখা",
+            "name_en": "View volunteers"
+        },
+        {
+            "id": "volunteers.edit",
+            "resource": "volunteers",
+            "action": "edit",
+            "name_bn": "স্বেচ্ছাসেবক প্রোফাইল সম্পাদনা",
+            "name_en": "Edit volunteer"
+        },
+        {
+            "id": "volunteers.assign",
+            "resource": "volunteers",
+            "action": "assign",
+            "name_bn": "প্রকল্পে দায়িত্ব অর্পণ",
+            "name_en": "Assign to project"
+        },
+        {
+            "id": "content.view",
+            "resource": "content",
+            "action": "view",
+            "name_bn": "ওয়েবসাইট পৃষ্ঠা দেখা",
+            "name_en": "View pages"
+        },
+        {
+            "id": "content.edit",
+            "resource": "content",
+            "action": "edit",
+            "name_bn": "পৃষ্ঠার বয়ান সম্পাদনা",
+            "name_en": "Edit page content"
+        },
+        {
+            "id": "content.publish",
+            "resource": "content",
+            "action": "publish",
+            "name_bn": "পৃষ্ঠা প্রকাশ ও লাইভ করা",
+            "name_en": "Publish page"
+        },
+        {
+            "id": "knowledge.view",
+            "resource": "knowledge",
+            "action": "view",
+            "name_bn": "জ্ঞানপীঠ নিবন্ধ দেখা",
+            "name_en": "View knowledge"
+        },
+        {
+            "id": "knowledge.create",
+            "resource": "knowledge",
+            "action": "create",
+            "name_bn": "নতুন নিবন্ধ তৈরি",
+            "name_en": "Create article"
+        },
+        {
+            "id": "knowledge.edit",
+            "resource": "knowledge",
+            "action": "edit",
+            "name_bn": "নিবন্ধ পরিমার্জন",
+            "name_en": "Edit article"
+        },
+        {
+            "id": "knowledge.publish",
+            "resource": "knowledge",
+            "action": "publish",
+            "name_bn": "নিবন্ধ লাইভ প্রকাশ",
+            "name_en": "Publish article"
+        },
+        {
+            "id": "scripture.view",
+            "resource": "scripture",
+            "action": "view",
+            "name_bn": "শাস্ত্র ও শ্লোক দেখা",
+            "name_en": "View scriptures"
+        },
+        {
+            "id": "scripture.edit",
+            "resource": "scripture",
+            "action": "edit",
+            "name_bn": "শ্লোক ও বঙ্গানুবাদ সম্পাদনা",
+            "name_en": "Edit scripture"
+        },
+        {
+            "id": "scripture.publish",
+            "resource": "scripture",
+            "action": "publish",
+            "name_bn": "শাস্ত্র শ্লোক প্রকাশ",
+            "name_en": "Publish scripture"
+        },
+        {
+            "id": "blog.view",
+            "resource": "blog",
+            "action": "view",
+            "name_bn": "সদস্য ব্লগ ড্রাফট দেখা",
+            "name_en": "View blog submissions"
+        },
+        {
+            "id": "blog.approve",
+            "resource": "blog",
+            "action": "approve",
+            "name_bn": "ব্লগ অনুমোদন ও পরিবর্তন চাওয়া",
+            "name_en": "Approve \/ review blog"
+        },
+        {
+            "id": "blog.publish",
+            "resource": "blog",
+            "action": "publish",
+            "name_bn": "ব্লগ লাইভ প্রকাশ",
+            "name_en": "Publish blog"
+        },
+        {
+            "id": "blog.delete",
+            "resource": "blog",
+            "action": "delete",
+            "name_bn": "ব্লগ বাতিল বা হাইড করা",
+            "name_en": "Reject or archive blog"
+        },
+        {
+            "id": "comments.view",
+            "resource": "comments",
+            "action": "view",
+            "name_bn": "মন্তব্য ও রিপোর্ট দেখা",
+            "name_en": "View comments"
+        },
+        {
+            "id": "comments.moderate",
+            "resource": "comments",
+            "action": "moderate",
+            "name_bn": "মন্তব্য অনুমোদন বা হাইড",
+            "name_en": "Moderate comments"
+        },
+        {
+            "id": "projects.view",
+            "resource": "projects",
+            "action": "view",
+            "name_bn": "সেবামূলক প্রকল্প দেখা",
+            "name_en": "View projects"
+        },
+        {
+            "id": "projects.create",
+            "resource": "projects",
+            "action": "create",
+            "name_bn": "নতুন প্রকল্প তৈরি",
+            "name_en": "Create project"
+        },
+        {
+            "id": "projects.edit",
+            "resource": "projects",
+            "action": "edit",
+            "name_bn": "প্রকল্প বিবরণ ও মাইলফলক সম্পাদনা",
+            "name_en": "Edit project"
+        },
+        {
+            "id": "projects.status_update",
+            "resource": "projects",
+            "action": "status_update",
+            "name_bn": "প্রকল্প স্ট্যাটাস পরিবর্তন",
+            "name_en": "Update project status"
+        },
+        {
+            "id": "activities.view",
+            "resource": "activities",
+            "action": "view",
+            "name_bn": "কার্যক্রম ও ইভেন্ট দেখা",
+            "name_en": "View activities"
+        },
+        {
+            "id": "activities.create",
+            "resource": "activities",
+            "action": "create",
+            "name_bn": "নতুন কার্যক্রম যুক্ত করা",
+            "name_en": "Create activity"
+        },
+        {
+            "id": "activities.edit",
+            "resource": "activities",
+            "action": "edit",
+            "name_bn": "কার্যক্রম বিবরণ তৈরি ও এডিট",
+            "name_en": "Edit activities"
+        },
+        {
+            "id": "activities.delete",
+            "resource": "activities",
+            "action": "delete",
+            "name_bn": "কার্যক্রম ডিলিট করা",
+            "name_en": "Delete activity"
+        },
+        {
+            "id": "finance.view",
+            "resource": "finance",
+            "action": "view",
+            "name_bn": "আর্থিক লেনদেন ও রিপোর্ট দেখা",
+            "name_en": "View financial ledgers"
+        },
+        {
+            "id": "finance.create_expense",
+            "resource": "finance",
+            "action": "create_expense",
+            "name_bn": "ব্যয়ের ভাউচার এন্ট্রি (মেকার)",
+            "name_en": "Create expense entry"
+        },
+        {
+            "id": "finance.approve_expense",
+            "resource": "finance",
+            "action": "approve_expense",
+            "name_bn": "ব্যয়ের ভাউচার অনুমোদন (চেকার)",
+            "name_en": "Approve expense voucher"
+        },
+        {
+            "id": "finance.verify_donation",
+            "resource": "finance",
+            "action": "verify_donation",
+            "name_bn": "অনুদানের ট্রানজ্যাকশন যাচাই",
+            "name_en": "Verify donation"
+        },
+        {
+            "id": "finance.export",
+            "resource": "finance",
+            "action": "export",
+            "name_bn": "আর্থিক স্টেটমেন্ট এক্সপোর্ট",
+            "name_en": "Export finance report"
+        },
+        {
+            "id": "finance.sheets_sync",
+            "resource": "finance",
+            "action": "sheets_sync",
+            "name_bn": "গুগল শিটসের সাথে সিঙ্ক",
+            "name_en": "Sync with Google Sheets"
+        },
+        {
+            "id": "library.view",
+            "resource": "library",
+            "action": "view",
+            "name_bn": "গ্রন্থাগার ক্যাটালগ দেখা",
+            "name_en": "View library"
+        },
+        {
+            "id": "library.manage",
+            "resource": "library",
+            "action": "manage",
+            "name_bn": "বই ও ই-বুক ফাইল পরিচালনা",
+            "name_en": "Manage books & e-books"
+        },
+        {
+            "id": "library.approve_request",
+            "resource": "library",
+            "action": "approve_request",
+            "name_bn": "পাঠাধিকার আবেদন অনুমোদন",
+            "name_en": "Approve reader requests"
+        },
+        {
+            "id": "library.manage_stock",
+            "resource": "library",
+            "action": "manage_stock",
+            "name_bn": "মুদ্রিত বইয়ের ইনভেন্টরি স্টক",
+            "name_en": "Manage physical stock"
+        },
+        {
+            "id": "orders.view",
+            "resource": "orders",
+            "action": "view",
+            "name_bn": "বই বিক্রয় অর্ডার দেখা",
+            "name_en": "View book orders"
+        },
+        {
+            "id": "orders.manage_shipping",
+            "resource": "orders",
+            "action": "manage_shipping",
+            "name_bn": "প্যাকিং ও শিপিং আপডেট",
+            "name_en": "Manage packaging & shipping"
+        },
+        {
+            "id": "orders.cancel",
+            "resource": "orders",
+            "action": "cancel",
+            "name_bn": "অর্ডার বাতিল ও ফেরত",
+            "name_en": "Cancel \/ return order"
+        },
+        {
+            "id": "audit_logs.view",
+            "resource": "audit_logs",
+            "action": "view",
+            "name_bn": "নিরীক্ষা ও অডিট লগ দেখা",
+            "name_en": "View audit logs"
+        },
+        {
+            "id": "audit_logs.export",
+            "resource": "audit_logs",
+            "action": "export",
+            "name_bn": "অডিট লগ এক্সপোর্ট",
+            "name_en": "Export audit logs"
+        },
+        {
+            "id": "settings.view",
+            "resource": "settings",
+            "action": "view",
+            "name_bn": "সিস্টেম সেটিংস দেখা",
+            "name_en": "View settings"
+        },
+        {
+            "id": "settings.manage_system",
+            "resource": "settings",
+            "action": "manage_system",
+            "name_bn": "সংস্থা ও ভাষা সেটিংস",
+            "name_en": "Manage general settings"
+        },
+        {
+            "id": "settings.manage_security",
+            "resource": "settings",
+            "action": "manage_security",
+            "name_bn": "নিরাপত্তা ও OAuth কনফিগারেশন",
+            "name_en": "Manage security & OAuth"
+        }
+    ],
+    "role_permissions": {
+        "super_admin": [
+            "users.view",
+            "users.create",
+            "users.edit",
+            "users.delete",
+            "users.manage_roles",
+            "roles.view",
+            "roles.manage",
+            "members.view",
+            "members.create",
+            "members.edit",
+            "members.approve",
+            "members.reject",
+            "volunteers.view",
+            "volunteers.edit",
+            "volunteers.assign",
+            "content.view",
+            "content.edit",
+            "content.publish",
+            "knowledge.view",
+            "knowledge.create",
+            "knowledge.edit",
+            "knowledge.publish",
+            "scripture.view",
+            "scripture.edit",
+            "scripture.publish",
+            "blog.view",
+            "blog.approve",
+            "blog.publish",
+            "blog.delete",
+            "comments.view",
+            "comments.moderate",
+            "projects.view",
+            "projects.create",
+            "projects.edit",
+            "projects.status_update",
+            "activities.view",
+            "activities.create",
+            "activities.edit",
+            "activities.delete",
+            "finance.view",
+            "finance.create_expense",
+            "finance.approve_expense",
+            "finance.verify_donation",
+            "finance.export",
+            "finance.sheets_sync",
+            "library.view",
+            "library.manage",
+            "library.approve_request",
+            "library.manage_stock",
+            "orders.view",
+            "orders.manage_shipping",
+            "orders.cancel",
+            "audit_logs.view",
+            "audit_logs.export",
+            "settings.view",
+            "settings.manage_system",
+            "settings.manage_security"
+        ],
+        "admin": [
+            "users.view",
+            "users.create",
+            "users.edit",
+            "roles.view",
+            "members.view",
+            "members.create",
+            "members.edit",
+            "members.approve",
+            "members.reject",
+            "volunteers.view",
+            "volunteers.edit",
+            "volunteers.assign",
+            "content.view",
+            "content.edit",
+            "content.publish",
+            "knowledge.view",
+            "knowledge.create",
+            "knowledge.edit",
+            "knowledge.publish",
+            "scripture.view",
+            "scripture.edit",
+            "scripture.publish",
+            "blog.view",
+            "blog.approve",
+            "blog.publish",
+            "blog.delete",
+            "comments.view",
+            "comments.moderate",
+            "projects.view",
+            "projects.create",
+            "projects.edit",
+            "projects.status_update",
+            "activities.view",
+            "activities.create",
+            "activities.edit",
+            "activities.delete",
+            "finance.view",
+            "finance.approve_expense",
+            "finance.verify_donation",
+            "finance.export",
+            "library.view",
+            "library.manage",
+            "library.approve_request",
+            "library.manage_stock",
+            "orders.view",
+            "orders.manage_shipping",
+            "orders.cancel",
+            "audit_logs.view",
+            "settings.view",
+            "settings.manage_system"
+        ],
+        "content_editor": [
+            "content.view",
+            "content.edit",
+            "content.publish",
+            "knowledge.view",
+            "knowledge.create",
+            "knowledge.edit",
+            "knowledge.publish",
+            "scripture.view",
+            "scripture.edit",
+            "scripture.publish",
+            "blog.view",
+            "blog.approve",
+            "blog.publish",
+            "blog.delete",
+            "comments.moderate",
+            "members.view",
+            "projects.view"
+        ],
+        "blog_moderator": [
+            "blog.view",
+            "blog.approve",
+            "blog.publish",
+            "blog.delete",
+            "comments.view",
+            "comments.moderate"
+        ],
+        "project_manager": [
+            "projects.view",
+            "projects.create",
+            "projects.edit",
+            "projects.status_update",
+            "activities.view",
+            "activities.edit",
+            "volunteers.view",
+            "volunteers.assign",
+            "members.view",
+            "finance.view"
+        ],
+        "finance_officer": [
+            "members.view",
+            "members.approve",
+            "members.reject",
+            "finance.view",
+            "finance.create_expense",
+            "finance.verify_donation",
+            "finance.export",
+            "finance.sheets_sync",
+            "projects.view",
+            "orders.view",
+            "audit_logs.view"
+        ],
+        "library_manager": [
+            "library.view",
+            "library.manage",
+            "library.approve_request",
+            "library.manage_stock",
+            "orders.view",
+            "orders.manage_shipping",
+            "audit_logs.view"
+        ],
+        "order_manager": [
+            "orders.view",
+            "orders.manage_shipping",
+            "orders.cancel",
+            "library.view"
+        ],
+        "membership_officer": [
+            "members.view",
+            "members.create",
+            "members.edit",
+            "members.approve",
+            "members.reject",
+            "volunteers.view",
+            "volunteers.edit",
+            "volunteers.assign"
+        ],
+        "volunteer_coordinator": [
+            "volunteers.view",
+            "volunteers.edit",
+            "volunteers.assign",
+            "projects.view",
+            "activities.view"
+        ],
+        "moderator": [
+            "comments.view",
+            "comments.moderate",
+            "blog.view"
+        ],
+        "auditor": [
+            "finance.view",
+            "finance.export",
+            "projects.view",
+            "orders.view",
+            "audit_logs.view",
+            "audit_logs.export"
+        ]
+    },
+    "users": [
+        {
+            "id": "usr_anik",
+            "google_id": "google_sps_01",
+            "name_bn": "অনিক কুমার সাহা",
+            "name_en": "Anik Kumar Saha",
+            "designation_bn": "সভাপতি",
+            "designation_en": "President",
+            "email": "president@sps.org",
+            "avatar": "assets\/images\/executives\/anik-kumar-saha.png",
+            "role": "super_admin",
+            "adminship": "Super-Admin",
+            "scope": "Everything",
+            "status": "active",
+            "assigned_by": "Constitution",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "anik",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_robin",
+            "google_id": "google_sps_02",
+            "name_bn": "রবিন দে",
+            "name_en": "Robin Dey",
+            "designation_bn": "সাধারণ সম্পাদক",
+            "designation_en": "General Secretary",
+            "email": "general.secretary@sps.org",
+            "avatar": "assets\/images\/executives\/robin-dey.png",
+            "role": "admin",
+            "adminship": "Admin",
+            "scope": "Literature, Publishing, Advertisement",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "robin",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_likhon",
+            "google_id": "google_sps_03",
+            "name_bn": "লিখন ঘোষ",
+            "name_en": "Likhon Ghosh",
+            "designation_bn": "সাংগঠনিক সম্পাদক",
+            "designation_en": "Organizing Secretary",
+            "email": "organizing.secretary@sps.org",
+            "avatar": "assets\/images\/executives\/likhon-ghosh.jpg",
+            "role": "admin",
+            "adminship": "Admin",
+            "scope": "Literature, Publishing, Advertisement",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "likhon",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_joy",
+            "google_id": "google_sps_04",
+            "name_bn": "জয় চক্রবর্তী",
+            "name_en": "Joy Chakraborty",
+            "designation_bn": "কোষাধ্যক্ষ",
+            "designation_en": "Treasurer",
+            "email": "treasurer@sps.org",
+            "avatar": "assets\/images\/executives\/joy-chakraborty.png",
+            "role": "finance_officer",
+            "adminship": "Finance-Admin",
+            "scope": "Accounts Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "joy",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_pranto",
+            "google_id": "google_sps_10",
+            "name_bn": "প্রান্ত সাহা",
+            "name_en": "Pranto Saha",
+            "designation_bn": "শাস্ত্র বিষয়ক সম্পাদক-১",
+            "designation_en": "Scripture Affairs Secretary 1",
+            "email": "pranto.saha@sps.org",
+            "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=pranto",
+            "role": "content_editor",
+            "adminship": "Literature-Admin",
+            "scope": "Literature Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "updated_at": "2026-09-28 00:46:09",
+            "username": "pranto",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_goutam",
+            "google_id": "google_sps_11",
+            "name_bn": "গৌতম দণ্ডপাট",
+            "name_en": "Goutam Dandapat",
+            "designation_bn": "শাস্ত্র বিষয়ক সম্পাদক-২",
+            "designation_en": "Scripture Affairs Secretary 2",
+            "email": "goutam.dandapat@sps.org",
+            "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=goutam",
+            "role": "content_editor",
+            "adminship": "Literature-Admin",
+            "scope": "Literature Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "goutam",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_rahul",
+            "google_id": "google_sps_12",
+            "name_bn": "রাহুল কুমার সূত্রধর",
+            "name_en": "Rahul Kumar Sutradhar",
+            "designation_bn": "শাস্ত্র বিষয়ক সম্পাদক-৩",
+            "designation_en": "Scripture Affairs Secretary 3",
+            "email": "rahul.sutradhar@sps.org",
+            "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=rahul",
+            "role": "content_editor",
+            "adminship": "Literature-Admin",
+            "scope": "Literature Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "rahul",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_badhan",
+            "google_id": "google_sps_16",
+            "name_bn": "বাঁধন রায়",
+            "name_en": "Badhan Roy",
+            "designation_bn": "প্রকাশনা সম্পাদক-১",
+            "designation_en": "Publication Secretary 1",
+            "email": "badhan.roy@sps.org",
+            "avatar": "assets\/images\/executives\/badhan-roy.jpg",
+            "role": "library_manager",
+            "adminship": "Publishing-Admin",
+            "scope": "Publishing Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "badhan",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_partha",
+            "google_id": "google_sps_17",
+            "name_bn": "পার্থ প্রতিম দত্ত",
+            "name_en": "Partha Pratim Dutta",
+            "designation_bn": "প্রকাশনা সম্পাদক-২",
+            "designation_en": "Publication Secretary 2",
+            "email": "partha.dutta@sps.org",
+            "avatar": "assets\/images\/executives\/partha-pratim-dutta.png",
+            "role": "library_manager",
+            "adminship": "Publishing-Admin",
+            "scope": "Publishing Section",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "partha",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_kallol",
+            "google_id": "google_sps_05",
+            "name_bn": "রায় কল্লোল",
+            "name_en": "Roy Kallol",
+            "designation_bn": "দপ্তর সম্পাদক",
+            "designation_en": "Office Secretary",
+            "email": "office@sps.org",
+            "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=kallol",
+            "role": "membership_officer",
+            "adminship": "Executive Member",
+            "scope": "Office & Membership Records",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "kallol",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        },
+        {
+            "id": "usr_auditor",
+            "google_id": "google_sps_99",
+            "name_bn": "শান্তি প্রিয়া চক্রবর্তী (সিএ)",
+            "name_en": "Shanti Priya Chakraborty (CA)",
+            "designation_bn": "স্বাধীন চার্টার্ড অডিটর",
+            "designation_en": "Independent Auditor",
+            "email": "auditor@sps.org",
+            "avatar": "https:\/\/api.dicebear.com\/7.x\/bottts\/svg?seed=shantipriya",
+            "role": "auditor",
+            "adminship": "Auditor",
+            "scope": "Read-Only Audit Trail & Financial Transparency",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-01-01 10:00:00",
+            "username": "auditor",
+            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+        }
+    ]
+}

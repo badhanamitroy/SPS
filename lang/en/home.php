@@ -4,7 +4,7 @@ return [
     'hero' => [
         'pre_title' => 'An Authentic Scholarly Academy & Humanitarian Platform',
         'title' => 'Sanatan Philosophy and Scripture',
-        'subtitle' => 'Knowledge • Dharma • Service • Community',
+        'subtitle' => 'Steadfast in Sanatan Unity, Propagation & Welfare',
         'description' => 'Dedicated to the rigorous preservation of Vedanta, Upanishadic exegesis, and timeless Sanatan philosophy, coupled with selfless social service for humanity.',
         'cta_explore' => 'Explore SPS',
         'cta_member' => 'Become a Member',

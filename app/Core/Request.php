@@ -11,13 +11,18 @@ class Request
     private array $bodyParams;
     private array $headers;
 
-    public function __construct()
+    public function __construct(?string $method = null, ?string $uri = null, array $queryParams = [], array $bodyParams = [])
     {
-        $this->method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-        $this->uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $this->method = strtoupper($method ?? ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $this->uri = $uri ?? ($_SERVER['REQUEST_URI'] ?? '/');
         $this->path = parse_url($this->uri, PHP_URL_PATH) ?: '/';
-        $this->queryParams = $_GET ?? [];
-        $this->bodyParams = $_POST ?? [];
+        if (empty($queryParams) && ($queryString = parse_url($this->uri, PHP_URL_QUERY))) {
+            parse_str($queryString, $parsedQuery);
+            $this->queryParams = $parsedQuery;
+        } else {
+            $this->queryParams = !empty($queryParams) ? $queryParams : ($_GET ?? []);
+        }
+        $this->bodyParams = !empty($bodyParams) ? $bodyParams : ($_POST ?? []);
         $this->headers = function_exists('getallheaders') ? (getallheaders() ?: []) : [];
     }
 
@@ -56,6 +61,11 @@ class Request
         return $this->bodyParams[$key] ?? $default;
     }
 
+    public function getParam(string $key, $default = null)
+    {
+        return $this->queryParams[$key] ?? $this->bodyParams[$key] ?? $default;
+    }
+
     public function all(): array
     {
         return array_merge($this->queryParams, $this->bodyParams);
@@ -75,5 +85,10 @@ class Request
             }
         }
         return $default;
+    }
+
+    public function isAjax(): bool
+    {
+        return strtolower((string)$this->getHeader('X-Requested-With', '')) === 'xmlhttprequest';
     }
 }

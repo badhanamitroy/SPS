@@ -31,10 +31,7 @@ $currentLocale = current_locale();
 <div id="mobile-nav-drawer" class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:var(--space-xs);">
-            <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                <circle cx="50" cy="50" r="46" stroke="#C65A1E" stroke-width="2" />
-                <polygon points="50,34 62,50 50,66 38,50" stroke="#C65A1E" stroke-width="2" fill="#FFFFFF" />
-            </svg>
+            <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="<?= e(__('common.short_name')) ?>" class="mobile-drawer-brand-mark" width="45" height="32" style="object-fit:contain;">
             <span style="font-weight:700; color:var(--text-main);"><?= e(__('common.short_name')) ?></span>
         </div>
         <button data-drawer-close="mobile-nav" class="btn btn-ghost btn-sm" aria-label="<?= e(__('common.actions.close')) ?>">
@@ -53,15 +50,9 @@ $currentLocale = current_locale();
         <a href="<?= e(url('/', $currentLocale)) ?>"><?= e(__('common.nav.home')) ?></a>
         <a href="<?= e(url('/about', $currentLocale)) ?>"><?= e(__('common.nav.about')) ?></a>
         <a href="<?= e(url('/activities', $currentLocale)) ?>"><?= e(__('common.nav.activities')) ?></a>
-        <a href="<?= e(url('/knowledge', $currentLocale)) ?>"><?= e(__('common.nav.knowledge')) ?></a>
-        <a href="<?= e(url('/library', $currentLocale)) ?>"><?= e(__('common.nav.library')) ?></a>
         <a href="<?= e(url('/blog', $currentLocale)) ?>"><?= e(__('common.nav.blog')) ?></a>
-        <a href="<?= e(url('/get-involved', $currentLocale)) ?>"><?= e(__('common.nav.get_involved')) ?></a>
-        <a href="<?= e(url('/transparency', $currentLocale)) ?>"><?= e(__('common.nav.transparency')) ?></a>
-        <a href="<?= e(url('/contact', $currentLocale)) ?>"><?= e(__('common.nav.contact')) ?></a>
-        <a href="<?= e(url('/components', $currentLocale)) ?>" style="color:var(--accent-gold); font-size:0.95rem;">
-            <?= e(__('common.actions.view_components')) ?>
-        </a>
+        <a href="<?= e(url('/library', $currentLocale)) ?>" style="color:var(--accent-gold); font-weight:600;">📖 <?= e(__('common.nav.library')) ?></a>
+        <a href="<?= e(url('/admin/library', $currentLocale)) ?>" style="color:var(--accent-saffron); font-size:0.9rem;">🛡️ <?= $currentLocale === 'bn' ? 'প্রশাসনিক প্যানেল (Admin)' : 'Admin Dashboard' ?></a>
     </nav>
 
     <div style="margin-top:auto; padding-top:var(--space-lg); border-top:1px solid var(--border-medium); display:flex; flex-direction:column; gap:var(--space-sm);">

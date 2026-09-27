@@ -3,11 +3,27 @@
 return [
     'name' => 'SANATAN PHILOSOPHY AND SCRIPTURE',
     'short_name' => 'SPS',
-    'motto' => 'Knowledge • Dharma • Service • Community',
-    'motto_bn' => 'জ্ঞান • ধর্ম • সেবা • সমাজ',
+    'motto' => 'Steadfast in Sanatan Unity, Propagation & Welfare',
+    'motto_bn' => 'সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল।',
     'env' => 'development',
     'debug' => true,
     'base_url' => '',
     'timezone' => 'Asia/Dhaka',
     'version' => '1.0.0-phase1',
+
+    // Official SPS Social Media & Community Channels
+    'social' => [
+        'facebook' => 'https://www.facebook.com/bewithsps',
+        'youtube' => 'https://www.youtube.com/@spsofficial1529',
+        'blog' => 'https://sanatanphilosophyandscripture.blogspot.com',
+        'instagram' => 'https://www.instagram.com/bewithsps/',
+    ],
+
+    // Institutional Helplines & Contacts
+    'contacts' => [
+        'primary' => '+8801736360041',
+        'secondary' => '+880 1782-009415',
+        'tertiary' => '+880 1736-360041',
+        'email' => 'contact@sps-platform.org',
+    ],
 ];

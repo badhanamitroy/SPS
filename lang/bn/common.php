@@ -4,8 +4,8 @@ return [
     'brand_name' => 'সনাতন দর্শন ও শাস্ত্র',
     'brand_name_en' => 'SANATAN PHILOSOPHY AND SCRIPTURE',
     'short_name' => 'SPS',
-    'motto' => 'জ্ঞান • ধর্ম • সেবা • সমাজ',
-    'motto_sub' => 'Knowledge • Dharma • Service • Community',
+    'motto' => 'সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল।',
+    'motto_sub' => 'Steadfast in Sanatan Unity, Propagation & Welfare',
     'nav' => [
         'home' => 'প্রচ্ছদ',
         'about' => 'পরিচিতি',

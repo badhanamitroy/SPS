@@ -2,12 +2,12 @@
  * SPS Bilingual Editorial Typography
  */
 
-/* Google Fonts Imports */
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap');
+/* Google Fonts Imports: Poppins for English UI/Headings, Noto for Bengali & Devanagari */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Noto+Sans+Bengali:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;500;600&display=swap');
 
-/* Default English Body */
+/* Default English Body: Arial */
 html {
-  font-family: var(--font-en-sans);
+  font-family: var(--font-en-sans); /* Arial, Helvetica, sans-serif */
   font-size: 16px;
 }
 
@@ -27,20 +27,77 @@ html[lang="bn"] .scripture-quote {
   font-family: var(--font-bn-serif);
 }
 
+/* English Locale: Poppins for Headings, Brand, Navigation, Badges, Buttons, UI */
 html[lang="en"] h1,
 html[lang="en"] h2,
 html[lang="en"] h3,
-html[lang="en"] .editorial-title {
-  font-family: var(--font-display);
-  letter-spacing: 0.02em;
+html[lang="en"] .h1,
+html[lang="en"] .h2,
+html[lang="en"] .h3,
+html[lang="en"] .display-heading,
+html[lang="en"] .brand-title,
+html[lang="en"] .nav-link,
+html[lang="en"] .btn,
+html[lang="en"] .section-tag,
+html[lang="en"] .stat-value,
+html[lang="en"] .stat-label,
+html[lang="en"] .badge,
+html[lang="en"] .tab-item,
+html[lang="en"] .card-title,
+html[lang="en"] .hero-title,
+html[lang="en"] .hero-pretitle {
+  font-family: var(--font-en-poppins); /* 'Poppins', Arial, sans-serif */
+  letter-spacing: -0.01em;
 }
 
+/* English Locale: Times New Roman for Editorial Headings, Exegesis, Quotations, Subtitles, Scripture & Prose Reading */
 html[lang="en"] h4,
 html[lang="en"] h5,
 html[lang="en"] h6,
+html[lang="en"] .h4,
+html[lang="en"] .h5,
+html[lang="en"] .h6,
 html[lang="en"] .font-serif,
-html[lang="en"] .prose-reading {
-  font-family: var(--font-en-serif);
+html[lang="en"] .editorial-title,
+html[lang="en"] .editorial-quote,
+html[lang="en"] .scripture-quote,
+html[lang="en"] .scripture-translation-box,
+html[lang="en"] .scripture-translation-box p,
+html[lang="en"] .hero-motto,
+html[lang="en"] .brand-subtitle,
+html[lang="en"] blockquote,
+html[lang="en"] .prose-reading,
+html[lang="en"] cite {
+  font-family: var(--font-en-serif); /* 'Times New Roman', Times, Georgia, serif */
+}
+
+/* English Locale: Arial for Body, Paragraphs, Lists, Form Controls, Tables, Meta info */
+html[lang="en"] body,
+html[lang="en"] p,
+html[lang="en"] li,
+html[lang="en"] input,
+html[lang="en"] select,
+html[lang="en"] textarea,
+html[lang="en"] table,
+html[lang="en"] td,
+html[lang="en"] label,
+html[lang="en"] .hero-description,
+html[lang="en"] .text-muted,
+html[lang="en"] .text-body {
+  font-family: var(--font-en-sans); /* Arial, Helvetica, sans-serif */
+}
+
+/* Explicit Utility Font Classes */
+.font-poppins, html[lang="en"] .font-poppins {
+  font-family: var(--font-en-poppins) !important;
+}
+
+.font-arial, html[lang="en"] .font-arial {
+  font-family: var(--font-en-sans) !important;
+}
+
+.font-times, html[lang="en"] .font-times {
+  font-family: var(--font-en-serif) !important;
 }
 
 /* Sanskrit Typography */

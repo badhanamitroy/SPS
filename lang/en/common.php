@@ -4,8 +4,8 @@ return [
     'brand_name' => 'Sanatan Philosophy and Scripture',
     'brand_name_en' => 'SANATAN PHILOSOPHY AND SCRIPTURE',
     'short_name' => 'SPS',
-    'motto' => 'Knowledge • Dharma • Service • Community',
-    'motto_sub' => 'জ্ঞান • ধর্ম • সেবা • সমাজ',
+    'motto' => 'Steadfast in Sanatan Unity, Propagation & Welfare',
+    'motto_sub' => 'সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল।',
     'nav' => [
         'home' => 'Home',
         'about' => 'About SPS',

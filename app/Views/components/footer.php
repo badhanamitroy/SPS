@@ -7,12 +7,7 @@ $currentLocale = current_locale();
             <!-- Brand & Purpose -->
             <div>
                 <div style="display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-xs);">
-                    <svg width="34" height="34" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <circle cx="50" cy="50" r="46" stroke="#C65A1E" stroke-width="1.5" stroke-opacity="0.6" />
-                        <path d="M50 12 C54 26, 68 34, 88 50 C68 66, 54 74, 50 88 C46 74, 32 66, 12 50 C32 34, 46 26, 50 12 Z" stroke="#A37E36" stroke-width="1.5" fill="#FAF6F0" fill-opacity="0.9" />
-                        <polygon points="50,34 62,50 50,66 38,50" stroke="#C65A1E" stroke-width="1.5" fill="#FFFFFF" />
-                        <circle cx="50" cy="50" r="3.5" fill="#A37E36" />
-                    </svg>
+                    <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="<?= e(__('common.brand_name')) ?>" class="footer-brand-mark" width="48" height="34" loading="lazy">
                     <span style="font-size:1.1rem; font-weight:700; color:#FFFFFF;"><?= e(__('common.brand_name')) ?></span>
                 </div>
                 <p class="footer-brand-desc">
@@ -47,18 +42,35 @@ $currentLocale = current_locale();
                 </div>
             </div>
 
-            <!-- Contact & Transparency Column -->
+            <!-- Contact & Social Column -->
             <div>
                 <h4 class="footer-heading"><?= e(__('common.footer.address_title')) ?></h4>
                 <p style="font-size:0.88rem; color:var(--text-on-dark-muted); line-height:1.6; margin-bottom:var(--space-xs);">
                     <?= e(__('common.footer.address_lines')) ?>
                 </p>
                 <div style="font-size:0.86rem; color:var(--text-on-dark-muted); display:flex; flex-direction:column; gap:4px; margin-top:var(--space-xs);">
+                    <span><strong><?= e(__('common.footer.phone_label')) ?>:</strong> +880 1736-360041, +880 1782-009415</span>
                     <span><strong><?= e(__('common.footer.email_label')) ?>:</strong> contact@sps-platform.org</span>
-                    <span><strong><?= e(__('common.footer.phone_label')) ?>:</strong> +880 1712-345678</span>
                 </div>
-                <div style="margin-top:var(--space-md);">
-                    <a href="<?= e(url('/transparency', $currentLocale)) ?>" class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,0.2); color:#FFFFFF !important;">
+
+                <!-- Official Social Links -->
+                <div style="margin-top:var(--space-sm); display:flex; flex-wrap:wrap; gap:8px;">
+                    <a href="https://www.facebook.com/bewithsps" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; font-size:0.78rem; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:3px 8px; border-radius:var(--radius-sm); text-decoration:none; border:1px solid rgba(255,255,255,0.12);">
+                        <span>📘 Facebook</span>
+                    </a>
+                    <a href="https://www.youtube.com/@spsofficial1529" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; font-size:0.78rem; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:3px 8px; border-radius:var(--radius-sm); text-decoration:none; border:1px solid rgba(255,255,255,0.12);">
+                        <span>▶ YouTube</span>
+                    </a>
+                    <a href="https://sanatanphilosophyandscripture.blogspot.com" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; font-size:0.78rem; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:3px 8px; border-radius:var(--radius-sm); text-decoration:none; border:1px solid rgba(255,255,255,0.12);">
+                        <span>✍ Blog</span>
+                    </a>
+                    <a href="https://www.instagram.com/bewithsps/" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; font-size:0.78rem; background:rgba(255,255,255,0.08); color:#cbd5e1; padding:3px 8px; border-radius:var(--radius-sm); text-decoration:none; border:1px solid rgba(255,255,255,0.12);">
+                        <span>📷 Instagram</span>
+                    </a>
+                </div>
+
+                <div style="margin-top:var(--space-sm);">
+                    <a href="<?= e(url('/transparency', $currentLocale)) ?>" class="btn btn-secondary btn-sm" style="border-color:rgba(255,255,255,0.2); color:#FFFFFF !important; font-size:0.78rem; padding:4px 10px;">
                         <span><?= e(__('common.nav.transparency')) ?></span>
                     </a>
                 </div>

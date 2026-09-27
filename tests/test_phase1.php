@@ -88,7 +88,7 @@ ob_start();
 $resEn->send();
 $enHtml = ob_get_clean();
 assert_test("View: '/en' contains English brand title", str_contains($enHtml, 'Sanatan Philosophy and Scripture'));
-assert_test("View: '/en' contains English motto", str_contains($enHtml, 'Knowledge • Dharma • Service • Community'));
+assert_test("View: '/en' contains English motto", str_contains($enHtml, 'Steadfast in Sanatan Unity'));
 
 // Simulate '/bn/components'
 $_SERVER['REQUEST_METHOD'] = 'GET';

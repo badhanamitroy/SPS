@@ -421,9 +421,7 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background-color: rgba(250, 248, 245, 0.96);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: var(--bg-canvas);
   border-bottom: 1px solid var(--border-subtle);
   transition: background-color var(--transition-fast);
 }
@@ -448,9 +446,37 @@
 }
 
 .brand-mark {
-  width: 44px;
   height: 44px;
+  width: auto;
+  max-width: 65px;
+  object-fit: contain;
   flex-shrink: 0;
+  display: block;
+  transition: transform var(--transition-fast) ease;
+}
+
+.brand-wrapper:hover .brand-mark {
+  transform: scale(1.03);
+}
+
+.footer-brand-mark {
+  height: 38px;
+  width: auto;
+  max-width: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.mobile-drawer-brand-mark {
+  height: 32px;
+  width: auto;
+  max-width: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .brand-text {
@@ -468,9 +494,9 @@
 
 .brand-subtitle {
   font-size: 0.72rem;
-  font-weight: 500;
-  color: var(--accent-gold);
-  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
@@ -605,7 +631,6 @@
   position: fixed;
   inset: 0;
   background-color: var(--bg-overlay);
-  backdrop-filter: blur(4px);
   z-index: 2000;
   display: flex;
   align-items: center;
@@ -817,8 +842,16 @@
   .brand-title {
     font-size: 0.98rem;
   }
+  .brand-mark {
+    height: 38px;
+    max-width: 54px;
+  }
   .brand-subtitle {
     display: none;
+  }
+  .header-actions .lang-toggle,
+  .header-actions .header-login-btn {
+    display: none !important;
   }
   .footer-grid {
     grid-template-columns: 1fr;

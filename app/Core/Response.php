@@ -38,6 +38,21 @@ class Response
         return $this;
     }
 
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    public function getBody(): string
+    {
+        return $this->content;
+    }
+
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
     public function redirect(string $url, int $statusCode = 302): void
     {
         $this->statusCode = $statusCode;

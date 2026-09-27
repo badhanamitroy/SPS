@@ -64,6 +64,29 @@ class Session
         unset($_SESSION[$key]);
     }
 
+    public static function setFlash(string $key, $value): void
+    {
+        self::start();
+        $_SESSION['_flash'][$key] = $value;
+    }
+
+    public static function getFlash(string $key, $default = null)
+    {
+        self::start();
+        if (isset($_SESSION['_flash'][$key])) {
+            $val = $_SESSION['_flash'][$key];
+            unset($_SESSION['_flash'][$key]);
+            return $val;
+        }
+        return $default;
+    }
+
+    public static function hasFlash(string $key): bool
+    {
+        self::start();
+        return isset($_SESSION['_flash'][$key]);
+    }
+
     public static function getCsrfToken(): string
     {
         self::start();

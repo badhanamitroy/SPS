@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 720" width="100%" height="100%">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="420" height="720" fill="#F4F5F7" />
+
+  <!-- App Header -->
+  <rect width="420" height="75" fill="#E2136E" />
+  <text x="210" y="46" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700" fill="#FFFFFF" text-anchor="middle">bKash Send Money</text>
+
+  <!-- Success Card -->
+  <rect x="20" y="95" width="380" height="585" rx="14" fill="#FFFFFF" filter="url(#shadow)" />
+
+  <!-- Green / bKash Check Circle -->
+  <circle cx="210" cy="155" r="32" fill="#E2136E" />
+  <path d="M198 156 L206 164 L224 146" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+
+  <text x="210" y="210" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="17" font-weight="800" fill="#1E293B" text-anchor="middle">আপনার সেন্ড মানি সফল হয়েছে</text>
+  <text x="210" y="230" font-family="sans-serif" font-size="12" fill="#64748B" text-anchor="middle">Send Money Successful</text>
+
+  <!-- Amount -->
+  <text x="210" y="280" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="900" fill="#E2136E" text-anchor="middle">৳ 100.00</text>
+  <text x="210" y="302" font-family="sans-serif" font-size="12" fill="#15803D" font-weight="700" text-anchor="middle">চার্জ: ৳০.০০ (ফ্রি)</text>
+
+  <line x1="45" y1="325" x2="375" y2="325" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="4 4" />
+
+  <!-- Transaction Details List -->
+  <g font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13">
+    <!-- Recipient -->
+    <text x="45" y="360" fill="#64748B">প্রাপক / To:</text>
+    <text x="375" y="360" fill="#0F172A" font-weight="700" text-anchor="end">SPS Foundation (01700-000000)</text>
+
+    <!-- TrxID -->
+    <text x="45" y="405" fill="#64748B">ট্রানজেকশন আইডি / TrxID:</text>
+    <rect x="250" y="390" width="125" height="24" rx="4" fill="#FCE7F3" />
+    <text x="312" y="407" fill="#BE185D" font-weight="800" font-family="monospace" font-size="13" text-anchor="middle">BKA8X92JQK</text>
+
+    <!-- Time -->
+    <text x="45" y="450" fill="#64748B">তারিখ ও সময় / Time:</text>
+    <text x="375" y="450" fill="#334155" font-weight="600" text-anchor="end">26/09/2026 10:15 AM</text>
+
+    <!-- Reference -->
+    <text x="45" y="495" fill="#64748B">রেফারেন্স / Reference:</text>
+    <text x="375" y="495" fill="#334155" font-weight="600" text-anchor="end">SPS-MEMBERSHIP</text>
+
+    <!-- Source Account -->
+    <text x="45" y="540" fill="#64748B">প্রেরক / From:</text>
+    <text x="375" y="540" fill="#334155" font-weight="600" text-anchor="end">01711-872001 (User)</text>
+  </g>
+
+  <!-- Bottom Verification Watermark -->
+  <rect x="45" y="575" width="330" height="42" rx="8" fill="#F8FAFC" stroke="#E2E8F0" />
+  <text x="210" y="601" font-family="sans-serif" font-size="12" fill="#0F766E" font-weight="700" text-anchor="middle">🔒 bKash Official Transaction Confirmed</text>
+
+  <text x="210" y="650" font-family="sans-serif" font-size="11" fill="#94A3B8" text-anchor="middle">সনাতন দর্শন ও শাস্ত্র (SPS) ফাইন্যান্স ভেরিফিকেশন রশিদ</text>
+</svg>

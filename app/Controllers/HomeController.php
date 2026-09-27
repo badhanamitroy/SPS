@@ -14,8 +14,8 @@ class HomeController extends BaseController
         $isBn = $locale === 'bn';
 
         $title = $isBn 
-            ? 'সনাতন দর্শন ও শাস্ত্র (SPS) — জ্ঞান • ধর্ম • সেবা • সমাজ'
-            : 'Sanatan Philosophy and Scripture (SPS) — Knowledge • Dharma • Service • Community';
+            ? 'সনাতন দর্শন ও শাস্ত্র (SPS) — সনাতনী ঐক্য, প্রচার ও কল্যাণে অবিচল'
+            : 'Sanatan Philosophy and Scripture (SPS) — Steadfast in Sanatan Unity, Propagation & Welfare';
 
         $description = $isBn
             ? 'বেদান্ত, উপনিষদ ও শাশ্বত সনাতন দর্শনের প্রামাণিক সংরক্ষণ, গভীর তাত্ত্বিক পর্যালোচনা এবং আর্তমানবতার নিঃস্বার্থ সেবায় নিবেদিত এক মানবিক বিদ্যাপীঠ।'

@@ -24,13 +24,16 @@ $alternateEn = $alternateEn ?? url('/', 'en');
     <!-- Open Graph & Social Cards -->
     <meta property="og:title" content="<?= e($metaTitle) ?>">
     <meta property="og:description" content="<?= e($metaDescription) ?>">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="<?= e($ogType ?? 'website') ?>">
     <meta property="og:url" content="<?= e($canonicalUrl) ?>">
     <meta property="og:site_name" content="<?= e(config('app.name')) ?>">
     <meta property="og:locale" content="<?= $currentLocale === 'bn' ? 'bn_BD' : 'en_US' ?>">
+    <meta property="og:image" content="<?= e($ogImage ?? asset('assets/images/brand/sps-logo.png')) ?>">
 
     <!-- Brand Favicon -->
     <link rel="icon" type="image/svg+xml" href="<?= asset('favicon.svg') ?>">
+    <link rel="icon" type="image/png" sizes="64x64" href="<?= asset('favicon.png') ?>">
+    <link rel="apple-touch-icon" href="<?= asset('favicon.png') ?>">
 
     <!-- Design System Stylesheets -->
     <link rel="stylesheet" href="<?= asset('assets/css/tokens.css') ?>">
@@ -40,6 +43,11 @@ $alternateEn = $alternateEn ?? url('/', 'en');
     <link rel="stylesheet" href="<?= asset('assets/css/main.css') ?>">
 </head>
 <body class="sps-body">
+    <!-- Accessible Skip Link -->
+    <a href="#main-content" class="skip-link">
+        <?= $currentLocale === 'bn' ? 'মূল বিষয়বস্তুতে যান' : 'Skip to main content' ?>
+    </a>
+
     <!-- Master Header -->
     <?= \App\Core\View::component('header', ['activeNav' => $activeNav ?? 'home']) ?>
 
