@@ -9,7 +9,6 @@ $currentLocale = current_locale();
        aria-current="<?= $currentLocale === 'bn' ? 'true' : 'false' ?>">
        বাংলা
     </a>
-    <span style="color:var(--border-medium); font-size:0.75rem; user-select:none;">|</span>
     <a href="<?= e(route_switch_url('en')) ?>" 
        class="lang-toggle-link <?= $currentLocale === 'en' ? 'active' : '' ?>" 
        data-lang="en"

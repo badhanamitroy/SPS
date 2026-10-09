@@ -1,0 +1,110 @@
+[
+    {
+        "id": "hero",
+        "key": "hero",
+        "name_bn": "১. হিরো সেকশন (শাস্ত্রের জ্ঞান থেকে মানবসেবার কর্মযাত্রা)",
+        "name_en": "1. Hero Section (From Knowledge to Action)",
+        "enabled": true,
+        "order": 1,
+        "description_bn": "প্রধান শিরোনাম, দর্শন ও মানবসেবার ব্রতবাক্য, কল-টু-অ্যাকশন বোতাম এবং নেপথ্য বেদান্ত সূত্র।"
+    },
+    {
+        "id": "stats",
+        "key": "stats",
+        "name_bn": "২. প্রভাব পরিসংখ্যান (সদস্য, গ্রন্থ, সেবা ও কেন্দ্র)",
+        "name_en": "2. Quick Impact Numbers (Members, Books, Seva & Centers)",
+        "enabled": true,
+        "order": 2,
+        "description_bn": "সদস্য, শাস্ত্রীয় গ্রন্থ, সেবা-প্রাপ্ত মানুষ ও সক্রিয় পাঠশালা কেন্দ্রের লাইভ পরিসংখ্যান।"
+    },
+    {
+        "id": "about",
+        "key": "about",
+        "name_bn": "৩. এসপিএস পরিচিতি (সংক্ষিপ্ত প্রাতিষ্ঠানিক পরিচয়)",
+        "name_en": "3. What is SPS? (Concise Institutional Overview)",
+        "enabled": true,
+        "order": 3,
+        "description_bn": "শাশ্বত জ্ঞান ও সমকালীন মানবিক কর্মের মিলনস্থল হিসেবে এসপিএস-এর মূল লক্ষ্য।"
+    },
+    {
+        "id": "pillars",
+        "key": "pillars",
+        "name_bn": "৪. আমরা কী করি? (SPS-এর ৪টি স্তম্ভ)",
+        "name_en": "4. What We Do (The Four Pillars of SPS)",
+        "enabled": true,
+        "order": 4,
+        "description_bn": "জ্ঞান ও দর্শন, শাস্ত্র সংরক্ষণ, শিক্ষা ও মানবসেবা, এবং সমাজ ও সংস্কৃতি।"
+    },
+    {
+        "id": "activities",
+        "key": "activities",
+        "name_bn": "৫. চলমান কার্যক্রম স্লাইডার (জ্ঞান থেকে কর্মে)",
+        "name_en": "5. Live Activities Slider (From Knowledge to Seva)",
+        "enabled": true,
+        "order": 5,
+        "description_bn": "মাঠপর্যায়ে চলমান পাঠশালা, ভ্রাম্যমাণ স্বাস্থ্যসেবা ও সেবাকাজের ডায়নামিক স্লাইডার।"
+    },
+    {
+        "id": "knowledge",
+        "key": "knowledge",
+        "name_bn": "৬. এসপিএস জ্ঞানভাণ্ডার (গীতা, উপনিষদ, বেদান্ত ও মহাফেজখানা)",
+        "name_en": "6. Knowledge & Scripture Gateway (Gita, Upanishads, Vedanta & Archives)",
+        "enabled": true,
+        "order": 6,
+        "description_bn": "ভগবদ্গীতা, উপনিষদ, বেদান্ত দর্শন এবং ডিজিটাল পাণ্ডুলিপি মহাফেজখানায় প্রবেশের ৪টি মূল পোর্টাল।"
+    },
+    {
+        "id": "scripture",
+        "key": "scripture",
+        "name_bn": "৭. আজকের শাস্ত্রীয় আলোকপাত (নির্বাচিত শ্লোক ও তাৎপর্য)",
+        "name_en": "7. Today's Scripture Spotlight (Featured Verse & Exegesis)",
+        "enabled": true,
+        "order": 7,
+        "description_bn": "শ্রীমদ্ভগবদ্গীতার নির্বাচিত শ্লোক, দেবনাগরী ও বঙ্গানুবাদ এবং দার্শনিক তাৎপর্য।"
+    },
+    {
+        "id": "publications",
+        "key": "publications",
+        "name_bn": "৮. সর্বশেষ প্রকাশনা ও গবেষণা (মিডিয়া লাইব্রেরি থেকে)",
+        "name_en": "8. Latest from SPS (Archival Publications & Research)",
+        "enabled": true,
+        "order": 8,
+        "description_bn": "এসপিএস রামনবমী সংখ্যা, সমাচার এবং রামায়ণ কালনির্ণয়সহ লাইব্রেরির শীর্ষ প্রকাশনাসমূহ।"
+    },
+    {
+        "id": "blog",
+        "key": "blog",
+        "name_bn": "৯. সদস্যদের চিন্তাধারা (কমিউনিটি প্রবন্ধ ও চিন্তাশীল লেখা)",
+        "name_en": "9. Members' Voices & Journal (Scholarly & Community Essays)",
+        "enabled": true,
+        "order": 9,
+        "description_bn": "সদস্য ও গবেষকদের চিন্তাশীল দর্শন ও ইতিহাস বিষয়ক প্রবন্ধের আধুনিক কার্ড।"
+    },
+    {
+        "id": "transparency",
+        "key": "transparency",
+        "name_bn": "১০. আমাদের প্রভাব ও আর্থিক স্বচ্ছতা (আর্থিক অডিট ও অনুপাত)",
+        "name_en": "10. Impact & Financial Transparency (Audited Ledger & Allocation)",
+        "enabled": false,
+        "order": 10,
+        "description_bn": "মোট প্রাপ্ত অনুদান, সেবায় ব্যয়, জরুরি তহবিল এবং খাতভিত্তিক ব্যয়ের প্রকাশ্য অনুপাত।"
+    },
+    {
+        "id": "community",
+        "key": "community",
+        "name_bn": "১১. সোশ্যাল কমিউনিটি সংযোগ (ফেসবুক পেজ ও গ্রুপ)",
+        "name_en": "11. Social Community (Official Facebook Page & Group)",
+        "enabled": true,
+        "order": 11,
+        "description_bn": "এসপিএস অফিসিয়াল ফেসবুক পেজ এবং ফেসবুক গ্রুপের সাথে যুক্ত হওয়ার আনুষ্ঠানিক আমন্ত্রণ।"
+    },
+    {
+        "id": "join",
+        "key": "join",
+        "name_bn": "১২. এসপিএস-এ যুক্ত হোন (সদস্য, স্বেচ্ছাসেবক ও সহায়তা)",
+        "name_en": "12. Join SPS (Member, Volunteer & Donate Pathways)",
+        "enabled": true,
+        "order": 12,
+        "description_bn": "সদস্যপদ গ্রহণ, স্বেচ্ছাসেবক হিসেবে যোগদান এবং সমাজসেবা প্রকল্পে অংশগ্রহণের তিনটি স্পষ্ট পথ।"
+    }
+]

@@ -56,7 +56,17 @@ class Request
         return $this->queryParams[$key] ?? $default;
     }
 
+    public function get(string $key, $default = null)
+    {
+        return $this->queryParams[$key] ?? $default;
+    }
+
     public function getPost(string $key, $default = null)
+    {
+        return $this->bodyParams[$key] ?? $default;
+    }
+
+    public function post(string $key, $default = null)
     {
         return $this->bodyParams[$key] ?? $default;
     }
@@ -81,8 +91,12 @@ class Request
     {
         foreach ($this->headers as $key => $value) {
             if (strcasecmp($key, $name) === 0) {
-                return $value;
+                return (string)$value;
             }
+        }
+        $serverKey = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
+        if (isset($_SERVER[$serverKey])) {
+            return (string)$_SERVER[$serverKey];
         }
         return $default;
     }

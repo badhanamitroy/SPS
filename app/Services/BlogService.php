@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\HtmlSanitizer;
+
 class BlogService
 {
     private static ?array $blogs = null;
 
-    private static function getStoragePath(): string
+    public static function getStoragePath(): string
     {
         return dirname(__DIR__, 2) . '/storage/data/blogs.json';
     }
@@ -47,6 +49,69 @@ class BlogService
         return self::$blogs;
     }
 
+    /** @var resource|null */
+    private static $lockFp = null;
+    private static int $lockDepth = 0;
+
+    /**
+     * Perform an operation holding an exclusive advisory lock on the storage lock file.
+     * Guarantees the entire read-modify-write sequence is mutually exclusive.
+     */
+    public static function withExclusiveLock(callable $operation): mixed
+    {
+        if (self::$lockDepth === 0) {
+            $lockPath = dirname(self::getStoragePath()) . '/.blogs.lock';
+            self::$lockFp = @fopen($lockPath, 'c+');
+            if (self::$lockFp) {
+                @flock(self::$lockFp, LOCK_EX);
+            }
+            self::$blogs = null; // Always fresh read from disk under lock
+        }
+        self::$lockDepth++;
+
+        try {
+            return $operation();
+        } finally {
+            self::$lockDepth--;
+            if (self::$lockDepth === 0) {
+                if (self::$lockFp) {
+                    @flock(self::$lockFp, LOCK_UN);
+                    @fclose(self::$lockFp);
+                    self::$lockFp = null;
+                }
+            }
+        }
+    }
+
+    /**
+     * Atomically write file contents using temporary file and atomic rename.
+     */
+    public static function atomicWrite(string $path, string $content): bool
+    {
+        $dir = dirname($path);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $tmp = $path . '.tmp_' . bin2hex(random_bytes(6));
+        if (file_put_contents($tmp, $content) === false) {
+            return false;
+        }
+
+        if (@rename($tmp, $path)) {
+            return true;
+        }
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' && file_exists($path)) {
+            @unlink($path);
+            if (@rename($tmp, $path)) {
+                return true;
+            }
+        }
+
+        @unlink($tmp);
+        return false;
+    }
+
     /**
      * Save blogs list back to storage.
      */
@@ -54,11 +119,8 @@ class BlogService
     {
         self::$blogs = $blogs;
         $path = self::getStoragePath();
-        $dir = dirname($path);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-        return file_put_contents($path, json_encode($blogs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) !== false;
+        $json = json_encode($blogs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return self::atomicWrite($path, $json);
     }
 
     /**
@@ -152,6 +214,12 @@ class BlogService
         $blogs = self::getBlogs($onlyPublished);
         foreach ($blogs as $b) {
             if (($b['slug'] ?? '') === $slug) {
+                if (isset($b['content_bn'])) {
+                    $b['content_bn'] = HtmlSanitizer::clean($b['content_bn']);
+                }
+                if (isset($b['content_en'])) {
+                    $b['content_en'] = HtmlSanitizer::clean($b['content_en']);
+                }
                 return $b;
             }
         }
@@ -166,6 +234,12 @@ class BlogService
         $blogs = self::getBlogs(false);
         foreach ($blogs as $b) {
             if (($b['id'] ?? '') === $id) {
+                if (isset($b['content_bn'])) {
+                    $b['content_bn'] = HtmlSanitizer::clean($b['content_bn']);
+                }
+                if (isset($b['content_en'])) {
+                    $b['content_en'] = HtmlSanitizer::clean($b['content_en']);
+                }
                 return $b;
             }
         }
@@ -308,112 +382,114 @@ class BlogService
      */
     public static function createBlog(array $data, ?array $author = null): array
     {
-        $blogs = self::getBlogs(false);
+        return self::withExclusiveLock(function () use ($data, $author) {
+            $blogs = self::getBlogs(false);
 
-        $titleBn = trim((string)($data['title_bn'] ?? ''));
-        $titleEn = trim((string)($data['title_en'] ?? ''));
+            $titleBn = trim((string)($data['title_bn'] ?? ''));
+            $titleEn = trim((string)($data['title_en'] ?? ''));
 
-        // Generate URL slug
-        $baseSlug = !empty($titleEn) 
-            ? strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($titleEn)))
-            : 'blog-' . time();
-        $baseSlug = trim($baseSlug, '-');
-        if (empty($baseSlug)) {
-            $baseSlug = 'blog-' . time();
-        }
+            // Generate URL slug
+            $baseSlug = !empty($titleEn) 
+                ? strtolower(preg_replace('/[^a-zA-Z0-9]+/', '-', trim($titleEn)))
+                : 'blog-' . time();
+            $baseSlug = trim($baseSlug, '-');
+            if (empty($baseSlug)) {
+                $baseSlug = 'blog-' . time();
+            }
 
-        // Ensure unique slug
-        $slug = $baseSlug;
-        $counter = 1;
-        while (self::findBySlug($slug, false) !== null) {
-            $slug = $baseSlug . '-' . (++$counter);
-        }
+            // Ensure unique slug
+            $slug = $baseSlug;
+            $counter = 1;
+            while (self::findBySlug($slug, false) !== null) {
+                $slug = $baseSlug . '-' . (++$counter);
+            }
 
-        $now = date('Y-m-d H:i:s');
-        $id = 'blog-' . (count($blogs) + 1) . '-' . substr(md5(uniqid()), 0, 5);
+            $now = date('Y-m-d H:i:s');
+            $id = 'blog-' . (count($blogs) + 1) . '-' . substr(md5(uniqid()), 0, 5);
 
-        // Tags parsing
-        $tags = [];
-        if (isset($data['tags'])) {
-            if (is_array($data['tags'])) {
-                $tags = array_map('trim', $data['tags']);
-            } elseif (is_string($data['tags'])) {
-                $parts = explode(',', $data['tags']);
-                foreach ($parts as $p) {
-                    $p = trim($p);
-                    if ($p !== '') $tags[] = $p;
+            // Tags parsing
+            $tags = [];
+            if (isset($data['tags'])) {
+                if (is_array($data['tags'])) {
+                    $tags = array_map('trim', $data['tags']);
+                } elseif (is_string($data['tags'])) {
+                    $parts = explode(',', $data['tags']);
+                    foreach ($parts as $p) {
+                        $p = trim($p);
+                        if ($p !== '') $tags[] = $p;
+                    }
                 }
             }
-        }
 
-        // Category mapping
-        $cat = trim((string)($data['category'] ?? 'vedanta'));
-        $catNames = [
-            'vedanta' => ['bn' => 'বেদান্ত ও দর্শন', 'en' => 'Vedanta & Philosophy'],
-            'gita' => ['bn' => 'ভগবদগীতা ও আত্মউন্নয়ন', 'en' => 'Bhagavad Gita & Growth'],
-            'history' => ['bn' => 'সনাতন ইতিহাস ও ঐতিহ্য', 'en' => 'Sanatan History & Heritage'],
-            'seva' => ['bn' => 'সেবা ও মানবকল্যাণ', 'en' => 'Seva & Welfare'],
-            'scripture' => ['bn' => 'শাস্ত্র ও আধ্যাত্মিকতা', 'en' => 'Scriptures & Spirituality'],
-        ];
+            // Category mapping
+            $cat = trim((string)($data['category'] ?? 'vedanta'));
+            $catNames = [
+                'vedanta' => ['bn' => 'বেদান্ত ও দর্শন', 'en' => 'Vedanta & Philosophy'],
+                'gita' => ['bn' => 'ভগবদগীতা ও আত্মউন্নয়ন', 'en' => 'Bhagavad Gita & Growth'],
+                'history' => ['bn' => 'সনাতন ইতিহাস ও ঐতিহ্য', 'en' => 'Sanatan History & Heritage'],
+                'seva' => ['bn' => 'সেবা ও মানবকল্যাণ', 'en' => 'Seva & Welfare'],
+                'scripture' => ['bn' => 'শাস্ত্র ও আধ্যাত্মিকতা', 'en' => 'Scriptures & Spirituality'],
+            ];
 
-        $authorInfo = [
-            'name_bn' => $author['name_bn'] ?? ($data['author_name_bn'] ?? 'পেইড সদস্য'),
-            'name_en' => $author['name_en'] ?? ($data['author_name_en'] ?? 'Paid Member'),
-            'role' => $author['role'] ?? 'paid_member',
-            'tier_bn' => $author['tier_bn'] ?? 'পেইড সদস্য',
-            'tier_en' => $author['tier_en'] ?? 'Paid Member',
-            'avatar' => $author['avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($data['author_name_en'] ?? 'author')),
-            'email' => $author['email'] ?? ($data['author_email'] ?? 'member@sps.org'),
-        ];
+            $authorInfo = [
+                'name_bn' => $author['name_bn'] ?? ($data['author_name_bn'] ?? 'পেইড সদস্য'),
+                'name_en' => $author['name_en'] ?? ($data['author_name_en'] ?? 'Paid Member'),
+                'role' => $author['role'] ?? 'paid_member',
+                'tier_bn' => $author['tier_bn'] ?? 'পেইড সদস্য',
+                'tier_en' => $author['tier_en'] ?? 'Paid Member',
+                'avatar' => $author['avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($data['author_name_en'] ?? 'author')),
+                'email' => $author['email'] ?? ($data['author_email'] ?? 'member@sps.org'),
+            ];
 
-        $featuredImage = trim((string)($data['featured_image'] ?? ''));
-        if (empty($featuredImage)) {
-            $featuredImage = 'assets/images/library/covers/sps-samachar-feb.jpg';
-        }
+            $featuredImage = trim((string)($data['featured_image'] ?? ''));
+            if (empty($featuredImage)) {
+                $featuredImage = 'assets/images/library/covers/sps-samachar-feb.jpg';
+            }
 
-        $newBlog = [
-            'id' => $id,
-            'slug' => $slug,
-            'title_bn' => $titleBn ?: $titleEn,
-            'title_en' => $titleEn ?: $titleBn,
-            'category' => $cat,
-            'category_bn' => $catNames[$cat]['bn'] ?? ucfirst($cat),
-            'category_en' => $catNames[$cat]['en'] ?? ucfirst($cat),
-            'featured_image' => $featuredImage,
-            'excerpt_bn' => trim((string)($data['excerpt_bn'] ?? '')),
-            'excerpt_en' => trim((string)($data['excerpt_en'] ?? '')),
-            'content_bn' => trim((string)($data['content_bn'] ?? '')),
-            'content_en' => trim((string)($data['content_en'] ?? '')),
-            'tags' => array_values(array_unique($tags)),
-            'author' => $authorInfo,
-            'status' => 'pending', // Awaiting moderation
-            'published_at' => null,
-            'created_at' => $now,
-            'updated_at' => $now,
-            'approved_by' => null,
-            'approved_at' => null,
-            'rejection_reason' => null,
-            'likes_count' => 0,
-            'views_count' => 1,
-            'liked_ips' => [],
-            'comments' => [],
-        ];
+            $newBlog = [
+                'id' => $id,
+                'slug' => $slug,
+                'title_bn' => $titleBn ?: $titleEn,
+                'title_en' => $titleEn ?: $titleBn,
+                'category' => $cat,
+                'category_bn' => $catNames[$cat]['bn'] ?? ucfirst($cat),
+                'category_en' => $catNames[$cat]['en'] ?? ucfirst($cat),
+                'featured_image' => $featuredImage,
+                'excerpt_bn' => trim((string)($data['excerpt_bn'] ?? '')),
+                'excerpt_en' => trim((string)($data['excerpt_en'] ?? '')),
+                'content_bn' => HtmlSanitizer::clean(trim((string)($data['content_bn'] ?? ''))),
+                'content_en' => HtmlSanitizer::clean(trim((string)($data['content_en'] ?? ''))),
+                'tags' => array_values(array_unique($tags)),
+                'author' => $authorInfo,
+                'status' => 'pending', // Awaiting moderation
+                'published_at' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+                'approved_by' => null,
+                'approved_at' => null,
+                'rejection_reason' => null,
+                'likes_count' => 0,
+                'views_count' => 1,
+                'liked_ips' => [],
+                'comments' => [],
+            ];
 
-        $blogs[] = $newBlog;
-        self::saveBlogs($blogs);
+            $blogs[] = $newBlog;
+            self::saveBlogs($blogs);
 
-        AuditService::log(
-            'blog.submitted',
-            'blog',
-            $id,
-            $newBlog['title_en'],
-            [],
-            ['author' => $authorInfo['name_en'], 'status' => 'pending'],
-            "New blog post submitted by paid member {$authorInfo['name_en']} awaiting moderation",
-            $author
-        );
+            AuditService::log(
+                'blog.submitted',
+                'blog',
+                $id,
+                $newBlog['title_en'],
+                [],
+                ['author' => $authorInfo['name_en'], 'status' => 'pending'],
+                "New blog post submitted by paid member {$authorInfo['name_en']} awaiting moderation",
+                $author
+            );
 
-        return $newBlog;
+            return $newBlog;
+        });
     }
 
     /**
@@ -450,43 +526,45 @@ class BlogService
             return false;
         }
 
-        $blogs = self::getBlogs(false);
-        $found = false;
-        $now = date('Y-m-d H:i:s');
-        $approverName = ($adminUser['name_bn'] ?? $adminUser['name_en'] ?? 'Admin') . 
-            ' (' . ($adminUser['designation_bn'] ?? $adminUser['adminship'] ?? 'প্রশাসক') . ')';
+        return self::withExclusiveLock(function () use ($id, $adminUser) {
+            $blogs = self::getBlogs(false);
+            $found = false;
+            $now = date('Y-m-d H:i:s');
+            $approverName = ($adminUser['name_bn'] ?? $adminUser['name_en'] ?? 'Admin') . 
+                ' (' . ($adminUser['designation_bn'] ?? $adminUser['adminship'] ?? 'প্রশাসক') . ')';
 
-        foreach ($blogs as &$b) {
-            if (($b['id'] ?? '') === $id) {
-                $b['status'] = 'published';
-                $b['approved_by'] = $approverName;
-                $b['approved_at'] = $now;
-                $b['rejection_reason'] = null;
-                $b['updated_at'] = $now;
-                if (empty($b['published_at'])) {
-                    $b['published_at'] = $now;
+            foreach ($blogs as &$b) {
+                if (($b['id'] ?? '') === $id) {
+                    $b['status'] = 'published';
+                    $b['approved_by'] = $approverName;
+                    $b['approved_at'] = $now;
+                    $b['rejection_reason'] = null;
+                    $b['updated_at'] = $now;
+                    if (empty($b['published_at'])) {
+                        $b['published_at'] = $now;
+                    }
+                    $found = true;
+                    break;
                 }
-                $found = true;
-                break;
             }
-        }
 
-        if ($found) {
-            self::saveBlogs($blogs);
-            AuditService::log(
-                'blog.approved',
-                'blog',
-                $id,
-                $id,
-                ['status' => 'pending'],
-                ['status' => 'published', 'approver' => $approverName],
-                "Blog {$id} approved and published by {$approverName}",
-                $adminUser
-            );
-            return true;
-        }
+            if ($found) {
+                self::saveBlogs($blogs);
+                AuditService::log(
+                    'blog.approved',
+                    'blog',
+                    $id,
+                    $id,
+                    ['status' => 'pending'],
+                    ['status' => 'published', 'approver' => $approverName],
+                    "Blog {$id} approved and published by {$approverName}",
+                    $adminUser
+                );
+                return true;
+            }
 
-        return false;
+            return false;
+        });
     }
 
     /**
@@ -498,39 +576,41 @@ class BlogService
             return false;
         }
 
-        $blogs = self::getBlogs(false);
-        $found = false;
-        $now = date('Y-m-d H:i:s');
-        $approverName = ($adminUser['name_bn'] ?? $adminUser['name_en'] ?? 'Admin') . 
-            ' (' . ($adminUser['designation_bn'] ?? $adminUser['adminship'] ?? 'প্রশাসক') . ')';
+        return self::withExclusiveLock(function () use ($id, $adminUser, $reason) {
+            $blogs = self::getBlogs(false);
+            $found = false;
+            $now = date('Y-m-d H:i:s');
+            $approverName = ($adminUser['name_bn'] ?? $adminUser['name_en'] ?? 'Admin') . 
+                ' (' . ($adminUser['designation_bn'] ?? $adminUser['adminship'] ?? 'প্রশাসক') . ')';
 
-        foreach ($blogs as &$b) {
-            if (($b['id'] ?? '') === $id) {
-                $b['status'] = 'rejected';
-                $b['rejection_reason'] = trim($reason) ?: 'পাণ্ডুলিপিটি সম্পাদকীয় নীতিমালার সাথে সামঞ্জস্যপূর্ণ নয়।';
-                $b['approved_by'] = null;
-                $b['updated_at'] = $now;
-                $found = true;
-                break;
+            foreach ($blogs as &$b) {
+                if (($b['id'] ?? '') === $id) {
+                    $b['status'] = 'rejected';
+                    $b['rejection_reason'] = trim($reason) ?: 'পাণ্ডুলিপিটি সম্পাদকীয় নীতিমালার সাথে সামঞ্জস্যপূর্ণ নয়।';
+                    $b['approved_by'] = null;
+                    $b['updated_at'] = $now;
+                    $found = true;
+                    break;
+                }
             }
-        }
 
-        if ($found) {
-            self::saveBlogs($blogs);
-            AuditService::log(
-                'blog.rejected',
-                'blog',
-                $id,
-                $id,
-                ['status' => 'pending'],
-                ['status' => 'rejected', 'reason' => $reason, 'reviewer' => $approverName],
-                "Blog {$id} rejected by {$approverName}: {$reason}",
-                $adminUser
-            );
-            return true;
-        }
+            if ($found) {
+                self::saveBlogs($blogs);
+                AuditService::log(
+                    'blog.rejected',
+                    'blog',
+                    $id,
+                    $id,
+                    ['status' => 'pending'],
+                    ['status' => 'rejected', 'reason' => $reason, 'reviewer' => $approverName],
+                    "Blog {$id} rejected by {$approverName}: {$reason}",
+                    $adminUser
+                );
+                return true;
+            }
 
-        return false;
+            return false;
+        });
     }
 
     /**
@@ -542,26 +622,28 @@ class BlogService
             return false;
         }
 
-        $blogs = self::getBlogs(false);
-        $initialCount = count($blogs);
-        $filtered = array_values(array_filter($blogs, fn($b) => ($b['id'] ?? '') !== $id));
+        return self::withExclusiveLock(function () use ($id, $adminUser) {
+            $blogs = self::getBlogs(false);
+            $initialCount = count($blogs);
+            $filtered = array_values(array_filter($blogs, fn($b) => ($b['id'] ?? '') !== $id));
 
-        if (count($filtered) < $initialCount) {
-            self::saveBlogs($filtered);
-            AuditService::log(
-                'blog.deleted',
-                'blog',
-                $id,
-                $id,
-                [],
-                ['deleted_by' => $adminUser['name_en'] ?? 'Admin'],
-                "Blog post {$id} permanently removed",
-                $adminUser
-            );
-            return true;
-        }
+            if (count($filtered) < $initialCount) {
+                self::saveBlogs($filtered);
+                AuditService::log(
+                    'blog.deleted',
+                    'blog',
+                    $id,
+                    $id,
+                    [],
+                    ['deleted_by' => $adminUser['name_en'] ?? 'Admin'],
+                    "Blog post {$id} permanently removed",
+                    $adminUser
+                );
+                return true;
+            }
 
-        return false;
+            return false;
+        });
     }
 
     /**
@@ -569,41 +651,43 @@ class BlogService
      */
     public static function toggleLike(string $slug, string $identifier): array
     {
-        $blogs = self::getBlogs(false);
-        $found = false;
-        $liked = false;
-        $currentLikes = 0;
+        return self::withExclusiveLock(function () use ($slug, $identifier) {
+            $blogs = self::getBlogs(false);
+            $found = false;
+            $liked = false;
+            $currentLikes = 0;
 
-        foreach ($blogs as &$b) {
-            if (($b['slug'] ?? '') === $slug) {
-                $likedIps = $b['liked_ips'] ?? [];
-                if (in_array($identifier, $likedIps, true)) {
-                    // Unlike
-                    $likedIps = array_values(array_diff($likedIps, [$identifier]));
-                    $b['likes_count'] = max(0, ((int)($b['likes_count'] ?? 1)) - 1);
-                    $liked = false;
-                } else {
-                    // Like
-                    $likedIps[] = $identifier;
-                    $b['likes_count'] = ((int)($b['likes_count'] ?? 0)) + 1;
-                    $liked = true;
+            foreach ($blogs as &$b) {
+                if (($b['slug'] ?? '') === $slug) {
+                    $likedIps = $b['liked_ips'] ?? [];
+                    if (in_array($identifier, $likedIps, true)) {
+                        // Unlike
+                        $likedIps = array_values(array_diff($likedIps, [$identifier]));
+                        $b['likes_count'] = max(0, ((int)($b['likes_count'] ?? 1)) - 1);
+                        $liked = false;
+                    } else {
+                        // Like
+                        $likedIps[] = $identifier;
+                        $b['likes_count'] = ((int)($b['likes_count'] ?? 0)) + 1;
+                        $liked = true;
+                    }
+                    $b['liked_ips'] = $likedIps;
+                    $currentLikes = (int)$b['likes_count'];
+                    $found = true;
+                    break;
                 }
-                $b['liked_ips'] = $likedIps;
-                $currentLikes = (int)$b['likes_count'];
-                $found = true;
-                break;
             }
-        }
 
-        if ($found) {
-            self::saveBlogs($blogs);
-        }
+            if ($found) {
+                self::saveBlogs($blogs);
+            }
 
-        return [
-            'success' => $found,
-            'liked' => $liked,
-            'likes_count' => $currentLikes,
-        ];
+            return [
+                'success' => $found,
+                'liked' => $liked,
+                'likes_count' => $currentLikes,
+            ];
+        });
     }
 
     /**
@@ -622,43 +706,57 @@ class BlogService
      */
     public static function addComment(string $slug, array $commentData): ?array
     {
-        $blogs = self::getBlogs(false);
-        $newComment = null;
+        return self::withExclusiveLock(function () use ($slug, $commentData) {
+            $blogs = self::getBlogs(false);
+            $newComment = null;
 
-        $name = trim((string)($commentData['author_name'] ?? ''));
-        $content = trim((string)($commentData['content'] ?? ''));
-        if (empty($name) || empty($content)) {
-            return null;
-        }
-
-        $now = date('Y-m-d H:i:s');
-        $commentId = 'cmt-' . time() . '-' . rand(100, 999);
-        $role = trim((string)($commentData['author_role'] ?? 'visitor'));
-        $email = trim((string)($commentData['author_email'] ?? ''));
-
-        $newComment = [
-            'id' => $commentId,
-            'author_name' => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
-            'author_email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
-            'author_role' => $role,
-            'author_avatar' => $commentData['author_avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($name)),
-            'content' => htmlspecialchars($content, ENT_QUOTES, 'UTF-8'),
-            'created_at' => $now,
-            'likes' => 0,
-        ];
-
-        foreach ($blogs as &$b) {
-            if (($b['slug'] ?? '') === $slug) {
-                if (!isset($b['comments']) || !is_array($b['comments'])) {
-                    $b['comments'] = [];
-                }
-                $b['comments'][] = $newComment;
-                self::saveBlogs($blogs);
-                return $newComment;
+            $name = trim((string)($commentData['author_name'] ?? ''));
+            $content = trim((string)($commentData['content'] ?? ''));
+            if (empty($name) || empty($content)) {
+                return null;
             }
-        }
 
-        return null;
+            $now = date('Y-m-d H:i:s');
+            $commentId = 'cmt-' . time() . '-' . rand(100, 999);
+            $role = trim((string)($commentData['author_role'] ?? 'visitor'));
+            $email = trim((string)($commentData['author_email'] ?? ''));
+
+            // Enforce length limits
+            if (mb_strlen($name) > 100) {
+                $name = mb_substr($name, 0, 100);
+            }
+            if (mb_strlen($email) > 120) {
+                $email = mb_substr($email, 0, 120);
+            }
+            if (mb_strlen($content) > 2000) {
+                $content = mb_substr($content, 0, 2000);
+            }
+
+            $newComment = [
+                'id' => $commentId,
+                'author_name' => $name,
+                'author_email' => $email,
+                'author_role' => $role,
+                'author_avatar' => $commentData['author_avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($name)),
+                'content' => $content,
+                'created_at' => $now,
+                'likes' => 0,
+                'raw' => true,
+            ];
+
+            foreach ($blogs as &$b) {
+                if (($b['slug'] ?? '') === $slug) {
+                    if (!isset($b['comments']) || !is_array($b['comments'])) {
+                        $b['comments'] = [];
+                    }
+                    $b['comments'][] = $newComment;
+                    self::saveBlogs($blogs);
+                    return $newComment;
+                }
+            }
+
+            return null;
+        });
     }
 
     /**
@@ -666,13 +764,15 @@ class BlogService
      */
     public static function incrementViews(string $slug): void
     {
-        $blogs = self::getBlogs(false);
-        foreach ($blogs as &$b) {
-            if (($b['slug'] ?? '') === $slug) {
-                $b['views_count'] = ((int)($b['views_count'] ?? 0)) + 1;
-                self::saveBlogs($blogs);
-                break;
+        self::withExclusiveLock(function () use ($slug) {
+            $blogs = self::getBlogs(false);
+            foreach ($blogs as &$b) {
+                if (($b['slug'] ?? '') === $slug) {
+                    $b['views_count'] = ((int)($b['views_count'] ?? 0)) + 1;
+                    self::saveBlogs($blogs);
+                    break;
+                }
             }
-        }
+        });
     }
 }

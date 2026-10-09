@@ -22,8 +22,8 @@ return [
         'learn_more' => 'Read Our Full Philosophy & History',
     ],
     'pillars' => [
-        'tag' => 'Principles & Values',
-        'title' => 'Our Four Institutional Pillars',
+        'tag' => 'What We Do',
+        'title' => 'The Four Pillars of SPS',
         'subtitle' => 'The foundational values governing our research, community, and field initiatives',
         'pillar1_title' => 'Philosophical & Critical Rigor',
         'pillar1_desc' => 'Rigorous inquiry free from dogma. Deep comparative analysis of Advaita Vedanta, Vishishtadvaita, and classical Indian philosophical systems.',

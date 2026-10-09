@@ -1,842 +1,610 @@
 <?php
 /**
- * SPS Member Dashboard & Self-Service Portal
- * Digital Membership Card, Payment Ledger, Transition Engine & Activities
+ * SPS Member Portal — feed-centred dashboard
+ * Left nav • Feed / sections • Right summary panel • Mobile bottom nav
+ * Keeps all existing routes, form fields and services.
  */
 
 $currentLocale = current_locale();
 $isBn = $currentLocale === 'bn';
+$t = fn(string $bn, string $en): string => $isBn ? $bn : $en;
 
-$member = $member ?? null;
-$category = $category ?? null;
-$plan = $plan ?? null;
-$payments = $payments ?? [];
-$history = $history ?? [];
+$member     = $member ?? null;
+$category   = $category ?? null;
+$plan       = $plan ?? null;
+$payments   = $payments ?? [];
+$history    = $history ?? [];
 $allMembers = $allMembers ?? [];
+
+// Optional data providers (wire to DB later; safe defaults keep the page working)
+$feedPosts     = $feedPosts ?? [];
+$notices       = $notices ?? [];
+$events        = $events ?? [];
+$myArticles    = $myArticles ?? [];
+$notifications = $member['notifications'] ?? [];
+$nid = fn(array $n): string => (string)($n['id'] ?? md5(($n['title'] ?? '') . ($n['message'] ?? '')));
+$unread = count(array_filter($notifications, fn($n) => empty($n['read'])));
+
+$isPending = $member ? \App\Services\MembershipService::isPendingStatus($member['status'] ?? '') : false;
+$resolvedAvatar = $member ? \App\Services\MembershipService::getMemberAvatar($member) : \App\Services\MembershipService::DEFAULT_ORGANIZATION_DP;
+$defaultDp = asset(\App\Services\MembershipService::DEFAULT_ORGANIZATION_DP);
+$csrf = csrf_field();
+
+$status = $member['status'] ?? 'Active';
+$statusMap = [
+    'Lifetime Active' => ['#fef3c7', '#b45309', $t('👑 আজীবন সক্রিয়', '👑 Lifetime Active')],
+    'Payment Due'     => ['#fee2e2', '#b91c1c', $t('পেমেন্ট বকেয়া', 'Payment Due')],
+    'Suspended'       => ['#fef2f2', '#991b1b', $t('স্থগিত', 'Suspended')],
+];
+[$stBg, $stColor, $stLabel] = $statusMap[$status] ?? ['#dcfce7', '#15803d', $t('সক্রিয় সদস্য', 'Active Member')];
+$memberName = $member ? ($isBn ? ($member['name_bn'] ?? '') : ($member['name_en'] ?? '')) : '';
+$expiry = empty($member['expiry_date'] ?? '') ? $t('আজীবন / কোনো মেয়াদ নেই', 'Lifetime / No Expiry') : $member['expiry_date'];
 ?>
+<style>
+.spd{--ink:var(--primary-deep,#12324a);--line:var(--border-medium,#d8dee6);--sun:var(--accent-saffron,#C65A1E);--paper:#fff;background:var(--bg-surface,#f6f4ef);padding:24px 0 80px}
+.spd *{box-sizing:border-box}
+.spd-shell{display:grid;grid-template-columns:232px minmax(0,1fr) 296px;gap:22px;align-items:start;max-width:1280px;margin:0 auto;padding:0 16px}
+.spd-side,.spd-right{position:sticky;top:16px;display:flex;flex-direction:column;gap:14px}
+.spd-box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px}
+.spd-box h3{margin:0 0 10px;font-size:1.05rem;font-weight:800;color:var(--ink)}
+.spd-box h4{margin:0 0 8px;font-size:.92rem;font-weight:800;color:var(--ink)}
+.spd-muted{color:var(--text-muted,#64748b);font-size:.82rem}
+.spd-id{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.spd-av{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--line);flex-shrink:0}
+.spd-nav{display:flex;flex-direction:column;gap:2px}
+.spd-nav-g{font-size:.74rem;font-weight:700;color:var(--text-muted,#64748b);margin:12px 8px 4px}
+.spd-nav button{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:0;background:none;border-radius:8px;font:600 .9rem inherit;color:var(--ink);cursor:pointer;text-align:left}
+.spd-nav button:hover{background:#f1f5f9}
+.spd-nav button.on{background:#fff3e8;color:#9a3c0c;box-shadow:inset 3px 0 0 var(--sun)}
+.spd-badge{margin-left:auto;background:var(--sun);color:#fff;border-radius:999px;font-size:.7rem;padding:1px 7px}
+.spd-sec{display:none;flex-direction:column;gap:16px}.spd-sec.on{display:flex}
+.spd-compose{display:flex;gap:10px;align-items:center}
+.spd-compose a{flex:1;padding:10px 16px;border:1px solid var(--line);border-radius:999px;background:#f8fafc;color:var(--text-muted,#64748b);text-decoration:none;font-size:.9rem}
+.spd-post-h{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.spd-tag{font-size:.72rem;font-weight:800;padding:2px 9px;border-radius:999px;background:#e0f2fe;color:#0369a1}
+.spd-tag.official{background:#fff3e8;color:#9a3c0c}
+.spd-post-f{display:flex;gap:6px;border-top:1px solid var(--line);margin-top:12px;padding-top:8px}
+.spd-post-f button{flex:1;border:0;background:none;padding:6px;border-radius:6px;font-weight:600;font-size:.84rem;color:var(--text-muted,#64748b);cursor:pointer}
+.spd-post-f button:hover{background:#f1f5f9}
+.spd-empty{text-align:center;padding:26px 12px;color:var(--text-muted,#64748b);font-size:.9rem}
+.spd-notice{border-left:4px solid var(--sun);background:#fffaf5}
+.spd-grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.spd label{display:block;font-size:.8rem;font-weight:700;color:var(--ink);margin-bottom:3px}
+.spd input:not([type=checkbox]):not([type=file]),.spd select,.spd textarea{width:100%;padding:8px 11px;border:1px solid var(--line);border-radius:8px;font-size:.9rem;font-family:inherit;background:#fff}
+.spd input:focus,.spd select:focus,.spd textarea:focus,.spd-nav button:focus-visible{outline:2px solid var(--sun);outline-offset:1px}
+.spd-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:8px;border:1px solid var(--line);background:#f8fafc;font-weight:700;font-size:.88rem;color:var(--ink);text-decoration:none;cursor:pointer}
+.spd-btn.pri{background:var(--sun);border-color:#a64713;color:#fff}
+.spd-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.spd-table th{text-align:left;padding:9px 10px;background:var(--bg-surface,#f6f4ef);font-size:.76rem;color:var(--text-muted,#64748b)}
+.spd-table td{padding:10px;border-bottom:1px solid #eef1f5;vertical-align:middle}
+.spd-pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.74rem;font-weight:800}
+.spd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.spd-stats b{display:block;font-size:1.3rem;color:var(--ink)}
+.spd-card{border:2px solid #bfa054;border-radius:16px;padding:18px;color:#fff;position:relative;overflow:hidden;background:linear-gradient(175deg,#091723,#19354a 50%,#07131d)}
+.spd-bottom{display:none}
+.spd-notif{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:12px 10px;border:0;border-bottom:1px solid #eef1f5;background:none;font:inherit;cursor:pointer;border-radius:8px}
+.spd-notif:hover{background:#f8fafc}
+.spd-notif .spd-dot{width:9px;height:9px;border-radius:50%;background:transparent;margin-top:6px;flex-shrink:0}
+.spd-notif.unread{background:#fff8f1}.spd-notif.unread .spd-dot{background:var(--sun)}
+.spd-notif:not(.unread) strong{font-weight:600;color:var(--text-muted,#64748b)}
+@media(max-width:1100px){.spd-shell{grid-template-columns:200px minmax(0,1fr)}.spd-right{display:none}}
+@media(max-width:760px){
+ .spd-shell{grid-template-columns:1fr}.spd-side{display:none}
+ .spd-bottom{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;background:#fff;border-top:1px solid var(--line);padding:4px 0 env(safe-area-inset-bottom,0)}
+ .spd-bottom button{flex:1;border:0;background:none;padding:8px 2px;font-size:.68rem;font-weight:700;color:var(--text-muted,#64748b);display:flex;flex-direction:column;align-items:center;gap:2px}
+ .spd-bottom button.on{color:var(--sun)}.spd-bottom span{font-size:1.25rem}
+ .spd-stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
 
-<section class="section" style="padding: var(--space-2xl) 0 var(--space-3xl); background: var(--bg-surface);">
-    <div class="container" style="max-width: 1140px;">
+<section class="spd">
+<div class="container" style="max-width:1280px;">
 
-        <!-- Member Quick Switcher for Pair-Programming & Evaluation -->
-        <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: var(--space-xl); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow-sm);">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.2rem;">👤</span>
-                <div>
-                    <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;"><?= $isBn ? 'সদস্য টেস্ট সুইচবার:' : 'Member Switcher (Demo):' ?></span>
-                    <strong style="color: var(--primary-deep); font-size: 0.92rem; margin-left: 4px;"><?= e($isBn ? ($member['name_bn'] ?? '') : ($member['name_en'] ?? '')) ?> (<?= e($member['member_code'] ?? '') ?>)</strong>
-                </div>
-            </div>
+<?php if ($success = \App\Core\Session::getFlash('success')): ?>
+  <div class="spd-box" style="background:#f0fdf4;border-color:#bbf7d0;color:#166534;margin:0 16px 14px;padding:12px 16px;">✓ <?= e($success) ?></div>
+<?php endif; ?>
+<?php if ($error = \App\Core\Session::getFlash('error')): ?>
+  <div class="spd-box" style="background:#fef2f2;border-color:#fecaca;color:#991b1b;margin:0 16px 14px;padding:12px 16px;">⚠️ <?= e($error) ?></div>
+<?php endif; ?>
 
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <form method="GET" action="<?= url('/membership/dashboard', $currentLocale) ?>" style="margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <select name="as" onchange="this.form.submit()" style="padding: 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-medium); font-size: 0.85rem; background: #f8fafc; font-weight: 600;">
-                        <?php foreach ($allMembers as $m): ?>
-                            <option value="<?= e($m['member_code']) ?>" <?= ($member['member_code'] ?? '') === $m['member_code'] ? 'selected' : '' ?>>
-                                <?= e($m['member_code']) ?> — <?= e($m['name_bn']) ?> (<?= e($m['category_id']) ?>, <?= e($m['status']) ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <noscript><button type="submit" class="btn btn-sm btn-secondary"><?= $isBn ? 'পরিবর্তন' : 'Switch' ?></button></noscript>
-                </form>
-                <a href="<?= url('/membership/logout', $currentLocale) ?>" class="btn btn-sm btn-secondary" style="border-color:#fca5a5; color:#b91c1c; background:#fff1f2; font-weight:700; padding:6px 12px; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" title="<?= $isBn ? 'সদস্য সেশন থেকে লগআউট করুন' : 'Logout of member session' ?>">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                    <span><?= $isBn ? 'লগআউট' : 'Logout' ?></span>
-                </a>
-            </div>
+<?php if (!$member): ?>
+  <div class="spd-box" style="text-align:center;padding:48px;max-width:560px;margin:0 auto;">
+    <h2><?= $t('সদস্য রেকর্ড পাওয়া যায়নি', 'No Member Profile Found') ?></h2>
+    <p class="spd-muted"><?= $t('অনুগ্রহ করে নতুন সদস্যপদ আবেদন সম্পন্ন করুন।', 'Please complete a membership application.') ?></p>
+    <a href="<?= url('/membership/apply', $currentLocale) ?>" class="spd-btn pri"><?= $t('আবেদন করুন', 'Apply Now') ?></a>
+  </div>
+
+<?php elseif ($isPending): ?>
+  <?php
+    $recentPayment = null;
+    foreach ($payments as $p) {
+        if (($p['member_code'] ?? '') === ($member['member_code'] ?? '') || ($p['member_id'] ?? '') === ($member['id'] ?? '')) { $recentPayment = $p; break; }
+    }
+    $steps = [
+      [$t('১. আবেদন ও TrxID জমা', '1. Application'), $t('সফলভাবে গৃহীত', 'Completed'), 'done'],
+      [$t('২. প্রশাসন কর্তৃক যাচাই', '2. Verification'), $t('বর্তমানে প্রক্রিয়াধীন', 'In Progress'), 'now'],
+      [$t('৩. অনুমোদন ও সক্রিয়করণ', '3. Approval'), $t('যাচাই শেষে কার্যকর', 'Pending'), 'wait'],
+      [$t('৪. স্মার্ট কার্ড ও প্রোফাইল', '4. Active Profile'), $t('লগইনের পর উন্মুক্ত', 'Unlocked on Login'), 'wait'],
+    ];
+    $sty = ['done'=>'background:#f0fdf4;border:1px solid #86efac;color:#166534','now'=>'background:#fffbeb;border:1.5px solid #f59e0b;color:#92400e','wait'=>'background:#f8fafc;border:1px dashed #cbd5e1;color:#64748b'];
+  ?>
+  <div class="spd-box" style="max-width:880px;margin:0 auto;padding:30px 34px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:22px;">
+      <div class="spd-id" style="margin:0">
+        <img class="spd-av" style="width:58px;height:58px;border-color:#f59e0b" src="<?= asset($resolvedAvatar) ?>" alt="" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+        <div>
+          <strong style="font-size:1.25rem;color:var(--ink)"><?= e($memberName) ?></strong>
+          <code style="margin-left:6px;background:#f1f5f9;padding:2px 8px;border-radius:4px"><?= e($member['member_code']) ?></code>
+          <div class="spd-muted"><?= e($isBn ? ($category['name_bn'] ?? '') : ($category['name_en'] ?? '')) ?> • <b style="color:#b45309"><?= e($isBn ? ($plan['name_bn'] ?? '') : ($plan['name_en'] ?? '')) ?></b></div>
         </div>
-
-        <!-- Flash alerts -->
-        <?php if ($success = \App\Core\Session::getFlash('success')): ?>
-            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); margin-bottom: var(--space-xl); display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.3rem;">✓</span>
-                <div><?= e($success) ?></div>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($error = \App\Core\Session::getFlash('error')): ?>
-            <div style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); margin-bottom: var(--space-xl); display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.3rem;">⚠️</span>
-                <div><?= e($error) ?></div>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!$member): ?>
-            <div style="text-align: center; padding: var(--space-3xl); background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-medium);">
-                <h2><?= $isBn ? 'সদস্য রেকর্ড পাওয়া যায়নি' : 'No Member Profile Found' ?></h2>
-                <p style="color: var(--text-muted); margin-bottom: var(--space-lg);"><?= $isBn ? 'অনুগ্রহ করে নতুন সদস্যপদ আবেদন সম্পন্ন করুন।' : 'Please submit a new membership application.' ?></p>
-                <a href="<?= url('/membership/apply', $currentLocale) ?>" class="btn btn-primary"><?= $isBn ? 'আবেদন ফরম' : 'Apply Now' ?></a>
-            </div>
-        <?php else: ?>
-
-            <!-- Member Identity Banner -->
-            <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: var(--space-lg);">
-                    <div style="display: flex; gap: var(--space-lg); align-items: center;">
-                        <div style="width: 76px; height: 76px; border-radius: var(--radius-lg); background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; border: 2px solid var(--border-medium); overflow: hidden; flex-shrink: 0;">
-                            <?php if (!empty($member['avatar'])): ?>
-                                <img src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
-                            <?php else: ?>
-                                <?= $member['category_id'] === 'STUDENT' ? '🎓' : '💼' ?>
-                            <?php endif; ?>
-                        </div>
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                <h1 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-deep); margin: 0;">
-                                    <?= e($isBn ? $member['name_bn'] : $member['name_en']) ?>
-                                </h1>
-                                <span style="font-family: monospace; font-size: 0.95rem; font-weight: 800; background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: var(--radius-full); border: 1px solid #bae6fd;">
-                                    <?= e($member['member_code']) ?>
-                                </span>
-                            </div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
-                                <?= e($isBn ? ($category['name_bn'] ?? '') : ($category['name_en'] ?? '')) ?> • 
-                                <span style="font-weight: 700; color: #b45309;"><?= e($isBn ? ($plan['name_bn'] ?? '') : ($plan['name_en'] ?? '')) ?></span>
-                            </div>
-                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
-                                <?= $isBn ? 'যোগদানের তারিখ:' : 'Joined:' ?> <?= e($member['joined_at'] ?? '2024') ?> | 
-                                <?= e($member['email'] ?? '') ?> | <?= e($member['phone'] ?? '') ?>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Badge & Action -->
-                    <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-                        <?php
-                            $status = $member['status'] ?? 'Active';
-                            $statusBg = '#dcfce7'; $statusColor = '#15803d'; $statusLabel = $isBn ? 'সক্রিয় সদস্য (Active)' : 'Active Member';
-                            if ($status === 'Lifetime Active') {
-                                $statusBg = '#fef3c7'; $statusColor = '#b45309'; $statusLabel = $isBn ? '👑 আজীবন সক্রিয় (Lifetime Active)' : '👑 Lifetime Active';
-                            } elseif ($status === 'Payment Due') {
-                                $statusBg = '#fee2e2'; $statusColor = '#b91c1c'; $statusLabel = $isBn ? 'পেমেন্ট বকেয়া (Payment Due)' : 'Payment Due';
-                            } elseif ($status === 'Pending') {
-                                $statusBg = '#f1f5f9'; $statusColor = '#475569'; $statusLabel = $isBn ? 'অনুমোদনাধীন (Pending)' : 'Pending Review';
-                            } elseif ($status === 'Suspended') {
-                                $statusBg = '#fef2f2'; $statusColor = '#991b1b'; $statusLabel = $isBn ? 'স্থগিত (Suspended)' : 'Suspended';
-                            }
-                        ?>
-                        <span style="background: <?= $statusBg ?>; color: <?= $statusColor ?>; padding: 6px 16px; border-radius: var(--radius-full); font-weight: 800; font-size: 0.85rem; border: 1px solid currentColor;">
-                            ● <?= $statusLabel ?>
-                        </span>
-
-                        <div style="font-size: 0.82rem; color: var(--text-muted);">
-                            <?= $isBn ? 'মেয়াদ উত্তীর্ণ:' : 'Valid Until:' ?> 
-                            <strong style="color: var(--primary-deep);"><?= empty($member['expiry_date']) ? ($isBn ? 'আজীবন / কোনো মেয়াদ নেই' : 'Lifetime / No Expiry') : e($member['expiry_date']) ?></strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Two Columns: Left = Digital Card & Actions, Right = Details, History & Ledger -->
-            <div style="display: grid; grid-template-columns: 380px 1fr; gap: var(--space-2xl); align-items: start;">
-                
-                <!-- Left Column: Digital Card Presentation -->
-                <div>
-                    <!-- Digital Membership Card Component -->
-                    <div id="printableCard" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 18px; padding: 24px; color: #ffffff; box-shadow: 0 16px 36px rgba(15, 23, 42, 0.25); border: 1px solid rgba(255,255,255,0.12); position: relative; overflow: hidden; margin-bottom: var(--space-lg);">
-                        <!-- Card Header -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS" style="height: 36px; width: auto;">
-                                <div>
-                                    <div style="font-size: 0.85rem; font-weight: 800; letter-spacing: 0.5px; color: #ffffff;">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div>
-                                    <div style="font-size: 0.65rem; color: #94a3b8; letter-spacing: 0.8px;">SANATAN PHILOSOPHY & SCRIPTURE</div>
-                                </div>
-                            </div>
-                            <span style="background: rgba(255,255,255,0.12); color: #f8fafc; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: var(--radius-full);">
-                                SPS CARD
-                            </span>
-                        </div>
-
-                        <!-- Card Body -->
-                        <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 20px;">
-                            <div style="width: 60px; height: 60px; border-radius: 10px; background: #334155; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid rgba(255,255,255,0.2); overflow: hidden; flex-shrink: 0;">
-                                <?php if (!empty($member['avatar'])): ?>
-                                    <img src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
-                                <?php else: ?>
-                                    👤
-                                <?php endif; ?>
-                            </div>
-                            <div>
-                                <div style="font-size: 1.15rem; font-weight: 800; color: #ffffff; line-height: 1.2;">
-                                    <?= e($member['name_bn']) ?>
-                                </div>
-                                <div style="font-size: 0.8rem; color: #94a3b8;">
-                                    <?= e($member['name_en']) ?>
-                                </div>
-                                <div style="font-size: 0.9rem; color: #38bdf8; font-weight: 800; font-family: monospace; margin-top: 4px;">
-                                    ID: <?= e($member['member_code']) ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="background: rgba(255,255,255,0.06); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; font-size: 0.8rem;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="color: #94a3b8;"><?= $isBn ? 'ক্যাটাগরি:' : 'Category:' ?></span>
-                                <strong style="color: #f1f5f9;"><?= e($isBn ? ($category['name_bn'] ?? $member['category_id']) : ($category['name_en'] ?? $member['category_id'])) ?></strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span style="color: #94a3b8;"><?= $isBn ? 'প্ল্যান:' : 'Plan:' ?></span>
-                                <strong style="color: #fde047;"><?= e($isBn ? ($plan['name_bn'] ?? $member['plan_id']) : ($plan['name_en'] ?? $member['plan_id'])) ?></strong>
-                            </div>
-                        </div>
-
-                        <!-- Card Footer & QR Code -->
-                        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.12);">
-                            <div>
-                                <div style="font-size: 0.65rem; color: #94a3b8; text-transform: uppercase;"><?= $isBn ? 'মেয়াদ / স্থায়িত্ব:' : 'Validity:' ?></div>
-                                <div style="font-size: 0.85rem; font-weight: 800; color: #4ade80;">
-                                    <?= empty($member['expiry_date']) ? 'LIFETIME ACTIVE' : e($member['expiry_date']) ?>
-                                </div>
-                            </div>
-
-                            <!-- Live Authentic QR Code Link with Center SPS Logo -->
-                            <div style="text-align: right;">
-                                <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; background: #ffffff; padding: 4px; border-radius: 8px; width: 50px; height: 50px; box-sizing: border-box; box-shadow: 0 2px 8px rgba(0,0,0,0.25); text-decoration: none;" title="<?= $isBn ? 'অনলাইন কিউআর যাচাই পেজ (স্ক্যান করুন)' : 'Scan for live online verification' ?>">
-                                    <img id="dashboardCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR" style="width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 4px;">
-                                </a>
-                                <div style="font-size: 0.62rem; color: #94a3b8; margin-top: 3px; font-weight: 700;">QR VERIFY</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card Action Buttons -->
-                    <div style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-xl);">
-                        <a href="<?= url('/membership/card/print?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-secondary btn-sm" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            🖨️ <?= $isBn ? 'কার্ড প্রিন্ট / ডাউনলোড' : 'Print / Download Card' ?>
-                        </a>
-                        <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
-                            🔗 <?= $isBn ? 'কিউআর যাচাই' : 'QR Verify' ?>
-                        </a>
-                    </div>
-
-                    <!-- Member Renewal / Payment Form Box -->
-                    <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: var(--space-lg); margin-bottom: var(--space-xl); box-shadow: var(--shadow-sm);">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                            <h3 style="font-size: 1.05rem; font-weight: 800; color: var(--primary-deep); margin: 0;">
-                                💳 <?= $isBn ? 'সদস্যপদ ফি নবায়ন / আপগ্রেড' : 'Renew / Upgrade' ?>
-                            </h3>
-                            <span style="font-size: 0.75rem; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: var(--radius-full); font-weight: 700;">
-                                🪙 Finance Desk
-                            </span>
-                        </div>
-                        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: var(--space-md); line-height: 1.4;">
-                            <?= $isBn 
-                                ? 'নিয়মিত মাসিক বা বাৎসরিক ফি প্রদান করে আপনার মেম্বারশিপ সক্রিয় রাখুন।' 
-                                : 'Pay regular monthly or annual fees to keep your membership active.' ?>
-                        </p>
-
-                        <div style="background: linear-gradient(135deg, #fdf2f8 0%, #fff1f2 100%); border: 1px solid #fbcfe8; border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; color: #831843;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
-                                <strong style="color: #9d174d;">📱 <?= $isBn ? 'অফিসিয়াল বিকাশ নম্বর:' : 'Official bKash:' ?></strong>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <code style="background: #ffffff; padding: 2px 6px; border-radius: 4px; font-weight: 800; color: #be185d;">01700-000000</code>
-                                    <button type="button" onclick="navigator.clipboard && navigator.clipboard.writeText('01700-000000'); alert('কপি করা হয়েছে: 01700-000000');" style="border: 1px solid #fbcfe8; background: #fff; border-radius: 4px; font-size: 0.7rem; padding: 1px 6px; cursor: pointer; color: #9d174d;">
-                                        📋 কপি
-                                    </button>
-                                </div>
-                            </div>
-                            <div style="font-size: 0.75rem; color: #9d174d; line-height: 1.4;">
-                                <?= $isBn 
-                                    ? 'বিকাশ অ্যাপ থেকে Send Money করার পর TrxID এবং সেন্ট মানি কনফার্মেশন স্ক্রিনশট (Sent SS) নিচে আপলোড করুন।' 
-                                    : 'Send fee via bKash Send Money, enter TrxID, and upload the Sent SS confirmation.' ?>
-                            </div>
-                        </div>
-
-                        <!-- Finance Officer Verification Advisory -->
-                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.8rem; color: #166534; display: flex; gap: 8px; align-items: flex-start;">
-                            <span style="font-size: 1.1rem; line-height: 1;">🪙</span>
-                            <div>
-                                <strong><?= $isBn ? 'ফাইন্যান্স অফিসার (কোষাধ্যক্ষ) যাচাইকরণ:' : 'Finance Officer (Treasurer) Verification:' ?></strong>
-                                <?= $isBn 
-                                    ? 'মেম্বারশিপের প্রতিটি পেমেন্ট সরাসরি ফাইন্যান্স অফিসার (কোষাধ্যক্ষ - জয় চক্রবর্তী) অডিট করে ভেরিফাই করবেন। সুপার অ্যাডমিন ও অন্য ২ জন অ্যাডমিন সার্বক্ষণিক এটি পর্যবেক্ষণ ও অডিট করছেন।' 
-                                    : 'Payments are audited & verified solely by the Finance Officer (Joy Chakraborty) under Super Admin & Admins monitoring.' ?>
-                            </div>
-                        </div>
-
-                        <form action="<?= url('/membership/payment', $currentLocale) ?>" method="POST" enctype="multipart/form-data" id="dashPaymentForm">
-                            <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
-                            <input type="hidden" name="member_id" value="<?= e($member['id']) ?>">
-                            <input type="hidden" name="payment_screenshot_url" id="dash_preset_screenshot" value="assets/images/payments/bkash-success-sample.svg">
-
-                            <div style="margin-bottom: var(--space-sm);">
-                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                    <?= $isBn ? 'পেমেন্ট ধরন' : 'Payment Type' ?>
-                                </label>
-                                <select name="payment_type" class="form-select" style="width: 100%; padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
-                                    <option value="monthly"><?= $isBn ? 'মাসিক সদস্যপদ নবায়ন' : 'Monthly Renewal' ?></option>
-                                    <option value="yearly"><?= $isBn ? 'বাৎসরিক প্ল্যান (৳১,০০০ / ১ বছর)' : 'Yearly Renewal (৳1,000)' ?></option>
-                                    <option value="lifetime"><?= $isBn ? 'আজীবন সদস্যপদ আপগ্রেড (৳১০,০০০)' : 'Upgrade to Lifetime (৳10,000)' ?></option>
-                                </select>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xs); margin-bottom: var(--space-sm);">
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'মাধ্যম' : 'Method' ?>
-                                    </label>
-                                    <select name="payment_method" id="dash_payment_method" class="form-select" style="width: 100%; padding: 8px 10px; font-size: 0.85rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md); font-weight: 700;">
-                                        <option value="bKash" selected>🌸 bKash (বিকাশ)</option>
-                                        <option value="Nagad">🔥 Nagad (নগদ)</option>
-                                        <option value="Rocket">🚀 Rocket (রকেট)</option>
-                                        <option value="Bank">🏦 Bank Transfer</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'টাকার পরিমাণ' : 'Amount' ?>
-                                    </label>
-                                    <input type="number" name="amount" placeholder="<?= $member['category_id'] === 'STUDENT' ? '50' : '100' ?>" style="width: 100%; padding: 8px 10px; font-size: 0.85rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xs); margin-bottom: var(--space-sm);">
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'প্রেরক নম্বর *' : 'Sender Phone *' ?>
-                                    </label>
-                                    <input type="text" name="sender_number" required value="<?= e($member['phone'] ?? '') ?>" placeholder="01XXXXXXXXX" style="width: 100%; padding: 8px 10px; font-size: 0.85rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md); font-family: monospace;">
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'কার একাউন্ট / নাম' : 'Sender Name' ?>
-                                    </label>
-                                    <input type="text" name="sender_name" placeholder="<?= $isBn ? 'উদাঃ অমিত সেন' : 'Sender account name' ?>" style="width: 100%; padding: 8px 10px; font-size: 0.85rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
-                                </div>
-                            </div>
-
-                            <!-- Provider TrxID Field -->
-                            <div style="margin-bottom: var(--space-sm);">
-                                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                    <?= $isBn ? 'ট্রানজেকশন আইডি (TrxID) *' : 'Transaction ID (TrxID) *' ?>
-                                    <span style="font-size: 0.72rem; color: #dc2626; font-weight: 800;">(বাধ্যতামূলক)</span>
-                                </label>
-                                <div style="display: flex; gap: 6px;">
-                                    <input type="text" name="trx_id" id="dash_trx_id" required placeholder="e.g. BKA8X92JQK" style="flex: 1; padding: 8px 12px; font-size: 0.9rem; font-family: monospace; font-weight: 900; border: 1.5px solid #fdba74; border-radius: var(--radius-md); text-transform: uppercase; background: #fffaf5; color: #9a3412;">
-                                    <button type="button" onclick="document.getElementById('dash_trx_id').value = 'BKA' + Math.random().toString(36).substring(2, 8).toUpperCase();" class="btn btn-sm btn-ghost" style="border: 1px solid var(--border-medium); font-size: 0.75rem; padding: 4px 8px; white-space: nowrap;" title="<?= $isBn ? 'টেস্ট TrxID জেনারেট করুন' : 'Generate Demo TrxID' ?>">
-                                        🎲 টেস্ট TrxID
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Payment Reference & Time -->
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-xs); margin-bottom: var(--space-sm);">
-                                <div>
-                                    <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'রেফারেন্স নোট' : 'Reference' ?>
-                                    </label>
-                                    <input type="text" name="payment_reference" placeholder="<?= $isBn ? 'উদাঃ নবায়ন ফি' : 'e.g. Renewal' ?>" style="width: 100%; padding: 6px 10px; font-size: 0.82rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.78rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 2px;">
-                                        <?= $isBn ? 'পেমেন্ট সময়' : 'Time' ?>
-                                    </label>
-                                    <input type="text" name="payment_time" value="<?= date('Y-m-d H:i') ?>" style="width: 100%; padding: 6px 10px; font-size: 0.82rem; border: 1px solid var(--border-medium); border-radius: var(--radius-md); font-family: monospace;">
-                                </div>
-                            </div>
-
-                            <!-- Payment Screenshot Upload & Live Preview -->
-                            <div style="margin-bottom: var(--space-md);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                                    <label style="font-size: 0.8rem; font-weight: 800; color: #9d174d; margin: 0;">
-                                        📸 <?= $isBn ? 'সেন্ট মানি স্ক্রিনশট (Sent SS) *' : 'Sent Money Screenshot (Sent SS) *' ?>
-                                    </label>
-                                    <span style="font-size: 0.7rem; background: #be185d; color: #fff; padding: 1px 8px; border-radius: 999px; font-weight: 800;">
-                                        <?= $isBn ? 'বিকাশে আবশ্যক' : 'bKash Mandatory' ?>
-                                    </span>
-                                </div>
-                                
-                                <div style="border: 2px dashed #f472b6; border-radius: 8px; padding: 12px; text-align: center; background: #fdf2f8; position: relative;">
-                                    <input type="file" name="payment_screenshot" id="dash_screenshot_file" accept="image/*" onchange="previewDashScreenshot(this)" style="display: none;">
-                                    
-                                    <div id="dash_screenshot_empty" onclick="document.getElementById('dash_screenshot_file').click();" style="cursor: pointer; padding: 6px 0;">
-                                        <div style="font-size: 1.5rem; color: #be185d;">📸</div>
-                                        <div style="font-size: 0.82rem; font-weight: 700; color: #9d174d; margin-top: 2px;">
-                                            <?= $isBn ? 'স্ক্রিনশট আপলোড করতে ক্লিক করুন' : 'Click to Upload Sent SS' ?>
-                                        </div>
-                                        <div style="font-size: 0.72rem; color: var(--text-muted);">PNG, JPG, WebP অথবা SVG</div>
-                                    </div>
-
-                                    <!-- Live Preview Container -->
-                                    <div id="dash_screenshot_preview_box" style="display: block; position: relative; margin-top: 6px;">
-                                        <img id="dash_screenshot_preview_img" src="<?= asset('assets/images/payments/bkash-success-sample.svg') ?>" alt="Payment Receipt" style="max-height: 130px; max-width: 100%; border-radius: 6px; border: 1px solid var(--border-medium); box-shadow: 0 2px 6px rgba(0,0,0,0.06); object-fit: contain; background: #fff;">
-                                        <div style="margin-top: 6px; display: flex; justify-content: center; gap: 8px;">
-                                            <button type="button" onclick="document.getElementById('dash_screenshot_file').click();" class="btn btn-sm btn-ghost" style="padding: 2px 8px; font-size: 0.72rem; border: 1px solid var(--border-medium);">
-                                                🔄 <?= $isBn ? 'ছবি পরিবর্তন' : 'Change' ?>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Demo Screenshot Presets -->
-                                    <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #fbcfe8; display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;">
-                                        <span style="font-size: 0.72rem; color: #9d174d;"><?= $isBn ? 'টেস্ট স্যাম্পল:' : 'Demo Presets:' ?></span>
-                                        <button type="button" onclick="setDashPresetScreenshot('assets/images/payments/bkash-success-sample.svg')" class="btn btn-xs btn-ghost" style="font-size: 0.7rem; padding: 2px 6px; border: 1px solid #fbcfe8; color: #be185d; background: #fff;">
-                                            🌸 bKash রসিদ
-                                        </button>
-                                        <button type="button" onclick="setDashPresetScreenshot('assets/images/payments/nagad-success-sample.svg')" class="btn btn-xs btn-ghost" style="font-size: 0.7rem; padding: 2px 6px; border: 1px solid #fed7aa; color: #c2410c; background: #fff;">
-                                            🔥 Nagad রসিদ
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-sm" style="width: 100%; font-weight: 800; padding: 11px; font-size: 0.92rem; box-shadow: 0 4px 10px rgba(180, 83, 9, 0.2);">
-                                🚀 <?= $isBn ? 'পেমেন্ট রসিদ সাবমিট করুন' : 'Submit Payment' ?>
-                            </button>
-                        </form>
-                    </div>
-
-                    <script>
-                    function previewDashScreenshot(input) {
-                        if (input.files && input.files[0]) {
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                document.getElementById('dash_screenshot_preview_img').src = e.target.result;
-                                document.getElementById('dash_screenshot_preview_box').style.display = 'block';
-                                document.getElementById('dash_preset_screenshot').value = '';
-                            };
-                            reader.readAsDataURL(input.files[0]);
-                        }
-                    }
-
-                    function setDashPresetScreenshot(path) {
-                        document.getElementById('dash_screenshot_preview_img').src = '<?= asset('') ?>' + path;
-                        document.getElementById('dash_preset_screenshot').value = path;
-                        document.getElementById('dash_screenshot_file').value = '';
-                    }
-                    </script>
-
-                    <!-- Member Quick Shortcuts: Blog, Volunteer, Library -->
-                    <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-lg); padding: var(--space-lg);">
-                        <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--primary-deep); margin: 0 0 var(--space-sm);">
-                            <?= $isBn ? 'সদস্য এক্টিভিটিজ ও সুযোগ' : 'Member Shortcuts' ?>
-                        </h4>
-                        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem;">
-                            <a href="<?= url('/blog/write', $currentLocale) ?>" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-radius: var(--radius-md); text-decoration: none; color: var(--primary-deep); font-weight: 600;">
-                                <span>✍️ <?= $isBn ? 'আমার ব্লগ ও নতুন লেখা' : 'Write a Blog Post' ?></span>
-                                <span style="color: var(--text-muted);">→</span>
-                            </a>
-                            <a href="<?= url('/activities', $currentLocale) ?>" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-radius: var(--radius-md); text-decoration: none; color: var(--primary-deep); font-weight: 600;">
-                                <span>🚩 <?= $isBn ? 'সেবামূলক কার্যক্রম ও প্রকল্প' : 'SPS Activities & Projects' ?></span>
-                                <span style="color: var(--text-muted);">→</span>
-                            </a>
-                            <a href="<?= url('/library', $currentLocale) ?>" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-surface); border-radius: var(--radius-md); text-decoration: none; color: var(--primary-deep); font-weight: 600;">
-                                <span>📚 <?= $isBn ? 'গ্রন্থাগার ও শাস্ত্র সংগ্রহ' : 'Scripture Library' ?></span>
-                                <span style="color: var(--text-muted);">→</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Right Column: Transition Engine, History & Payment Ledger -->
-                <div>
-                    <!-- Student -> Earning Category Transition Card (if student) -->
-                    <?php if ($member['category_id'] === 'STUDENT'): ?>
-                        <div style="background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%); border: 2px solid #fdba74; border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); position: relative;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-md); flex-wrap: wrap;">
-                                <div>
-                                    <div style="display: inline-flex; align-items: center; gap: 6px; background: #c2410c; color: #ffffff; padding: 2px 10px; border-radius: var(--radius-full); font-size: 0.72rem; font-weight: 800; margin-bottom: 6px;">
-                                        🎓 ➔ 💼 <?= $isBn ? 'ক্যাটাগরি রূপান্তর ব্যবস্থা' : 'Category Transition' ?>
-                                    </div>
-                                    <h3 style="font-size: 1.25rem; font-weight: 800; color: #9a3412; margin: 0 0 6px;">
-                                        <?= $isBn ? 'শিক্ষার্থী থেকে উপার্জনশীল সদস্যপদে রূপান্তর' : 'Transition to Earning Member' ?>
-                                    </h3>
-                                    <p style="color: #7c2d12; font-size: 0.88rem; line-height: 1.5; margin: 0 0 var(--space-md); max-width: 580px;">
-                                        <?= $isBn 
-                                            ? 'আপনি কি পড়াশোনা সম্পন্ন করে কর্মজীবনে বা পেশায় পদার্পণ করেছেন? আপনার স্থায়ী মেম্বার আইডি ('.$member['member_code'].') অক্ষুণ্ণ রেখে সিস্টেমে ক্যাটাগরি রূপান্তর সম্পন্ন করুন।' 
-                                            : 'Graduated and entered professional life? Transition smoothly while keeping your permanent Member ID ('.$member['member_code'].').' ?>
-                                    </p>
-                                </div>
-
-                                <button onclick="document.getElementById('transition-form-box').style.display = document.getElementById('transition-form-box').style.display === 'none' ? 'block' : 'none';" class="btn btn-primary btn-sm" style="background: #c2410c; border-color: #c2410c; font-weight: 800;">
-                                    <?= $isBn ? 'রূপান্তর আবেদন করুন ➔' : 'Apply Transition ➔' ?>
-                                </button>
-                            </div>
-
-                            <!-- Expandable Transition Form -->
-                            <div id="transition-form-box" style="display: none; background: #ffffff; border-radius: var(--radius-lg); padding: var(--space-lg); margin-top: var(--space-md); border: 1px solid #fed7aa;">
-                                <form action="<?= url('/membership/transition', $currentLocale) ?>" method="POST">
-                                    <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
-                                    <input type="hidden" name="member_id" value="<?= e($member['id']) ?>">
-                                    <input type="hidden" name="new_category" value="EARNING">
-
-                                    <div style="margin-bottom: var(--space-md);">
-                                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                            <?= $isBn ? 'পরবর্তী মেম্বারশিপ প্ল্যান' : 'Select New Plan' ?>
-                                        </label>
-                                        <select name="new_plan" class="form-select" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
-                                            <option value="EARNING_MONTHLY"><?= $isBn ? 'উপার্জনশীল সদস্য - মাসিক (৳১০০/মাস)' : 'Earning Member - Monthly (৳100/mo)' ?></option>
-                                            <option value="YEARLY"><?= $isBn ? 'বাৎসরিক সদস্যপদ (৳১,০০০/বছর)' : 'Yearly Member (৳1,000/yr)' ?></option>
-                                            <option value="LIFETIME"><?= $isBn ? 'আজীবন সদস্যপদ (৳১০,০০০)' : 'Lifetime Member (৳10,000)' ?></option>
-                                        </select>
-                                    </div>
-
-                                    <div style="margin-bottom: var(--space-md);">
-                                        <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                            <?= $isBn ? 'রূপান্তরের কারণ / বর্তমান কর্মবিবরণ' : 'Reason / Professional Update' ?>
-                                        </label>
-                                        <textarea name="reason" rows="2" placeholder="<?= $isBn ? 'উদাঃ শিক্ষাজীবন সমাপ্ত করে চাকরি/ব্যবসায় যোগদান হেতু উপার্জনশীল সদস্যপদে রূপান্তর।' : 'Graduated and entered professional employment.' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-md); font-size: 0.88rem;"></textarea>
-                                    </div>
-
-                                    <button type="submit" class="btn btn-primary btn-sm" style="background: #c2410c; border-color: #c2410c; font-weight: 800;">
-                                        <?= $isBn ? 'রূপান্তর নিশ্চিত করুন' : 'Confirm Transition' ?>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Member Profile Information & Anytime Self-Update Card -->
-                    <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);" id="member-profile-update-card">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-md); flex-wrap: wrap; gap: 8px;">
-                            <div>
-                                <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0 0 4px; display: flex; align-items: center; gap: 8px;">
-                                    <span>👤</span>
-                                    <span><?= $isBn ? 'আমার প্রোফাইল ও তথ্য হালনাগাদ' : 'My Profile & Information Update' ?></span>
-                                </h3>
-                                <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.4;">
-                                    <?= $isBn 
-                                        ? 'আপনার নাম, মোবাইল, ইমেইল, ঠিকানা ও কর্মবিবরণ যে কোনো সময় হালনাগাদ করতে পারেন।' 
-                                        : 'Update your personal details, contact info, address and career records anytime.' ?>
-                                </p>
-                            </div>
-                            <span style="font-size: 0.76rem; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 3px 10px; border-radius: var(--radius-full); font-weight: 700;">
-                                ID: <?= e($member['member_code']) ?> (<?= $isBn ? 'স্থায়ী কোড' : 'Permanent ID' ?>)
-                            </span>
-                        </div>
-
-                        <form action="<?= url('/membership/profile/update', $currentLocale) ?>" method="POST" id="memberProfileForm" enctype="multipart/form-data">
-                            <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
-                            <input type="hidden" name="member_code" value="<?= e($member['member_code']) ?>">
-
-                            <!-- Photo / Avatar Upload Section -->
-                            <div style="background: #f8fafc; border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg); display: flex; gap: var(--space-lg); align-items: center; flex-wrap: wrap;">
-                                <div style="position: relative; width: 84px; height: 84px; border-radius: var(--radius-md); background: #e2e8f0; border: 2px dashed #94a3b8; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" id="avatarPreviewContainer">
-                                    <?php if (!empty($member['avatar'])): ?>
-                                        <img id="avatarPreviewImg" src="<?= asset($member['avatar']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
-                                        <span id="avatarPreviewPlaceholder" style="font-size: 2.2rem; display: none;">👤</span>
-                                    <?php else: ?>
-                                        <img id="avatarPreviewImg" src="" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; display: none;">
-                                        <span id="avatarPreviewPlaceholder" style="font-size: 2.2rem;">👤</span>
-                                    <?php endif; ?>
-                                </div>
-                                <div style="flex: 1; min-width: 240px;">
-                                    <label for="mem_avatar_file" style="display: block; font-size: 0.88rem; font-weight: 800; color: var(--primary-deep); margin-bottom: 4px;">
-                                        📷 <?= $isBn ? 'সদস্য ছবি / আইডি কার্ডের ফটো আপলোড' : 'Upload Member Photo / ID Picture' ?>
-                                    </label>
-                                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px;">
-                                        <?= $isBn ? 'পাসপোর্ট সাইজ বা স্পষ্ট ছবি দিন (JPG, PNG, WebP — সর্বোচ্চ ৫MB)। এই ছবিটি ডিজিটাল সদস্য কার্ড ও প্রিন্ট কপিতে প্রদর্শিত হবে।' : 'Passport size or portrait photo (JPG, PNG, WebP — max 5MB). Featured on your official ID card.' ?>
-                                    </p>
-                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                        <input type="file" id="mem_avatar_file" name="avatar_file" accept="image/png, image/jpeg, image/webp" style="font-size: 0.85rem;" onchange="previewAvatar(this)">
-                                        <input type="hidden" id="mem_avatar_preset" name="avatar" value="<?= e($member['avatar'] ?? '') ?>">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
-                                <div>
-                                    <label for="mem_name_bn" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'পূর্ণ নাম (বাংলা) *' : 'Full Name (Bengali) *' ?>
-                                    </label>
-                                    <input type="text" id="mem_name_bn" name="name_bn" value="<?= e($member['name_bn'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-
-                                <div>
-                                    <label for="mem_name_en" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'পূর্ণ নাম (English) *' : 'Full Name (English) *' ?>
-                                    </label>
-                                    <input type="text" id="mem_name_en" name="name_en" value="<?= e($member['name_en'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
-                                <div>
-                                    <label for="mem_phone" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'মোবাইল নম্বর *' : 'Mobile Phone *' ?>
-                                    </label>
-                                    <input type="text" id="mem_phone" name="phone" value="<?= e($member['phone'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-
-                                <div>
-                                    <label for="mem_email" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'ইমেইল ঠিকানা *' : 'Email Address *' ?>
-                                    </label>
-                                    <input type="email" id="mem_email" name="email" value="<?= e($member['email'] ?? '') ?>" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
-                                <div>
-                                    <label for="mem_district" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'জেলা / অঞ্চল' : 'District' ?>
-                                    </label>
-                                    <input type="text" id="mem_district" name="district" value="<?= e($member['district'] ?? '') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-
-                                <div>
-                                    <label for="mem_upazila" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'উপজেলা / এলাকা' : 'Upazila / Area' ?>
-                                    </label>
-                                    <input type="text" id="mem_upazila" name="upazila" value="<?= e($member['upazila'] ?? '') ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-
-                                <div>
-                                    <label for="mem_blood_group" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'রক্তের গ্রুপ' : 'Blood Group' ?>
-                                    </label>
-                                    <?php $bg = $member['blood_group'] ?? ''; ?>
-                                    <select id="mem_blood_group" name="blood_group" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box; background: #fff;">
-                                        <option value=""><?= $isBn ? '-- নির্বাচন করুন --' : '-- Select --' ?></option>
-                                        <?php foreach (['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] as $b): ?>
-                                            <option value="<?= $b ?>" <?= $bg === $b ? 'selected' : '' ?>><?= $b ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: var(--space-md);">
-                                <label for="mem_address" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                    <?= $isBn ? 'বর্তমান পূর্ণ ঠিকানা' : 'Present Address' ?>
-                                </label>
-                                <input type="text" id="mem_address" name="address" value="<?= e($member['address'] ?? '') ?>" placeholder="<?= $isBn ? 'বাড়ি/রোড নং, এলাকা, শহর' : 'House/Road, Area, City' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                            </div>
-
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md); margin-bottom: var(--space-md);">
-                                <div>
-                                    <label for="mem_institution" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'শিক্ষা প্রতিষ্ঠান / কর্মস্থল' : 'Institution / Workplace' ?>
-                                    </label>
-                                    <?php 
-                                        $instVal = $member['education']['institution'] ?? ($member['profession']['institution'] ?? '');
-                                    ?>
-                                    <input type="text" id="mem_institution" name="institution" value="<?= e($instVal) ?>" placeholder="<?= $isBn ? 'শিক্ষা প্রতিষ্ঠান বা প্রতিষ্ঠানের নাম' : 'Institution or Organization' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-
-                                <div>
-                                    <label for="mem_designation" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                        <?= $isBn ? 'বিভাগ / পদবি' : 'Department / Designation' ?>
-                                    </label>
-                                    <?php 
-                                        $desigVal = $member['education']['department'] ?? ($member['profession']['designation'] ?? '');
-                                    ?>
-                                    <input type="text" id="mem_designation" name="designation" value="<?= e($desigVal) ?>" placeholder="<?= $isBn ? 'বিভাগ, বর্ষ অথবা পদের নাম' : 'Department or Role' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: var(--space-lg);">
-                                <label for="mem_bio" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                                    <?= $isBn ? 'সংক্ষিপ্ত পরিচিতি ও সেবামূলক আগ্রহ' : 'Bio & Seva Interests' ?>
-                                </label>
-                                <textarea id="mem_bio" name="bio" rows="2" placeholder="<?= $isBn ? 'এসপিএস কার্যক্রমে আপনার বিশেষ আগ্রহ বা অভিজ্ঞতা...' : 'Your seva interests or experience...' ?>" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box; font-family: inherit;"><?= e($member['bio'] ?? ($member['notes'] ?? '')) ?></textarea>
-                            </div>
-
-                            <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px;">
-                                <button type="submit" class="btn btn-primary" id="saveMemberProfileBtn" style="background-color: var(--accent-saffron, #C65A1E); border-color: var(--accent-saffron-hover, #A64713); font-weight: 800; padding: 9px 20px; box-shadow: 0 2px 8px rgba(198, 90, 30, 0.28);">
-                                    💾 <?= $isBn ? 'প্রোফাইল তথ্য সংরক্ষণ করুন' : 'Save Profile Changes' ?>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Historical Transition & Status Audit Trail -->
-                    <?php if (!empty($history)): ?>
-                        <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); margin-bottom: var(--space-2xl); box-shadow: var(--shadow-sm);">
-                            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0 0 var(--space-md); display: flex; align-items: center; gap: 8px;">
-                                <span>📜</span>
-                                <span><?= $isBn ? 'সদস্যপদ রূপান্তর ইতিহাস (Membership History)' : 'Membership Transition History' ?></span>
-                            </h3>
-
-                            <div style="position: relative; padding-left: 20px; border-left: 2px solid var(--border-medium); display: flex; flex-direction: column; gap: var(--space-md);">
-                                <?php foreach ($history as $h): ?>
-                                    <div style="position: relative;">
-                                        <div style="position: absolute; left: -26px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: #0284c7; border: 2px solid #ffffff;"></div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
-                                            <?= e($h['changed_at'] ?? '') ?>
-                                        </div>
-                                        <div style="font-size: 0.92rem; font-weight: 700; color: var(--primary-deep); margin-top: 2px;">
-                                            <?= e($h['old_category'] ?? '') ?> ➔ <span style="color: #c2410c;"><?= e($h['new_category'] ?? '') ?></span>
-                                            (<?= e($h['old_plan'] ?? '') ?> ➔ <?= e($h['new_plan'] ?? '') ?>)
-                                        </div>
-                                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px;">
-                                            <?= e($h['reason'] ?? '') ?>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Payment Ledger & Financial Transactions Table -->
-                    <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-xl); box-shadow: var(--shadow-sm);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; gap: 10px;">
-                            <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0; display: flex; align-items: center; gap: 8px;">
-                                <span>💰</span>
-                                <span><?= $isBn ? 'পেমেন্ট ও চাঁদা খতিয়ান (Payment History)' : 'Payment Ledger & Transactions' ?></span>
-                            </h3>
-                            <span style="font-size: 0.8rem; color: var(--text-muted); background: var(--bg-surface); padding: 3px 10px; border-radius: var(--radius-full);">
-                                <?= $isBn ? 'মোট লেনদেন:' : 'Transactions:' ?> <?= count($payments) ?>
-                            </span>
-                        </div>
-
-                        <?php if (empty($payments)): ?>
-                            <div style="text-align: center; padding: var(--space-xl); color: var(--text-muted); font-size: 0.9rem;">
-                                <?= $isBn ? 'এখনো কোনো পেমেন্ট রেকর্ড পাওয়া যায়নি।' : 'No payment records available.' ?>
-                            </div>
-                        <?php else: ?>
-                            <div style="overflow-x: auto;">
-                                <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
-                                    <thead>
-                                        <tr style="border-bottom: 2px solid var(--border-medium); text-align: left; background: var(--bg-surface); color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase;">
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'ট্রানজেকশন ও TrxID' : 'TxID & TrxID' ?></th>
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'তারিখ' : 'Date' ?></th>
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'প্ল্যান ধরন' : 'Type' ?></th>
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'পরিমাণ' : 'Amount' ?></th>
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'মাধ্যম ও প্রেরক' : 'Method & Sender' ?></th>
-                                            <th style="padding: 10px 12px; text-align: center;"><?= $isBn ? 'রসিদ স্ক্রিনশট' : 'Receipt' ?></th>
-                                            <th style="padding: 10px 12px;"><?= $isBn ? 'স্ট্যাটাস ও ভেরিফিকেশন' : 'Status & Verification' ?></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($payments as $p): ?>
-                                            <tr style="border-bottom: 1px solid var(--border-subtle); vertical-align: middle;">
-                                                <td style="padding: 10px 12px;">
-                                                    <div style="font-family: monospace; font-weight: 700; color: #0284c7; font-size: 0.85rem;">
-                                                        <?= e($p['transaction_id'] ?? '') ?>
-                                                    </div>
-                                                    <?php if (!empty($p['trx_id'])): ?>
-                                                        <div style="display: flex; align-items: center; gap: 4px; margin-top: 3px;">
-                                                            <span style="font-size: 0.72rem; color: var(--text-muted);">TrxID:</span>
-                                                            <span style="font-family: monospace; font-weight: 800; font-size: 0.8rem; background: #f1f5f9; padding: 1px 6px; border-radius: 4px; color: var(--primary-deep);">
-                                                                <?= e($p['trx_id']) ?>
-                                                            </span>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td style="padding: 10px 12px; color: var(--text-muted); font-size: 0.82rem; white-space: nowrap;">
-                                                    <?= e($p['payment_date'] ?? $p['created_at'] ?? '') ?>
-                                                </td>
-                                                <td style="padding: 10px 12px;">
-                                                    <span style="background: #f1f5f9; padding: 2px 8px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700;">
-                                                        <?= e($p['payment_type'] ?? '') ?>
-                                                    </span>
-                                                </td>
-                                                <td style="padding: 10px 12px; font-weight: 800; color: var(--primary-deep); font-size: 0.95rem;">
-                                                    ৳<?= number_format((float)($p['amount'] ?? 0)) ?>
-                                                </td>
-                                                <td style="padding: 10px 12px; font-size: 0.82rem;">
-                                                    <div style="font-weight: 700; color: var(--text-primary);"><?= e($p['payment_method'] ?? 'bKash') ?></div>
-                                                    <div style="color: var(--text-muted); font-size: 0.75rem; font-family: monospace;"><?= e($p['sender_number'] ?? '') ?></div>
-                                                </td>
-                                                <td style="padding: 10px 12px; text-align: center;">
-                                                    <?php 
-                                                        $screenshot = $p['payment_screenshot'] ?? '';
-                                                        $imgSrc = !empty($screenshot) ? (str_starts_with($screenshot, 'http') ? $screenshot : asset($screenshot)) : asset('assets/images/payments/bkash-success-sample.svg');
-                                                    ?>
-                                                    <button type="button" onclick="openReceiptZoomModal('<?= $imgSrc ?>', '<?= e($p['trx_id'] ?? $p['transaction_id']) ?>')" style="background: none; border: none; cursor: pointer; padding: 0;" title="<?= $isBn ? 'স্ক্রিনশট বড় করে দেখুন' : 'Click to Zoom Receipt' ?>">
-                                                        <img src="<?= $imgSrc ?>" alt="Receipt" style="width: 42px; height: 42px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border-medium); box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s ease;">
-                                                    </button>
-                                                </td>
-                                                <td style="padding: 10px 12px; font-size: 0.82rem;">
-                                                    <?php if (($p['status'] ?? '') === 'Verified'): ?>
-                                                        <span style="color: #15803d; background: #dcfce7; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 4px;">
-                                                            ✓ <?= $isBn ? 'যাচাইকৃত' : 'Verified' ?>
-                                                        </span>
-                                                        <div style="font-size: 0.72rem; color: #166534; margin-top: 3px;">
-                                                            <?= e($p['verified_by'] ?? ($isBn ? 'ফাইন্যান্স অফিসার' : 'Finance Officer')) ?>
-                                                        </div>
-                                                    <?php elseif (($p['status'] ?? '') === 'Rejected'): ?>
-                                                        <span style="color: #991b1b; background: #fee2e2; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 4px;">
-                                                            ✕ <?= $isBn ? 'বাতিলকৃত' : 'Rejected' ?>
-                                                        </span>
-                                                        <div style="font-size: 0.72rem; color: #991b1b; margin-top: 3px;">
-                                                            <?= e($p['notes'] ?? '') ?>
-                                                        </div>
-                                                    <?php else: ?>
-                                                        <span style="color: #b45309; background: #fef3c7; font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: var(--radius-full); display: inline-flex; align-items: center; gap: 4px;">
-                                                            ⌛ <?= $isBn ? 'যাচাইয়ের অপেক্ষায়' : 'Pending Verification' ?>
-                                                        </span>
-                                                        <div style="font-size: 0.72rem; color: #b45309; margin-top: 3px;">
-                                                            <?= $isBn ? 'ফাইন্যান্স অফিসার কর্তৃক পর্যালোচনায়' : 'Awaiting Finance Officer' ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-            </div>
-
-        <?php endif; ?>
+      </div>
+      <span class="spd-pill" style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;padding:6px 14px">⏳ <?= $t('আবেদন ও পেমেন্ট যাচাই প্রক্রিয়াধীন', 'Under Verification') ?></span>
     </div>
+
+    <div class="spd-grid2" style="margin-bottom:22px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+      <?php foreach ($steps as [$ti, $sub, $k]): ?>
+        <div style="<?= $sty[$k] ?>;border-radius:8px;padding:10px 12px;font-size:.82rem"><strong><?= $k==='done'?'✓ ':($k==='now'?'⏳ ':'🔒 ') ?><?= $ti ?></strong><div style="font-size:.72rem"><?= $sub ?></div></div>
+      <?php endforeach; ?>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border:1px solid #fde68a;border-radius:12px;padding:18px 24px;margin-bottom:20px;text-align:center">
+      <div style="font-size:.78rem;font-weight:800;color:#92400e;margin-bottom:6px"><?= $t('ধৈর্য ও আত্মসংযমের শাশ্বত শাস্ত্রীয় বার্তা', 'Eternal Message of Patience') ?></div>
+      <div style="font-family:'Tiro Devanagari Sanskrit','Noto Serif Devanagari','Sanskrit Text',serif;font-size:1.15rem;font-weight:700;color:#78350f;line-height:1.6">शक्नोतीहैव यः सोढुं प्राक्शरीरविमोक्षणात्। कामक्रोधोद्भवं वेगं स युक्तः स सुखी नरः।।</div>
+      <div style="font-size:.82rem;font-weight:800;color:#b45309;margin:4px 0 8px"><?= $t('শ্রীমদ্ভগবদ্গীতা — অধ্যায় ৫, শ্লোক ২৩', 'Bhagavad Gita — Chapter 5, Verse 23') ?></div>
+      <div style="font-size:.84rem;color:#78350f;line-height:1.5;border-top:1px dashed #d97706;padding-top:8px">
+        <?= $t('দেহত্যাগের পূর্ব পর্যন্ত যিনি ধৈর্যের সাথে অন্তরের বেগ সহ্য করতে পারেন, তিনিই প্রকৃত যোগী ও সুখী। আপনার সদস্যপদ আবেদন ও পেমেন্ট তথ্য সফলভাবে সংরক্ষিত রয়েছে। প্রশাসন কর্তৃক যাচাই ও অনুমোদন সম্পন্ন হওয়ামাত্র আপনার প্রোফাইল ও লগইন সুবিধা সক্রিয় করা হবে।',
+                'One who can tolerate the impulses of desire and anger before quitting the body is a yogi and is truly happy. Your application has been received and is under review. Once approved, your profile and login access will be activated.') ?>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px 18px;margin-bottom:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-size:.82rem">
+      <div><span class="spd-muted"><?= $t('প্ল্যান ও ফি:', 'Plan & Fee:') ?></span> <strong style="color:#b45309"><?= e($isBn ? ($plan['name_bn'] ?? '') : ($plan['name_en'] ?? '')) ?> (৳<?= number_format($plan['fee'] ?? 50) ?>)</strong></div>
+      <div><span class="spd-muted">TrxID:</span> <strong style="font-family:monospace;color:#0284c7"><?= e($recentPayment['trx_id'] ?? $recentPayment['transaction_id'] ?? $member['notes'] ?? 'Pending') ?></strong></div>
+      <div><span class="spd-muted"><?= $t('তারিখ:', 'Date:') ?></span> <strong><?= e($member['join_date'] ?? date('Y-m-d')) ?></strong></div>
+      <div><span class="spd-muted"><?= $t('যাচাইকারী কর্তৃপক্ষ:', 'Reviewing Authority:') ?></span> <strong style="color:#166534"><?= $t('এসপিএস প্রশাসন ও অর্থ বিভাগ', 'SPS Administration & Finance Desk') ?></strong></div>
+    </div>
+    <div style="text-align:center"><a href="<?= url('/', $currentLocale) ?>" class="spd-btn">← <?= $t('মূল ওয়েবসাইটে ফিরে যান', 'Back to Home') ?></a></div>
+  </div>
+
+<?php else: ?>
+<div class="spd-shell">
+
+  <!-- ============ LEFT NAV ============ -->
+  <aside class="spd-side">
+    <div class="spd-box">
+      <div class="spd-id">
+        <img class="spd-av" src="<?= asset($resolvedAvatar) ?>" alt="" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+        <div style="min-width:0">
+          <strong style="color:var(--ink);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= e($memberName) ?></strong>
+          <code style="font-size:.76rem"><?= e($member['member_code']) ?></code>
+        </div>
+      </div>
+      <span class="spd-pill" style="background:<?= $stBg ?>;color:<?= $stColor ?>">● <?= $stLabel ?></span>
+    </div>
+
+    <nav class="spd-box spd-nav" style="padding:8px" aria-label="<?= $t('সদস্য মেনু', 'Member menu') ?>">
+      <div class="spd-nav-g"><?= $t('প্রধান', 'Main') ?></div>
+      <button data-go="feed" class="on">🏠 <?= $t('ড্যাশবোর্ড', 'Dashboard') ?></button>
+      <button data-go="notices">📢 <?= $t('নোটিশ', 'Notices') ?></button>
+      <button data-go="events">📅 <?= $t('ইভেন্ট', 'Events') ?></button>
+      <div class="spd-nav-g"><?= $t('আমার SPS', 'My SPS') ?></div>
+      <button data-go="profile">👤 <?= $t('আমার প্রোফাইল', 'My Profile') ?></button>
+      <button data-go="membership">💳 <?= $t('সদস্যপদ ও ফি', 'Membership & Fees') ?></button>
+      <button data-go="notifications">🔔 <?= $t('বিজ্ঞপ্তি', 'Notifications') ?><span class="spd-badge" id="spd-unread-badge" <?= $unread ? '' : 'hidden' ?>><?= $unread ?></span></button>
+      <div class="spd-nav-g"><?= $t('কনটেন্ট', 'Content') ?></div>
+      <button data-go="writing">✍️ <?= $t('আমার লেখা', 'My Writing') ?></button>
+      <a href="<?= url('/library', $currentLocale) ?>" style="text-decoration:none"><button type="button">📚 <?= $t('গ্রন্থাগার', 'SPS Library') ?></button></a>
+      <div class="spd-nav-g"><?= $t('অন্যান্য', 'Other') ?></div>
+      <button data-go="settings">⚙️ <?= $t('সেটিংস', 'Settings') ?></button>
+      <a href="<?= url('/membership/logout', $currentLocale) ?>" style="text-decoration:none"><button type="button" style="color:#b91c1c">🚪 <?= $t('লগআউট', 'Logout') ?></button></a>
+    </nav>
+
+  </aside>
+
+  <!-- ============ CENTER ============ -->
+  <main>
+
+    <!-- FEED -->
+    <div class="spd-sec on" id="sec-feed">
+      <?php foreach (array_reverse($notifications) as $n): ?>
+        <div class="spd-box" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-color:#86efac;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+          <div><strong style="color:#166534">🎉 <?= e($n['title'] ?? $t('সদস্যপদ সক্রিয় হয়েছে', 'Membership Approved')) ?></strong><div style="color:#15803d;font-size:.85rem"><?= e($n['message'] ?? '') ?></div></div>
+          <?php if (!empty($n['invoice_id'])): ?><a target="_blank" class="spd-btn pri" style="background:#16a34a;border-color:#15803d" href="<?= url('/invoice/' . urlencode($n['invoice_id']), $currentLocale) ?>">🧾 <?= $t('মানি রিসিট দেখুন', 'View Payment Receipt') ?></a><?php endif; ?>
+        </div>
+      <?php endforeach; ?>
+
+      <?php if ($status === 'Payment Due'): ?>
+        <div class="spd-box spd-notice"><strong>💳 <?= $t('আপনার সদস্যপদ ফি বকেয়া আছে', 'Your membership fee is due') ?></strong>
+          <div class="spd-muted"><?= $t('সদস্যপদ সক্রিয় রাখতে ফি প্রদান করুন।', 'Pay your fee to keep your membership active.') ?></div>
+          <button class="spd-btn pri" style="margin-top:8px" data-go="membership"><?= $t('ফি প্রদান করুন', 'Pay fee') ?></button></div>
+      <?php endif; ?>
+
+      <div class="spd-box spd-compose">
+        <img class="spd-av" style="width:40px;height:40px" src="<?= asset($resolvedAvatar) ?>" alt="" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+        <a href="<?= url('/blog/write', $currentLocale) ?>"><?= $t('SPS-এ কী ঘটছে? লেখা শুরু করুন…', "What's happening at SPS? Write an article…") ?></a>
+      </div>
+
+      <?php if (empty($feedPosts)): ?>
+        <div class="spd-box spd-empty">
+          <div style="font-size:2rem">📰</div>
+          <strong style="color:var(--ink)"><?= $t('এখনও কোনো আপডেট নেই', 'No updates yet') ?></strong><br>
+          <?= $t('SPS-এর প্রকল্প, খবর ও ঘোষণা প্রকাশিত হলে এখানে দেখাবে।', 'Projects, news and announcements from SPS will appear here.') ?>
+        </div>
+      <?php else: foreach ($feedPosts as $post): $official = !empty($post['official']); ?>
+        <article class="spd-box">
+          <div class="spd-post-h">
+            <img class="spd-av" style="width:40px;height:40px" src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS">
+            <div><strong style="color:var(--ink)">SPS</strong> <span class="spd-tag <?= $official ? 'official' : '' ?>"><?= e($official ? $t('অফিসিয়াল আপডেট', 'Official SPS Update') : ($post['category'] ?? '')) ?></span>
+              <div class="spd-muted"><?= e($post['date'] ?? '') ?></div></div>
+          </div>
+          <?php if (!empty($post['image'])): ?><img src="<?= asset($post['image']) ?>" alt="" style="width:100%;border-radius:8px;margin-bottom:10px;max-height:320px;object-fit:cover"><?php endif; ?>
+          <h3><?= e($post['title'] ?? '') ?></h3>
+          <p style="margin:0;line-height:1.6;font-size:.92rem"><?= e($post['excerpt'] ?? '') ?></p>
+          <?php if (!empty($post['url'])): ?><a href="<?= e($post['url']) ?>" style="font-weight:700;color:var(--sun);font-size:.88rem"><?= $t('আরও পড়ুন', 'Read more') ?></a><?php endif; ?>
+          <div class="spd-post-f"><button>👍 <?= $t('লাইক', 'Like') ?></button><button>💬 <?= $t('মন্তব্য', 'Comment') ?></button><button>🔖 <?= $t('সংরক্ষণ', 'Save') ?></button><button>🔗 <?= $t('শেয়ার', 'Share') ?></button></div>
+        </article>
+      <?php endforeach; endif; ?>
+
+      <div class="spd-box">
+        <h4>📚 <?= $t('গ্রন্থাগার থেকে', 'From the Library') ?></h4>
+        <p class="spd-muted"><?= $t('পাবলিক, সদস্য ও প্রিমিয়াম সংগ্রহ ব্রাউজ করুন।', 'Browse public, member and premium collections.') ?></p>
+        <a class="spd-btn" href="<?= url('/library', $currentLocale) ?>"><?= $t('গ্রন্থাগার খুলুন', 'Open library') ?></a>
+      </div>
+    </div>
+
+    <!-- NOTICES -->
+    <div class="spd-sec" id="sec-notices">
+      <div class="spd-box"><h3>📢 <?= $t('নোটিশ ও ঘোষণা', 'Notices & Announcements') ?></h3>
+        <?php if (empty($notices)): ?><div class="spd-empty"><?= $t('বর্তমানে কোনো নোটিশ নেই।', 'No notices right now.') ?></div>
+        <?php else: foreach ($notices as $n): ?>
+          <div class="spd-box spd-notice" style="margin-bottom:10px"><strong><?= e($n['title'] ?? '') ?></strong><div class="spd-muted"><?= e($n['date'] ?? '') ?></div><p style="margin:6px 0 0"><?= e($n['body'] ?? '') ?></p></div>
+        <?php endforeach; endif; ?></div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="spd-sec" id="sec-events">
+      <div class="spd-box"><h3>📅 <?= $t('আসন্ন ইভেন্ট', 'Upcoming Events') ?></h3>
+        <?php if (empty($events)): ?><div class="spd-empty"><?= $t('কোনো আসন্ন ইভেন্ট নেই।', 'No upcoming events.') ?></div>
+        <?php else: ?><div class="spd-grid2"><?php foreach ($events as $ev): ?>
+          <div class="spd-box" style="padding:14px"><strong style="color:var(--sun)"><?= e($ev['date'] ?? '') ?></strong><div style="font-weight:800;color:var(--ink)"><?= e($ev['title'] ?? '') ?></div><div class="spd-muted"><?= e($ev['time'] ?? '') ?> <?= !empty($ev['place']) ? '📍 ' . e($ev['place']) : '' ?></div></div>
+        <?php endforeach; ?></div><?php endif; ?></div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="spd-sec" id="sec-notifications">
+      <div class="spd-box"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <h3 style="margin:0">🔔 <?= $t('বিজ্ঞপ্তি', 'Notifications') ?></h3>
+        <button type="button" id="spd-mark-all" class="spd-btn" style="padding:5px 12px;font-size:.8rem" <?= $unread ? '' : 'hidden' ?>>✓ <?= $t('সব পড়া হয়েছে', 'Mark all as read') ?></button></div>
+        <?php if (empty($notifications)): ?><div class="spd-empty"><?= $t('কোনো নতুন বিজ্ঞপ্তি নেই।', 'You are all caught up.') ?></div>
+        <?php else: foreach (array_reverse($notifications) as $n): ?>
+          <button type="button" class="spd-notif" data-nid="<?= e($nid($n)) ?>" data-read="<?= empty($n['read']) ? '0' : '1' ?>">
+            <span class="spd-dot"></span>
+            <span><strong><?= e($n['title'] ?? '') ?></strong><span class="spd-muted" style="display:block"><?= e($n['message'] ?? '') ?></span></span>
+          </button>
+        <?php endforeach; endif; ?></div>
+    </div>
+
+    <!-- WRITING -->
+    <div class="spd-sec" id="sec-writing">
+      <div class="spd-box"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">✍️ <?= $t('আমার লেখা', 'My Writing') ?></h3>
+        <a class="spd-btn pri" href="<?= url('/blog/write', $currentLocale) ?>">+ <?= $t('নতুন লেখা', 'Write new article') ?></a></div>
+        <?php $cnt = ['draft'=>0,'pending'=>0,'published'=>0,'rejected'=>0]; foreach ($myArticles as $a) { $k = strtolower($a['status'] ?? 'draft'); if (isset($cnt[$k])) $cnt[$k]++; } ?>
+        <div class="spd-stats" style="margin:16px 0">
+          <div><b><?= $cnt['draft'] ?></b><span class="spd-muted"><?= $t('খসড়া', 'Drafts') ?></span></div>
+          <div><b><?= $cnt['pending'] ?></b><span class="spd-muted"><?= $t('অপেক্ষমাণ', 'Pending') ?></span></div>
+          <div><b><?= $cnt['published'] ?></b><span class="spd-muted"><?= $t('প্রকাশিত', 'Published') ?></span></div>
+          <div><b><?= $cnt['rejected'] ?></b><span class="spd-muted"><?= $t('বাতিল', 'Rejected') ?></span></div>
+        </div>
+        <p class="spd-muted"><?= $t('লেখা জমা দিলে সম্পাদক পর্যালোচনা করে প্রকাশ করবেন।', 'Submitted articles are reviewed by an editor before they are published.') ?></p>
+        <?php foreach ($myArticles as $a): ?><div style="padding:8px 0;border-top:1px solid #eef1f5"><strong><?= e($a['title'] ?? '') ?></strong> <span class="spd-tag"><?= e($a['status'] ?? '') ?></span></div><?php endforeach; ?>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="spd-sec" id="sec-profile">
+      <div class="spd-box" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <img class="spd-av" style="width:84px;height:84px" src="<?= asset($resolvedAvatar) ?>" alt="" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+        <div><h2 style="margin:0;color:var(--ink);font-size:1.5rem"><?= e($memberName) ?></h2>
+          <div class="spd-muted"><?= e($isBn ? ($category['name_bn'] ?? '') : ($category['name_en'] ?? '')) ?> • <b style="color:#b45309"><?= e($isBn ? ($plan['name_bn'] ?? '') : ($plan['name_en'] ?? '')) ?></b></div>
+          <div class="spd-muted"><?= $t('যোগদান:', 'Joined:') ?> <?= e($member['joined_at'] ?? '2024') ?> | <?= e($member['email'] ?? '') ?> | <?= e($member['phone'] ?? '') ?></div></div>
+      </div>
+
+      <form class="spd-box" action="<?= url('/membership/profile/update', $currentLocale) ?>" method="POST" enctype="multipart/form-data" id="memberProfileForm">
+        <?= $csrf ?><input type="hidden" name="member_code" value="<?= e($member['member_code']) ?>">
+        <h3>👤 <?= $t('প্রোফাইল হালনাগাদ', 'Edit profile') ?></h3>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px">
+          <img id="avatarPreviewImg" class="spd-av" style="width:72px;height:72px;border-radius:10px" src="<?= asset($resolvedAvatar) ?>" alt="" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+          <div style="flex:1;min-width:220px"><label for="mem_avatar_file">📷 <?= $t('সদস্য ছবি আপলোড', 'Upload member photo') ?></label>
+            <div class="spd-muted" style="margin-bottom:6px"><?= $t('JPG, PNG, WebP — সর্বোচ্চ ৫MB। কার্ডে প্রদর্শিত হবে।', 'JPG, PNG, WebP — max 5MB. Shown on your ID card.') ?></div>
+            <input type="file" id="mem_avatar_file" name="avatar_file" accept="image/png,image/jpeg,image/webp" onchange="previewAvatar(this)">
+            <input type="hidden" name="avatar" value="<?= e($member['avatar'] ?? '') ?>"></div>
+        </div>
+        <div class="spd-grid2" style="margin-bottom:12px">
+          <div><label for="mem_name_bn"><?= $t('পূর্ণ নাম (বাংলা) *', 'Full name (Bengali) *') ?></label><input id="mem_name_bn" name="name_bn" required value="<?= e($member['name_bn'] ?? '') ?>"></div>
+          <div><label for="mem_name_en"><?= $t('পূর্ণ নাম (English) *', 'Full name (English) *') ?></label><input id="mem_name_en" name="name_en" required value="<?= e($member['name_en'] ?? '') ?>"></div>
+          <div><label for="mem_phone"><?= $t('মোবাইল *', 'Mobile *') ?></label><input id="mem_phone" name="phone" required value="<?= e($member['phone'] ?? '') ?>"></div>
+          <div><label for="mem_email"><?= $t('ইমেইল *', 'Email *') ?></label><input id="mem_email" type="email" name="email" required value="<?= e($member['email'] ?? '') ?>"></div>
+          <div><label for="mem_district"><?= $t('জেলা', 'District') ?></label><input id="mem_district" name="district" value="<?= e($member['district'] ?? '') ?>"></div>
+          <div><label for="mem_upazila"><?= $t('উপজেলা / এলাকা', 'Upazila / Area') ?></label><input id="mem_upazila" name="upazila" value="<?= e($member['upazila'] ?? '') ?>"></div>
+          <div><label for="mem_blood_group"><?= $t('রক্তের গ্রুপ', 'Blood group') ?></label>
+            <select id="mem_blood_group" name="blood_group"><option value=""><?= $t('-- নির্বাচন --', '-- Select --') ?></option>
+              <?php foreach (['A+','A-','B+','B-','AB+','AB-','O+','O-'] as $b): ?><option <?= ($member['blood_group'] ?? '') === $b ? 'selected' : '' ?>><?= $b ?></option><?php endforeach; ?></select></div>
+          <div><label for="mem_address"><?= $t('বর্তমান ঠিকানা', 'Present address') ?></label><input id="mem_address" name="address" value="<?= e($member['address'] ?? '') ?>"></div>
+          <div><label for="mem_institution"><?= $t('শিক্ষা প্রতিষ্ঠান / কর্মস্থল', 'Institution / workplace') ?></label><input id="mem_institution" name="institution" value="<?= e($member['education']['institution'] ?? ($member['profession']['institution'] ?? '')) ?>"></div>
+          <div><label for="mem_designation"><?= $t('বিভাগ / পদবি', 'Department / designation') ?></label><input id="mem_designation" name="designation" value="<?= e($member['education']['department'] ?? ($member['profession']['designation'] ?? '')) ?>"></div>
+        </div>
+        <label for="mem_bio"><?= $t('সংক্ষিপ্ত পরিচিতি ও সেবামূলক আগ্রহ', 'Bio & seva interests') ?></label>
+        <textarea id="mem_bio" name="bio" rows="3"><?= e($member['bio'] ?? ($member['notes'] ?? '')) ?></textarea>
+        <div style="text-align:right;margin-top:12px"><button type="submit" id="saveMemberProfileBtn" class="spd-btn pri">💾 <?= $t('পরিবর্তন সংরক্ষণ', 'Save changes') ?></button></div>
+      </form>
+    </div>
+
+    <!-- MEMBERSHIP & FEES -->
+    <div class="spd-sec" id="sec-membership">
+      <div class="spd-card" id="printableCard">
+        <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:150px;opacity:.12">
+        <div style="display:flex;align-items:center;gap:10px;position:relative">
+          <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS" style="height:36px">
+          <div><div style="font-weight:700;font-family:'Noto Sans Bengali',sans-serif">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div><div style="font-size:.64rem;color:#cbd5e1;letter-spacing:.8px">SANATAN PHILOSOPHY &amp; SCRIPTURE</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:center;margin:14px 0;position:relative">
+          <img src="<?= asset($resolvedAvatar) ?>" alt="" style="width:74px;height:74px;border-radius:12px;border:2.5px solid #c59b27;object-fit:cover" onerror="this.onerror=null;this.src='<?= $defaultDp ?>'">
+          <div style="min-width:0"><div style="font-size:1.25rem;font-weight:800;font-family:'Noto Sans Bengali',sans-serif"><?= e($member['name_bn']) ?></div>
+            <div style="color:#e2e8f0"><?= e($member['name_en']) ?></div>
+            <span style="display:inline-block;margin-top:4px;background:#9fc6e2;color:#082136;font-family:monospace;font-weight:800;padding:2px 10px;border-radius:6px">ID : <?= e($member['member_code']) ?></span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;position:relative">
+          <div><div style="font-weight:700"><?= e($category['name_en'] ?? ($member['category_id'] === 'STUDENT' ? 'Student Member' : 'Earning Member')) ?></div>
+            <div style="font-weight:800;color:#22c55e"><?= empty($member['expiry_date']) ? 'VALID: LIFETIME' : 'VALID: ' . e($member['expiry_date']) ?></div></div>
+          <a href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>" target="_blank" style="background:#fff;padding:4px;border-radius:8px;width:56px;height:56px;display:block"><img id="dashboardCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR" style="width:100%;height:100%;object-fit:contain"></a>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <a class="spd-btn" style="flex:1" target="_blank" href="<?= url('/membership/card/print?code=' . e($member['member_code']), $currentLocale) ?>">🖨️ <?= $t('কার্ড প্রিন্ট / ডাউনলোড', 'Print / download card') ?></a>
+        <a class="spd-btn" style="flex:1" target="_blank" href="<?= url('/membership/verify?code=' . e($member['member_code']), $currentLocale) ?>">🔗 <?= $t('কিউআর যাচাই', 'QR verify') ?></a>
+      </div>
+
+      <?php if ($member['category_id'] === 'STUDENT'): ?>
+      <div class="spd-box" style="background:#fff7ed;border-color:#fdba74">
+        <h3 style="color:#9a3412">🎓 ➔ 💼 <?= $t('উপার্জনশীল সদস্যপদে রূপান্তর', 'Transition to Earning Member') ?></h3>
+        <p class="spd-muted"><?= $t('আপনার স্থায়ী আইডি (' . e($member['member_code']) . ') অক্ষুণ্ণ রেখে ক্যাটাগরি পরিবর্তন করুন।', 'Keep your permanent ID (' . e($member['member_code']) . ') while switching category.') ?></p>
+        <button type="button" class="spd-btn pri" onclick="var b=document.getElementById('transition-form-box');b.style.display=b.style.display==='none'?'block':'none'"><?= $t('রূপান্তর আবেদন', 'Apply transition') ?></button>
+        <form id="transition-form-box" style="display:none;margin-top:12px" action="<?= url('/membership/transition', $currentLocale) ?>" method="POST">
+          <?= $csrf ?><input type="hidden" name="member_id" value="<?= e($member['id']) ?>"><input type="hidden" name="new_category" value="EARNING">
+          <label><?= $t('পরবর্তী প্ল্যান', 'New plan') ?></label>
+          <select name="new_plan"><option value="EARNING_MONTHLY"><?= $t('মাসিক (৳১০০/মাস)', 'Monthly (৳100/mo)') ?></option><option value="YEARLY"><?= $t('বাৎসরিক (৳১,০০০)', 'Yearly (৳1,000)') ?></option><option value="LIFETIME"><?= $t('আজীবন (৳১০,০০০)', 'Lifetime (৳10,000)') ?></option></select>
+          <label style="margin-top:8px"><?= $t('কারণ / বর্তমান কর্মবিবরণ', 'Reason / professional update') ?></label><textarea name="reason" rows="2"></textarea>
+          <button type="submit" class="spd-btn pri" style="margin-top:10px"><?= $t('রূপান্তর নিশ্চিত করুন', 'Confirm transition') ?></button>
+        </form>
+      </div>
+      <?php endif; ?>
+
+      <form class="spd-box" action="<?= url('/membership/payment', $currentLocale) ?>" method="POST" enctype="multipart/form-data" id="dashPaymentForm">
+        <?= $csrf ?><input type="hidden" name="member_id" value="<?= e($member['id']) ?>">
+        <input type="hidden" name="payment_screenshot_url" id="dash_preset_screenshot" value="assets/images/payments/bkash-success-sample.svg">
+        <h3>💳 <?= $t('ফি প্রদান / নবায়ন / আপগ্রেড', 'Pay fee / renew / upgrade') ?></h3>
+        <div style="background:#fdf2f8;border:1px solid #fbcfe8;border-radius:8px;padding:12px;margin-bottom:12px;font-size:.82rem;color:#831843">
+          <strong>📱 <?= $t('অফিসিয়াল বিকাশ নম্বর:', 'Official bKash:') ?></strong> <code>01700-000000</code>
+          <button type="button" onclick="navigator.clipboard&&navigator.clipboard.writeText('01700-000000')" class="spd-btn" style="padding:1px 8px;font-size:.72rem">📋</button>
+          <div style="margin-top:4px"><?= $t('Send Money করার পর TrxID ও Sent SS আপলোড করুন। ফাইন্যান্স অফিসার (কোষাধ্যক্ষ) প্রতিটি পেমেন্ট যাচাই করবেন।', 'Send money, then enter the TrxID and upload the Sent SS. The Finance Officer verifies every payment.') ?></div>
+        </div>
+        <div class="spd-grid2" style="margin-bottom:10px">
+          <div><label><?= $t('পেমেন্ট ধরন', 'Payment type') ?></label><select name="payment_type"><option value="monthly"><?= $t('মাসিক নবায়ন', 'Monthly renewal') ?></option><option value="yearly"><?= $t('বাৎসরিক (৳১,০০০)', 'Yearly (৳1,000)') ?></option><option value="lifetime"><?= $t('আজীবন (৳১০,০০০)', 'Lifetime (৳10,000)') ?></option></select></div>
+          <div><label><?= $t('মাধ্যম', 'Method') ?></label><select name="payment_method" id="dash_payment_method"><option value="bKash">bKash</option><option value="Nagad">Nagad</option><option value="Rocket">Rocket</option><option value="Bank">Bank Transfer</option></select></div>
+          <div><label><?= $t('টাকার পরিমাণ', 'Amount') ?></label><input type="number" name="amount" placeholder="<?= $member['category_id'] === 'STUDENT' ? '50' : '100' ?>"></div>
+          <div><label><?= $t('প্রেরক নম্বর *', 'Sender phone *') ?></label><input name="sender_number" required value="<?= e($member['phone'] ?? '') ?>"></div>
+          <div><label><?= $t('প্রেরকের নাম', 'Sender name') ?></label><input name="sender_name"></div>
+          <div><label><?= $t('ট্রানজেকশন আইডি (TrxID) *', 'Transaction ID (TrxID) *') ?></label><input name="trx_id" id="dash_trx_id" required placeholder="BKA8X92JQK" style="text-transform:uppercase;font-family:monospace;font-weight:800"></div>
+          <div><label><?= $t('রেফারেন্স', 'Reference') ?></label><input name="payment_reference"></div>
+          <div><label><?= $t('পেমেন্ট সময়', 'Time') ?></label><input name="payment_time" value="<?= date('Y-m-d H:i') ?>"></div>
+        </div>
+        <label>📸 <?= $t('সেন্ট মানি স্ক্রিনশট (Sent SS) *', 'Sent money screenshot (Sent SS) *') ?></label>
+        <div style="border:2px dashed #f472b6;border-radius:8px;padding:12px;text-align:center;background:#fdf2f8">
+          <input type="file" name="payment_screenshot" id="dash_screenshot_file" accept="image/*" onchange="previewDashScreenshot(this)" style="display:none">
+          <img id="dash_screenshot_preview_img" src="<?= asset('assets/images/payments/bkash-success-sample.svg') ?>" alt="" style="max-height:120px;max-width:100%;border-radius:6px;background:#fff">
+          <div style="margin-top:8px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+            <button type="button" class="spd-btn" style="padding:4px 10px;font-size:.76rem" onclick="document.getElementById('dash_screenshot_file').click()">🔄 <?= $t('ছবি আপলোড', 'Upload image') ?></button>
+            <button type="button" class="spd-btn" style="padding:4px 10px;font-size:.76rem" onclick="setDashPresetScreenshot('assets/images/payments/bkash-success-sample.svg')">🌸 bKash</button>
+            <button type="button" class="spd-btn" style="padding:4px 10px;font-size:.76rem" onclick="setDashPresetScreenshot('assets/images/payments/nagad-success-sample.svg')">🔥 Nagad</button>
+            <button type="button" class="spd-btn" style="padding:4px 10px;font-size:.76rem" onclick="document.getElementById('dash_trx_id').value='BKA'+Math.random().toString(36).substring(2,8).toUpperCase()">🎲 <?= $t('টেস্ট TrxID', 'Demo TrxID') ?></button>
+          </div>
+        </div>
+        <button type="submit" class="spd-btn pri" style="width:100%;margin-top:12px">🚀 <?= $t('পেমেন্ট রসিদ সাবমিট করুন', 'Submit payment') ?></button>
+      </form>
+
+      <?php if (!empty($history)): ?>
+      <div class="spd-box"><h3>📜 <?= $t('সদস্যপদ রূপান্তর ইতিহাস', 'Membership history') ?></h3>
+        <div style="border-left:2px solid var(--line);padding-left:16px;display:flex;flex-direction:column;gap:12px">
+          <?php foreach ($history as $h): ?><div><div class="spd-muted"><?= e($h['changed_at'] ?? '') ?></div>
+            <strong><?= e($h['old_category'] ?? '') ?> ➔ <span style="color:#c2410c"><?= e($h['new_category'] ?? '') ?></span></strong> (<?= e($h['old_plan'] ?? '') ?> ➔ <?= e($h['new_plan'] ?? '') ?>)
+            <div class="spd-muted"><?= e($h['reason'] ?? '') ?></div></div><?php endforeach; ?></div></div>
+      <?php endif; ?>
+
+      <div class="spd-box"><h3>💰 <?= $t('পেমেন্ট ইতিহাস', 'Payment history') ?> <span class="spd-muted">(<?= count($payments) ?>)</span></h3>
+        <?php if (empty($payments)): ?><div class="spd-empty"><?= $t('এখনো কোনো পেমেন্ট রেকর্ড নেই।', 'No payments yet.') ?></div>
+        <?php else: ?><div style="overflow-x:auto"><table class="spd-table">
+          <thead><tr><th>TrxID</th><th><?= $t('তারিখ', 'Date') ?></th><th><?= $t('ধরন', 'Type') ?></th><th><?= $t('পরিমাণ', 'Amount') ?></th><th><?= $t('মাধ্যম', 'Method') ?></th><th><?= $t('রসিদ', 'Receipt') ?></th><th><?= $t('স্ট্যাটাস', 'Status') ?></th><th><?= $t('মানি রসিদ', 'Invoice') ?></th></tr></thead>
+          <tbody><?php foreach ($payments as $p):
+            $shot = $p['payment_screenshot'] ?? '';
+            $imgSrc = !empty($shot) ? (str_starts_with($shot, 'http') ? $shot : asset($shot)) : asset('assets/images/payments/bkash-success-sample.svg');
+            $ps = $p['status'] ?? '';
+            [$pb, $pc, $pl] = $ps === 'Verified' ? ['#dcfce7', '#15803d', '✓ ' . $t('যাচাইকৃত', 'Verified')] : ($ps === 'Rejected' ? ['#fee2e2', '#991b1b', '✕ ' . $t('বাতিল', 'Rejected')] : ['#fef3c7', '#b45309', '⌛ ' . $t('অপেক্ষমাণ', 'Pending')]);
+          ?><tr>
+            <td><code><?= e($p['transaction_id'] ?? '') ?></code><?php if (!empty($p['trx_id'])): ?><div class="spd-muted">TrxID: <b><?= e($p['trx_id']) ?></b></div><?php endif; ?></td>
+            <td class="spd-muted" style="white-space:nowrap"><?= e($p['payment_date'] ?? $p['created_at'] ?? '') ?></td>
+            <td><?= e($p['payment_type'] ?? '') ?></td>
+            <td><b>৳<?= number_format((float)($p['amount'] ?? 0)) ?></b></td>
+            <td><?= e($p['payment_method'] ?? 'bKash') ?><div class="spd-muted"><?= e($p['sender_number'] ?? '') ?></div></td>
+            <td><button type="button" style="border:0;background:none;padding:0;cursor:pointer" onclick="openReceiptZoomModal(<?= e(json_encode($imgSrc)) ?>, <?= e(json_encode($p['trx_id'] ?? $p['transaction_id'] ?? '')) ?>)"><img src="<?= $imgSrc ?>" alt="Receipt" style="width:40px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--line)"></button></td>
+            <td><span class="spd-pill" style="background:<?= $pb ?>;color:<?= $pc ?>"><?= $pl ?></span><?php if ($ps === 'Rejected' && !empty($p['notes'])): ?><div class="spd-muted"><?= e($p['notes']) ?></div><?php endif; ?></td>
+            <td><a class="spd-btn" style="padding:4px 10px;font-size:.76rem" target="_blank" href="<?= url('/invoice/' . e($p['transaction_id']), $currentLocale) ?>">📄 <?= $t('রসিদ', 'Receipt') ?></a></td>
+          </tr><?php endforeach; ?></tbody></table></div><?php endif; ?></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="spd-sec" id="sec-settings">
+      <form class="spd-box" action="<?= url('/membership/password/update', $currentLocale) ?>" method="POST" id="memberPasswordUpdateForm">
+        <?= $csrf ?>
+        <h3>🔒 <?= $t('নিরাপত্তা ও পাসওয়ার্ড', 'Account security & password') ?> <span class="spd-pill" style="background:#ecfdf5;color:#047857">🛡️ Email 2FA</span></h3>
+        <p class="spd-muted"><?= $t('প্রতিটি লগইনে আপনার ইমেইলে (' . e($member['email'] ?? '') . ') একটি ৬-সংখ্যার ওটিপি পাঠানো হবে।', 'Each login sends a 6-digit OTP to ' . e($member['email'] ?? '') . '.') ?></p>
+        <div class="spd-grid2">
+          <?php if (!empty($member['password_hash'])): ?><div><label for="mem_curr_password"><?= $t('বর্তমান পাসওয়ার্ড *', 'Current password *') ?></label><input type="password" id="mem_curr_password" name="current_password" required></div><?php endif; ?>
+          <div><label for="mem_new_password"><?= $t('নতুন পাসওয়ার্ড *', 'New password *') ?></label><input type="password" id="mem_new_password" name="new_password" required minlength="6" placeholder="<?= $t('কমপক্ষে ৬ অক্ষর', 'At least 6 characters') ?>"></div>
+          <div><label for="mem_confirm_password"><?= $t('নিশ্চিত করুন *', 'Confirm password *') ?></label><input type="password" id="mem_confirm_password" name="confirm_password" required></div>
+        </div>
+        <div style="text-align:right;margin-top:12px"><button type="submit" id="updateMemberPasswordBtn" class="spd-btn">🔐 <?= $t('পাসওয়ার্ড হালনাগাদ', 'Update password') ?></button></div>
+      </form>
+    </div>
+  </main>
+
+  <!-- ============ RIGHT PANEL ============ -->
+  <aside class="spd-right">
+    <div class="spd-box">
+      <h4><?= $t('আপনার সদস্যপদ', 'Your membership') ?></h4>
+      <span class="spd-pill" style="background:<?= $stBg ?>;color:<?= $stColor ?>">● <?= $stLabel ?></span>
+      <div style="margin-top:8px;font-weight:700;color:#b45309"><?= e($isBn ? ($plan['name_bn'] ?? '') : ($plan['name_en'] ?? '')) ?></div>
+      <div class="spd-muted"><?= $t('মেয়াদ:', 'Valid until:') ?> <b style="color:var(--ink)"><?= e($expiry) ?></b></div>
+    </div>
+    <div class="spd-box">
+      <h4><?= $t('আসন্ন', 'Upcoming') ?></h4>
+      <?php if (empty($events)): ?><div class="spd-muted"><?= $t('কোনো আসন্ন ইভেন্ট নেই।', 'No upcoming events.') ?></div>
+      <?php else: foreach (array_slice($events, 0, 3) as $ev): ?><div style="margin-bottom:6px"><b style="color:var(--sun)"><?= e($ev['date'] ?? '') ?></b> <?= e($ev['title'] ?? '') ?></div><?php endforeach; endif; ?>
+    </div>
+    <div class="spd-box spd-nav" style="padding:10px">
+      <h4 style="padding:0 6px"><?= $t('দ্রুত অ্যাক্সেস', 'Quick access') ?></h4>
+      <a href="<?= url('/library', $currentLocale) ?>" style="text-decoration:none"><button type="button">📚 <?= $t('গ্রন্থাগার', 'Library') ?></button></a>
+      <a href="<?= url('/blog/write', $currentLocale) ?>" style="text-decoration:none"><button type="button">✍️ <?= $t('লিখুন', 'Write') ?></button></a>
+      <button data-go="membership">💳 <?= $t('ফি প্রদান', 'Pay fee') ?></button>
+      <a href="<?= url('/activities', $currentLocale) ?>" style="text-decoration:none"><button type="button">🚩 <?= $t('কার্যক্রম ও প্রকল্প', 'Activities & projects') ?></button></a>
+    </div>
+  </aside>
+</div>
+
+<!-- Mobile bottom nav -->
+<nav class="spd-bottom" aria-label="<?= $t('দ্রুত মেনু', 'Quick menu') ?>">
+  <button data-go="feed" class="on"><span>🏠</span><?= $t('হোম', 'Home') ?></button>
+  <button data-go="notices"><span>📰</span><?= $t('আপডেট', 'Updates') ?></button>
+  <button data-go="writing"><span>✍️</span><?= $t('লেখা', 'Writing') ?></button>
+  <button data-go="membership"><span>💳</span><?= $t('সদস্যপদ', 'Member') ?></button>
+  <button data-go="profile"><span>👤</span><?= $t('প্রোফাইল', 'Profile') ?></button>
+</nav>
+<?php endif; ?>
+
+</div>
 </section>
 
-<!-- Receipt Zoom Lightbox Modal -->
-<div id="receiptZoomModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); z-index: 9999; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px);">
-    <div style="background: #ffffff; border-radius: var(--radius-xl); max-width: 480px; width: 100%; padding: 20px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4); border: 1px solid var(--border-medium); position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.2rem;">🧾</span>
-                <strong id="receiptModalTitle" style="color: var(--primary-deep); font-size: 0.95rem; font-family: monospace;"></strong>
-            </div>
-            <button type="button" onclick="closeReceiptZoomModal()" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted);">&times;</button>
-        </div>
-        
-        <div style="text-align: center; background: #0f172a; border-radius: var(--radius-lg); padding: 12px; overflow: hidden;">
-            <img id="receiptModalImg" src="" alt="Payment Receipt" style="max-height: 480px; max-width: 100%; object-fit: contain; border-radius: 8px;">
-        </div>
-
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 0.8rem; color: var(--text-muted);">
-            <span><?= $isBn ? 'ফাইন্যান্স অফিসার ভেরিফিকেশন রেকর্ড' : 'Finance Officer Audit Record' ?></span>
-            <button type="button" onclick="closeReceiptZoomModal()" class="btn btn-sm btn-secondary">
-                <?= $isBn ? 'বন্ধ করুন' : 'Close' ?>
-            </button>
-        </div>
-    </div>
+<!-- Receipt zoom modal -->
+<div id="receiptZoomModal" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.75);z-index:9999;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this)closeReceiptZoomModal()">
+  <div style="background:#fff;border-radius:16px;max-width:480px;width:100%;padding:20px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><strong id="receiptModalTitle" style="font-family:monospace"></strong>
+      <button type="button" onclick="closeReceiptZoomModal()" aria-label="Close" style="background:none;border:0;font-size:1.4rem;cursor:pointer">&times;</button></div>
+    <div style="text-align:center;background:#0f172a;border-radius:10px;padding:12px"><img id="receiptModalImg" src="" alt="Payment receipt" style="max-height:480px;max-width:100%;object-fit:contain"></div>
+  </div>
 </div>
+
+<div id="spd-cfg" hidden
+     data-asset-base="<?= e(asset('')) ?>"
+     data-verify-url="<?= e($member ? \App\Services\QrCodeService::getVerificationUrl($member['member_code'], $currentLocale) : '') ?>"
+     data-logo="<?= e(asset('assets/images/brand/sps-logo.png')) ?>"
+     data-member="<?= e($member['member_code'] ?? '') ?>"
+     data-csrf="<?= e(\App\Core\Session::getCsrfToken() ?: '') ?>"
+     data-read-url="<?= e(url('/membership/notifications/read', $currentLocale)) ?>"></div>
 
 <script src="<?= asset('assets/js/qrcode.min.js') ?>"></script>
 <script src="<?= asset('assets/js/sps-qr.js') ?>"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const verifyUrl = "<?= \App\Services\QrCodeService::getVerificationUrl($member['member_code'], $currentLocale) ?>";
-    const logoUrl = "<?= asset('assets/images/brand/sps-logo.png') ?>";
-    renderSpsQrCode('dashboardCardQrImg', verifyUrl, logoUrl);
-});
+(function () {
+  function show(id) {
+    var sec = document.getElementById('sec-' + id);
+    if (!sec) return;
+    document.querySelectorAll('.spd-sec').forEach(function (s) { s.classList.toggle('on', s === sec); });
+    document.querySelectorAll('[data-go]').forEach(function (b) {
+      if (b.closest('.spd-nav, .spd-bottom') && !b.closest('.spd-right')) b.classList.toggle('on', b.dataset.go === id);
+    });
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    window.scrollTo({ top: 0 });
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-go]');
+    if (b) { e.preventDefault(); show(b.dataset.go); }
+  });
+  if (location.hash) show(location.hash.slice(1));
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var cfg = document.getElementById('spd-cfg');
+    var qrEl = document.getElementById('dashboardCardQrImg');
+    if (cfg && qrEl && typeof renderSpsQrCode === 'function') {
+      renderSpsQrCode('dashboardCardQrImg', cfg.dataset.verifyUrl, cfg.dataset.logo);
+    }
+  });
+})();
+
+(function () {
+  var cfg = document.getElementById('spd-cfg');
+  if (!cfg) return;
+  var key = 'spd_read_' + cfg.dataset.member, read = [];
+  try { read = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) {}
+  var items = document.querySelectorAll('.spd-notif');
+  function refresh() {
+    var n = 0;
+    items.forEach(function (el) {
+      var r = el.dataset.read === '1' || read.indexOf(el.dataset.nid) > -1;
+      el.classList.toggle('unread', !r);
+      if (!r) n++;
+    });
+    var b = document.getElementById('spd-unread-badge');
+    if (b) { b.textContent = n; b.hidden = n === 0; }
+    var all = document.getElementById('spd-mark-all');
+    if (all) all.hidden = n === 0;
+  }
+  function mark(ids) {
+    var fresh = ids.filter(function (i) { return read.indexOf(i) < 0; });
+    if (!fresh.length) return;
+    read = read.concat(fresh);
+    try { localStorage.setItem(key, JSON.stringify(read)); } catch (e) {}
+    refresh();
+    if (cfg.dataset.readUrl && window.fetch) {
+      var f = new FormData();
+      fresh.forEach(function (i) { f.append('ids[]', i); });
+      f.append('_csrf', cfg.dataset.csrf || '');
+      fetch(cfg.dataset.readUrl, { method: 'POST', body: f, credentials: 'same-origin' }).catch(function () {});
+    }
+  }
+  items.forEach(function (el) { el.addEventListener('click', function () { mark([el.dataset.nid]); }); });
+  var all = document.getElementById('spd-mark-all');
+  if (all) all.addEventListener('click', function () {
+    mark(Array.prototype.map.call(items, function (el) { return el.dataset.nid; }));
+  });
+  refresh();
+})();
 
 function previewAvatar(input) {
-    if (input.files && input.files[0]) {
-        const file = input.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const previewImg = document.getElementById('avatarPreviewImg');
-            const placeholder = document.getElementById('avatarPreviewPlaceholder');
-            if (previewImg) {
-                previewImg.src = e.target.result;
-                previewImg.style.display = 'block';
-            }
-            if (placeholder) {
-                placeholder.style.display = 'none';
-            }
-        };
-        reader.readAsDataURL(file);
-    }
+  if (input.files && input.files[0]) {
+    var r = new FileReader();
+    r.onload = function (e) { var i = document.getElementById('avatarPreviewImg'); if (i) i.src = e.target.result; };
+    r.readAsDataURL(input.files[0]);
+  }
 }
-
+function previewDashScreenshot(input) {
+  if (input.files && input.files[0]) {
+    var r = new FileReader();
+    r.onload = function (e) {
+      document.getElementById('dash_screenshot_preview_img').src = e.target.result;
+      document.getElementById('dash_preset_screenshot').value = '';
+    };
+    r.readAsDataURL(input.files[0]);
+  }
+}
+function setDashPresetScreenshot(path) {
+  document.getElementById('dash_screenshot_preview_img').src = document.getElementById('spd-cfg').dataset.assetBase + path;
+  document.getElementById('dash_preset_screenshot').value = path;
+  document.getElementById('dash_screenshot_file').value = '';
+}
 function openReceiptZoomModal(src, id) {
-    document.getElementById('receiptModalImg').src = src;
-    document.getElementById('receiptModalTitle').textContent = 'Trx: ' + id;
-    const modal = document.getElementById('receiptZoomModal');
-    modal.style.display = 'flex';
+  document.getElementById('receiptModalImg').src = src;
+  document.getElementById('receiptModalTitle').textContent = 'Trx: ' + id;
+  document.getElementById('receiptZoomModal').style.display = 'flex';
 }
-
-function closeReceiptZoomModal() {
-    const modal = document.getElementById('receiptZoomModal');
-    modal.style.display = 'none';
-}
+function closeReceiptZoomModal() { document.getElementById('receiptZoomModal').style.display = 'none'; }
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeReceiptZoomModal(); });
 </script>

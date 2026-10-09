@@ -10,6 +10,9 @@ class App
 
     public function __construct(string $baseDir)
     {
+        // Load Environment Configuration
+        Env::load($baseDir);
+
         // Load configuration files
         $configDir = $baseDir . '/config';
         self::$configs['app'] = require $configDir . '/app.php';

@@ -90,10 +90,16 @@ AuthService::switchUser('usr_robin');
 assert_test("Maker-Checker: Different admin can act as checker", AuthService::isEligibleChecker('usr_joy'));
 
 // 6. Immutable Audit Trail
-$initialLogCount = count(AuditService::all());
-AuditService::log('test.verify', 'system', 'target_001', 'Test Target', null, ['status' => 'verified'], 'Automated test suite entry');
-$newLogCount = count(AuditService::all());
-assert_test("Audit Trail: Appended new immutable log", $newLogCount === $initialLogCount + 1);
+$logEntry = AuditService::log('test.verify', 'system', 'target_001', 'Test Target', null, ['status' => 'verified'], 'Automated test suite entry');
+// Verify by inspecting the returned entry (count() saturates at the 1000-record cap)
+$logs = AuditService::all();
+$mostRecent = $logs[0] ?? null;
+assert_test("Audit Trail: Appended new immutable log",
+    !empty($logEntry['id']) &&
+    ($mostRecent['action'] ?? '') === 'test.verify' &&
+    ($mostRecent['resource'] ?? '') === 'system',
+    'Log entry action/resource mismatch or log empty'
+);
 
 // 7. Route and Authorization Enforcement
 $router = new Router();
@@ -223,14 +229,25 @@ assert_test("Router: /bn/admin/login returns 200", $resLoginPage->getStatusCode(
 assert_test("View: Login page contains username/email and password inputs", 
     str_contains($resLoginPage->getContent(), 'name="identifier"') && str_contains($resLoginPage->getContent(), 'name="password"'));
 
+// SETUP: Ensure admin password at baseline and rate limits cleared for this test block
+\App\Core\RateLimiter::resetAttempts('login:admin:acct:' . hash('sha256', 'anik'));
+\App\Core\RateLimiter::resetAttempts('2fa:resend:admin:usr_anik');
+\App\Core\RateLimiter::resetAttempts('2fa:verify:admin:usr_anik:127.0.0.1');
+\App\Services\RbacService::updatePasswordHashDirect('usr_anik', \App\Core\CryptoService::hashPassword('sps@admin2026'));
+
 // Attempt login with invalid credentials
 $resFailedLogin = $router->dispatch(new Request('POST', '/bn/admin/login', [], ['identifier' => 'anik', 'password' => 'wrongpass']));
 assert_test("Security: Invalid credentials login fails with 302", $resFailedLogin->getStatusCode() === 302);
 assert_test("Auth: Remains unauthenticated after failed login", !AuthService::check());
 
-// Attempt login with valid credentials (username + password)
+// Attempt login with valid credentials (username + password triggers 2FA)
 $resValidLogin = $router->dispatch(new Request('POST', '/bn/admin/login', [], ['identifier' => 'anik', 'password' => 'sps@admin2026']));
-assert_test("Auth: Valid login redirects to admin dashboard", $resValidLogin->getStatusCode() === 302);
+assert_test("Auth: Valid login credentials redirect to 2FA verification", $resValidLogin->getStatusCode() === 302 && str_contains($resValidLogin->getHeaders()['Location'] ?? '', '/admin/2fa'));
+
+// Complete 2FA verification using static OTP capture (test-only mechanism)
+$otpCode = \App\Services\TwoFactorService::getLastAdminOtp();
+$res2fa = $router->dispatch(new Request('POST', '/bn/admin/2fa', [], ['code' => $otpCode ?? '']));
+assert_test("Auth: Valid 2FA code redirects to admin console", $res2fa->getStatusCode() === 302);
 assert_test("Auth: Session successfully authenticated as Super Admin", AuthService::check() && AuthService::isSuperAdmin());
 
 // Topbar verification: Role simulator removed, Logout button present

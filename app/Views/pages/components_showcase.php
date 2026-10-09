@@ -24,35 +24,35 @@ $isBn = $currentLocale === 'bn';
         <h2 style="font-size:1.5rem; margin-bottom:var(--space-md);"><?= $isBn ? 'পরিমিত ও অর্থবহ বর্ণচ্ছটা' : 'Restrained Color Architecture' ?></h2>
         
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:var(--space-md);">
-            <div style="background:#FAF8F5; border:1px solid #D6CCC0; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#FAF8F5; border:1px solid #E8E2D8; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Warm Ivory</strong>
-                <code style="font-size:0.75rem; color:var(--text-muted);">#FAF8F5 (--bg-canvas)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--bg-canvas); border:1px solid var(--border-medium); border-radius:8px; margin-bottom:8px;"></div>
+                <strong style="font-size:0.88rem; display:block;">Canvas Background</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--bg-canvas)</code>
             </div>
-            <div style="background:#1A1F1C; color:#fff; border:1px solid #1A1F1C; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#1A1F1C; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Deep Charcoal</strong>
-                <code style="font-size:0.75rem; color:#A8B5AC;">#1A1F1C (--text-main)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--bg-surface); border:1px solid var(--border-medium); border-radius:8px; margin-bottom:8px;"></div>
+                <strong style="font-size:0.88rem; display:block;">Surface / Card</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--bg-surface)</code>
             </div>
-            <div style="background:#FAF8F5; border:1px solid #D6CCC0; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#C65A1E; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Muted Saffron</strong>
-                <code style="font-size:0.75rem; color:var(--text-muted);">#C65A1E (--accent-saffron)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--accent-saffron); border-radius:8px; margin-bottom:8px; box-shadow:0 4px 12px rgba(226, 90, 30, 0.25);"></div>
+                <strong style="font-size:0.88rem; display:block;">Primary Accent (Saffron / Terracotta)</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--accent-saffron)</code>
             </div>
-            <div style="background:#FAF8F5; border:1px solid #D6CCC0; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#A37E36; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Antique Gold</strong>
-                <code style="font-size:0.75rem; color:var(--text-muted);">#A37E36 (--accent-gold)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--accent-gold); border-radius:8px; margin-bottom:8px; box-shadow:0 4px 12px rgba(245, 158, 11, 0.25);"></div>
+                <strong style="font-size:0.88rem; display:block;">Luminous Gold / Amber</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--accent-gold)</code>
             </div>
-            <div style="background:#FAF8F5; border:1px solid #D6CCC0; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#5C4334; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Warm Brown</strong>
-                <code style="font-size:0.75rem; color:var(--text-muted);">#5C4334 (--accent-brown)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--status-success); border-radius:8px; margin-bottom:8px;"></div>
+                <strong style="font-size:0.88rem; display:block;">Success / Mint</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--status-success)</code>
             </div>
-            <div style="background:#FAF8F5; border:1px solid #D6CCC0; padding:var(--space-md); border-radius:var(--radius-sm);">
-                <div style="height:36px; background:#286846; border-radius:2px; margin-bottom:8px;"></div>
-                <strong style="font-size:0.88rem; display:block;">Leaf Green</strong>
-                <code style="font-size:0.75rem; color:var(--text-muted);">#286846 (--status-success)</code>
+            <div class="card" style="padding:var(--space-md); border-radius:14px;">
+                <div style="height:40px; background:var(--text-main); border-radius:8px; margin-bottom:8px;"></div>
+                <strong style="font-size:0.88rem; display:block;">Text Main</strong>
+                <code style="font-size:0.75rem; color:var(--text-muted);">var(--text-main)</code>
             </div>
         </div>
     </section>

@@ -477,7 +477,7 @@ foreach ($members as $m) {
                                         <?php if (($p['status'] ?? '') === 'Pending'): ?>
                                             <?php if ($isFinanceOfficer): ?>
                                                 <!-- Verify Button (Triggers membership activation) -->
-                                                <form action="<?= url('/admin/members/payment/verify/' . e($p['id']), $currentLocale) ?>" method="POST" style="margin:0;">
+                                                <form action="<?= url('/admin/members/payment/verify/' . e($p['id']), $currentLocale) ?>" method="POST" style="margin:0;" onsubmit="return confirm('<?= $isBn ? 'পেমেন্ট অনুমোদন নিশ্চিতকরণ: আপনি কি নিশ্চিত যে এই সদস্যপদ ফি/পেমেন্ট অ্যাকাউন্টে জমা হয়েছে এবং যাচাই সম্পন্ন হয়েছে?' : 'Confirm Payment Approval: Are you sure this payment has been received and verified?' ?>');">
                                                     <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
                                                     <button type="submit" class="btn btn-sm btn-primary" style="background:#15803d; border-color:#15803d; padding:4px 10px; font-size:0.75rem; font-weight:800;" title="<?= $isBn ? 'TrxID ও রসিদ যাচাইপূর্বক মেম্বারশিপ সক্রিয় করুন' : 'Verify payment and activate member' ?>">
                                                         ✓ <?= $isBn ? 'ভেরিফাই করুন' : 'Verify' ?>
@@ -498,6 +498,11 @@ foreach ($members as $m) {
                                                 </button>
                                             <?php endif; ?>
                                         <?php endif; ?>
+
+                                        <!-- Official Signed Invoice shortcut -->
+                                        <a href="<?= url('/invoice/' . e($p['transaction_id']), $currentLocale) ?>" target="_blank" class="btn btn-sm btn-ghost" style="border:1px solid #fde68a; background:#fffbeb; color:#b45309; font-weight:800; padding:4px 8px; font-size:0.75rem;" title="<?= $isBn ? 'অর্থ সম্পাদকের স্বাক্ষরযুক্ত অফিসিয়াল মানি রসিদ দেখুন / প্রিন্ট করুন' : 'View / Print Official Signed Money Receipt' ?>">
+                                            📄 <?= $isBn ? 'রসিদ' : 'Invoice' ?>
+                                        </a>
 
                                         <!-- View Member Dashboard shortcut -->
                                         <a href="<?= url('/membership/dashboard?as=' . e($p['member_code']), $currentLocale) ?>" target="_blank" class="btn btn-sm btn-ghost" style="border:1px solid var(--border-medium); padding:4px 8px; font-size:0.75rem;" title="<?= $isBn ? 'সদস্যের ডিজিটাল কার্ড ও প্রোফাইল দেখুন' : 'View Member Dashboard' ?>">
@@ -693,7 +698,7 @@ foreach ($members as $m) {
                                         <!-- If Pending: Approve & Reject buttons (Strictly Finance Officer) -->
                                         <?php if ($m['status'] === 'Pending'): ?>
                                             <?php if ($isFinanceOfficer): ?>
-                                                <form action="<?= url('/admin/members/approve/' . e($m['id']), $currentLocale) ?>" method="POST" style="margin:0;">
+                                                <form action="<?= url('/admin/members/approve/' . e($m['id']), $currentLocale) ?>" method="POST" style="margin:0;" onsubmit="return confirm('<?= $isBn ? 'পেমেন্ট ও সদস্যপদ অনুমোদন নিশ্চিতকরণ: আপনি কি নিশ্চিত যে এই সদস্যপদ ফি অ্যাকাউন্টে জমা হয়েছে এবং সদস্যপদ সক্রিয় করতে চান?' : 'Confirm Payment Approval: Are you sure this payment has been received and verified?' ?>');">
                                                     <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
                                                     <button type="submit" class="btn btn-sm btn-primary" style="background:#15803d; border-color:#15803d; padding:4px 10px; font-size:0.75rem;" title="<?= $isBn ? 'সদস্যপদ অনুমোদন করুন' : 'Approve Application' ?>">
                                                         ✓ <?= $isBn ? 'অনুমোদন' : 'Approve' ?>
@@ -841,13 +846,19 @@ foreach ($members as $m) {
             <img id="modalPaymentImg" src="" alt="Payment Receipt" style="max-height:360px; max-width:100%; object-fit:contain; border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-            <button type="button" onclick="closeAdminScreenshotModal()" class="btn btn-sm btn-ghost" style="border:1px solid var(--border-medium);">
-                <?= $isBn ? 'বন্ধ করুন' : 'Close' ?>
-            </button>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="display:flex; gap:8px; align-items:center;">
+                <button type="button" onclick="closeAdminScreenshotModal()" class="btn btn-sm btn-ghost" style="border:1px solid var(--border-medium);">
+                    <?= $isBn ? 'বন্ধ করুন' : 'Close' ?>
+                </button>
+                <a id="modalOfficialInvoiceLink" href="#" target="_blank" class="btn btn-sm" style="display:inline-flex; align-items:center; gap:5px; background:#fffbeb; color:#b45309; border:1px solid #fde68a; font-weight:700; text-decoration:none; padding:5px 12px; font-size:0.78rem;">
+                    <span>📄</span>
+                    <span><?= $isBn ? 'অফিসিয়াল ইনভয়েস' : 'Official Invoice' ?></span>
+                </a>
+            </div>
             <div id="modalVerifyActionContainer" style="display:flex; gap:8px;">
                 <?php if ($isFinanceOfficer): ?>
-                    <form id="modalVerifyForm" action="" method="POST" style="margin:0;">
+                    <form id="modalVerifyForm" action="" method="POST" style="margin:0;" onsubmit="return confirm('<?= $isBn ? 'পেমেন্ট অনুমোদন নিশ্চিতকরণ: আপনি কি নিশ্চিত যে এই সদস্যপদ ফি/পেমেন্ট অ্যাকাউন্টে জমা হয়েছে এবং যাচাই সম্পন্ন হয়েছে?' : 'Confirm Payment Approval: Are you sure this payment has been received and verified?' ?>');">
                         <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
                         <button type="submit" class="btn btn-sm btn-primary" style="background:#15803d; border-color:#15803d; font-weight:800;">
                             ✓ <?= $isBn ? 'যাচাই ও সক্রিয় করুন' : 'Verify & Activate' ?>
@@ -945,6 +956,11 @@ function openAdminScreenshotModal(imgSrc, trx, name, amount, sender, paymentId, 
     document.getElementById('modalSenderName').textContent = senderName || '—';
     document.getElementById('modalPayTime').textContent = payTime || '—';
     document.getElementById('modalPayRef').textContent = payRef || '—';
+    
+    const invoiceLink = document.getElementById('modalOfficialInvoiceLink');
+    if (invoiceLink) {
+        invoiceLink.href = '<?= url('/invoice/', $currentLocale) ?>' + (trx || paymentId);
+    }
     
     const verifyContainer = document.getElementById('modalVerifyActionContainer');
     if (status === 'Pending') {

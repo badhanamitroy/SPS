@@ -26,4 +26,16 @@ return [
         'tertiary' => '+880 1736-360041',
         'email' => 'contact@sps-platform.org',
     ],
+
+    // Google Identity Services (GIS) / OAuth 2.0 Security Proof Gateway
+    'google' => [
+        'client_id' => getenv('GOOGLE_CLIENT_ID') ?: '',
+        'allowed_admin_emails' => [
+            'badhanamitroy571@gmail.com',
+            'anik@sps.org',
+            'president@sps.org',
+            'general.secretary@sps.org',
+        ],
+    ],
 ];
+

@@ -32,7 +32,8 @@ $isBn = $currentLocale === 'bn';
 <div id="mobile-nav-drawer" class="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <div style="display:flex; align-items:center; gap:var(--space-xs);">
-            <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="<?= e(__('common.short_name')) ?>" class="mobile-drawer-brand-mark" width="45" height="32" style="object-fit:contain;">
+            <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="<?= e(__('common.short_name')) ?>" class="mobile-drawer-brand-mark brand-mark-dark" width="45" height="32" style="object-fit:contain;">
+            <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="<?= e(__('common.short_name')) ?>" class="mobile-drawer-brand-mark brand-mark-light" width="45" height="32" style="object-fit:contain;">
             <span style="font-weight:700; color:var(--text-main);"><?= e(__('common.short_name')) ?></span>
         </div>
         <button data-drawer-close="mobile-nav" class="btn btn-ghost btn-sm" aria-label="<?= e(__('common.actions.close')) ?>">
@@ -52,16 +53,18 @@ $isBn = $currentLocale === 'bn';
         <a href="<?= e(url('/about', $currentLocale)) ?>"><?= e(__('common.nav.about')) ?></a>
         <a href="<?= e(url('/activities', $currentLocale)) ?>"><?= e(__('common.nav.activities')) ?></a>
         <a href="<?= e(url('/blog', $currentLocale)) ?>"><?= e(__('common.nav.blog')) ?></a>
-        <a href="<?= e(url('/library', $currentLocale)) ?>" style="color:var(--accent-gold); font-weight:600;">📖 <?= e(__('common.nav.library')) ?></a>
-        <a href="<?= e(url('/admin/library', $currentLocale)) ?>" style="color:var(--accent-saffron); font-size:0.9rem;">🛡️ <?= $currentLocale === 'bn' ? 'প্রশাসনিক প্যানেল (Admin)' : 'Admin Dashboard' ?></a>
+        <a href="<?= e(url('/library', $currentLocale)) ?>"><?= e(__('common.nav.library')) ?></a>
+        <a href="<?= e(url('/get-involved', $currentLocale)) ?>"><?= $isBn ? 'যোগ দিন' : 'Join us' ?></a>
     </nav>
 
     <div style="margin-top:auto; padding-top:var(--space-lg); border-top:1px solid var(--border-medium); display:flex; flex-direction:column; gap:var(--space-sm);">
         <?php
         $drawerMemberCode = \App\Core\Session::get('current_member_code');
         $isDrawerMemberLoggedIn = !empty($drawerMemberCode) && !\App\Core\Session::get('member_logged_out');
+        $drawerMember = $isDrawerMemberLoggedIn ? \App\Services\MembershipService::getMemberById($drawerMemberCode) : null;
+        $isDrawerMemberActive = $drawerMember && \App\Services\MembershipService::isActiveStatus($drawerMember['status'] ?? '');
         ?>
-        <?php if ($isDrawerMemberLoggedIn): ?>
+        <?php if ($isDrawerMemberLoggedIn && $drawerMember && $isDrawerMemberActive): ?>
             <a href="<?= e(url('/membership/dashboard', $currentLocale)) ?>" class="btn btn-secondary" style="width:100%; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;">
                 <span>👤</span>
                 <span><?= $isBn ? 'সদস্য ড্যাশবোর্ড (' . e($drawerMemberCode) . ')' : 'Member Dashboard (' . e($drawerMemberCode) . ')' ?></span>

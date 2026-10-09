@@ -18,10 +18,10 @@ $info = \App\Core\Session::getFlash('info');
     </nav>
 
     <!-- Two-Column Layout: Left = Login Card, Right = Non-Member / Join Guide -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-2xl); align-items: start;">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--space-2xl); align-items: stretch;">
         
         <!-- Left Column: Member Login Card -->
-        <div class="card" style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); box-shadow: var(--shadow-md); overflow: hidden; padding: 0;">
+        <div class="card" style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); box-shadow: var(--shadow-md); overflow: hidden; padding: 0; height: 100%;">
             
             <!-- Card Header with Brand Aesthetics -->
             <div style="background: #14202e; color: #ffffff; padding: var(--space-xl) var(--space-xl) var(--space-lg); text-align: center; position: relative;">
@@ -65,8 +65,11 @@ $info = \App\Core\Session::getFlash('info');
                     </div>
                 <?php endif; ?>
 
+
                 <form action="<?= url('/membership/login', $currentLocale) ?>" method="POST" id="memberLoginForm">
-                    <div style="margin-bottom: var(--space-lg);">
+                    <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+
+                    <div style="margin-bottom: var(--space-md);">
                         <label for="memberIdentifier" style="display: block; font-weight: 700; font-size: 0.92rem; color: var(--primary-deep); margin-bottom: 6px;">
                             <?= $isBn ? 'মেম্বার আইডি, ইমেইল অথবা মোবাইল নম্বর *' : 'Member ID, Email or Phone Number *' ?>
                         </label>
@@ -83,34 +86,41 @@ $info = \App\Core\Session::getFlash('info');
                                 🪪
                             </span>
                         </div>
-                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 5px;">
-                            <?= $isBn ? '💡 আপনি আপনার মেম্বার কোডের নম্বর (যেমন: 872) অথবা পূর্ণ আইডি (SPS-000872) দিতে পারেন।' : '💡 You can enter your numeric code (e.g. 872) or full ID (SPS-000872).' ?>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div style="margin-bottom: var(--space-lg);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label for="memberPassword" style="font-weight: 700; font-size: 0.92rem; color: var(--primary-deep); margin: 0;">
+                                <?= $isBn ? 'অ্যাকাউন্ট পাসওয়ার্ড' : 'Account Password' ?>
+                            </label>
+                            <span style="font-size: 0.76rem; color: var(--text-muted);">
+                                <?= $isBn ? '(পাসওয়ার্ড না থাকলে ওটিপি/ডিফল্ট)' : '(Optional if not set yet)' ?>
+                            </span>
+                        </div>
+                        <div style="position: relative;">
+                            <input type="password" 
+                                   id="memberPassword" 
+                                   name="password" 
+                                   placeholder="••••••••" 
+                                   class="form-input" 
+                                   style="width: 100%; padding: 12px 14px 12px 40px; border: 1.5px solid var(--border-medium); border-radius: var(--radius-md); font-size: 0.95rem; box-sizing: border-box;">
+                            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; color: var(--text-muted); pointer-events: none;">
+                                🔒
+                            </span>
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 5px; display: flex; align-items: center; gap: 4px;">
+                            <span>🛡️</span>
+                            <span><?= $isBn ? 'দ্বিমুখী প্রমাণীকরণ (2FA): লগইনের সময় আপনার ইমেইলে একটি ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।' : 'Two-Factor Authentication: A 6-digit OTP will be verified via your email.' ?></span>
                         </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary" id="memberLoginSubmitBtn" style="width: 100%; padding: 12px; font-weight: 800; font-size: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);">
-                        <span><?= $isBn ? 'সদস্য ড্যাশবোর্ডে প্রবেশ করুন' : 'Log in to Member Dashboard' ?></span>
+                        <span><?= $isBn ? 'নিরাপদভাবে ড্যাশবোর্ডে প্রবেশ করুন' : 'Secure Login to Member Dashboard' ?></span>
                         <span>→</span>
                     </button>
                 </form>
 
-                <!-- Quick Demo Logins for Pair-Programming & Evaluation -->
-                <div style="margin-top: var(--space-xl); padding-top: var(--space-lg); border-top: 1px dashed var(--border-medium);">
-                    <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                        <?= $isBn ? '⚡ দ্রুত পরীক্ষামূলক লগইন (Demo Quick Select):' : '⚡ Quick Demo Select:' ?>
-                    </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <?php foreach ($demoMembers as $dm): ?>
-                            <button type="button" 
-                                    onclick="document.getElementById('memberIdentifier').value='<?= e($dm['code']) ?>'; document.getElementById('memberLoginForm').submit();" 
-                                    class="btn btn-ghost btn-sm" 
-                                    style="justify-content: space-between; text-align: left; padding: 6px 10px; background: #f8fafc; border: 1px solid var(--border-medium); border-radius: var(--radius-md); font-size: 0.8rem; color: var(--text-body);">
-                                <span style="font-weight: 700; color: var(--primary-deep);"><?= e($dm['name']) ?></span>
-                                <span style="font-family: monospace; font-weight: 800; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px;"><?= e($dm['code']) ?></span>
-                            </button>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
 
             </div>
         </div>
@@ -150,26 +160,12 @@ $info = \App\Core\Session::getFlash('info');
                 </a>
             </div>
 
-            <!-- Public Verification & Help Desk Box -->
-            <div style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-lg); box-shadow: var(--shadow-sm);">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <span style="font-size: 1.4rem;">🔍</span>
-                    <div>
-                        <div style="font-weight: 800; font-size: 0.95rem; color: var(--primary-deep);"><?= $isBn ? 'ডিজিটাল কার্ডের কিউআর কোড যাচাই' : 'Public QR Card Verification' ?></div>
-                        <div style="font-size: 0.78rem; color: var(--text-muted);"><?= $isBn ? 'যেকোনো সদস্য কার্ডের কিউআর স্ক্যান করে সত্যতা নিশ্চিত করা যায়' : 'Verify any official member ID directly' ?></div>
-                    </div>
-                </div>
-                <div style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
-                    <?= $isBn ? 'অন্য কারো সদস্যপদ যাচাই করতে কার্ডে মুদ্রিত কিউআর কোড স্ক্যান করুন অথবা যাচাই পেজে যান।' : 'Scan the QR code printed on the card to inspect official status.' ?>
-                </div>
-                <a href="<?= url('/membership/verify', $currentLocale) ?>?code=SPS-000872" class="btn btn-secondary btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
-                    <span><?= $isBn ? 'নমুনা কার্ড যাচাই পেজ দেখুন' : 'View Sample Verification' ?></span>
-                    <span>↗</span>
-                </a>
-            </div>
 
         </div>
 
     </div>
 
 </div>
+
+
+

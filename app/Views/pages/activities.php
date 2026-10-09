@@ -232,11 +232,11 @@ $isBn = ($locale ?? 'bn') === 'bn';
                 <span style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-right:4px;">
                     <?= $isBn ? 'সাল নির্বাচন:' : 'Filter Year:' ?>
                 </span>
-                <button type="button" class="year-tab active" data-year="all" style="background:var(--primary-deep); color:#ffffff; border:none; padding:4px 14px; border-radius:var(--radius-full); font-size:0.82rem; font-weight:700; cursor:pointer;">
+                <button type="button" class="year-tab active" data-year="all">
                     <?= $isBn ? 'সকল সাল' : 'All Years' ?>
                 </button>
                 <?php foreach (array_keys($activitiesByYear) as $y): ?>
-                    <button type="button" class="year-tab" data-year="<?= $y ?>" style="background:var(--bg-subtle); color:var(--text-secondary); border:1px solid var(--border-medium); padding:4px 14px; border-radius:var(--radius-full); font-size:0.82rem; font-weight:600; cursor:pointer;">
+                    <button type="button" class="year-tab" data-year="<?= $y ?>">
                         <?= $y ?>
                     </button>
                 <?php endforeach; ?>
@@ -247,25 +247,25 @@ $isBn = ($locale ?? 'bn') === 'bn';
                 <span style="font-size:0.82rem; font-weight:700; color:var(--text-muted); margin-right:4px;">
                     <?= $isBn ? 'বিভাগ:' : 'Category:' ?>
                 </span>
-                <button type="button" class="cat-pill active" data-cat="all" style="background:#f1f5f9; color:#1e293b; border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:600; cursor:pointer;">
+                <button type="button" class="cat-pill active" data-cat="all">
                     <?= $isBn ? 'সব' : 'All' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="shastra" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="shastra">
                     📖 <?= $isBn ? 'শাস্ত্র ও শিক্ষা' : 'Scripture & Education' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="temple" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="temple">
                     🛕 <?= $isBn ? 'মন্দির ও তীর্থ' : 'Temple & Pilgrimage' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="humanitarian" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="humanitarian">
                     🤝 <?= $isBn ? 'মানবিক ও দুর্যোগ ত্রাণ' : 'Humanitarian & Disaster' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="livelihood" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="livelihood">
                     💼 <?= $isBn ? 'স্বাবলম্বীকরণ ও জীবিকা' : 'Livelihood & Rehabilitation' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="nature" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="nature">
                     🌱 <?= $isBn ? 'পরিবেশ ও প্রকৃতি' : 'Nature & Trees' ?>
                 </button>
-                <button type="button" class="cat-pill" data-cat="health" style="background:#ffffff; color:var(--text-secondary); border:1px solid var(--border-medium); padding:3px 12px; border-radius:var(--radius-sm); font-size:0.8rem; cursor:pointer;">
+                <button type="button" class="cat-pill" data-cat="health">
                     🩺 <?= $isBn ? 'চিকিৎসা সহায়তা' : 'Health Aid' ?>
                 </button>
             </div>
@@ -395,7 +395,7 @@ $isBn = ($locale ?? 'bn') === 'bn';
                     <?= $isBn ? 'চলমান ও পর্যালোচনাধীন প্রকল্প পর্যবেক্ষণ (SPS Project Tracking)' : 'Real-time Project Tracking & Execution Status' ?>
                 </h3>
                 <p style="font-size:0.88rem; color:var(--text-muted); margin:0;">
-                    <?= $isBn ? 'প্রাতিষ্ঠানিক স্বচ্ছতার অংশ হিসেবে প্রতিটি প্রকল্পের বর্তমান অবস্থা, অগ্রাধিকার এবং সমন্বয়কের দায়িত্ব সরাসরি প্রকাশ করা হলো।' : 'Institutional transparency: real-time breakdown of internal status, priority, and coordination desk.' ?>
+                    <?= $isBn ? 'প্রাতিষ্ঠানিক স্বচ্ছতার অংশ হিসেবে প্রতিটি প্রকল্পের বর্তমান অবস্থা ও ধরন সরাসরি প্রকাশ করা হলো।' : 'Institutional transparency: real-time breakdown of internal execution status and category.' ?>
                 </p>
             </div>
         </div>
@@ -405,10 +405,8 @@ $isBn = ($locale ?? 'bn') === 'bn';
                 <thead>
                     <tr style="background:var(--bg-subtle); border-bottom:2px solid var(--border-medium); color:var(--text-muted); font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">
                         <th style="padding:12px 14px; font-weight:700;"><?= $isBn ? 'প্রকল্পের নাম (Project Name)' : 'Project Name' ?></th>
-                        <th style="padding:12px 14px; font-weight:700; width:170px;"><?= $isBn ? 'অবস্থা (Status)' : 'Status' ?></th>
-                        <th style="padding:12px 14px; font-weight:700; width:130px;"><?= $isBn ? 'অগ্রাধিকার (Priority)' : 'Priority' ?></th>
-                        <th style="padding:12px 14px; font-weight:700; width:180px;"><?= $isBn ? 'ধরন (Type)' : 'Type' ?></th>
-                        <th style="padding:12px 14px; font-weight:700; width:160px;"><?= $isBn ? 'সমন্বয়ক (Lead)' : 'Coordinator' ?></th>
+                        <th style="padding:12px 14px; font-weight:700; width:180px;"><?= $isBn ? 'অবস্থা (Status)' : 'Status' ?></th>
+                        <th style="padding:12px 14px; font-weight:700; width:220px;"><?= $isBn ? 'ধরন (Type)' : 'Type' ?></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -418,12 +416,6 @@ $isBn = ($locale ?? 'bn') === 'bn';
                             'in_progress' => 'background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd;',
                             'in_review' => 'background:#f3e8ff; color:#7e22ce; border:1px solid #d8b4fe;',
                             default => 'background:#fef3c7; color:#b45309; border:1px solid #fde68a;',
-                        };
-
-                        $prioStyle = match($proj['priority']) {
-                            'high' => 'background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5;',
-                            'medium' => 'background:#ffedd5; color:#c2410c; border:1px solid #fed7aa;',
-                            default => 'background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;',
                         };
                     ?>
                         <tr style="border-bottom:1px solid var(--border-subtle); transition:background 0.15s ease;">
@@ -435,16 +427,8 @@ $isBn = ($locale ?? 'bn') === 'bn';
                                     <?= e($isBn ? $proj['status_bn'] : $proj['status_en']) ?>
                                 </span>
                             </td>
-                            <td style="padding:14px;">
-                                <span style="display:inline-block; font-size:0.75rem; font-weight:700; padding:2px 8px; border-radius:var(--radius-sm); <?= $prioStyle ?>">
-                                    <?= e($isBn ? $proj['priority_bn'] : $proj['priority_en']) ?>
-                                </span>
-                            </td>
                             <td style="padding:14px; color:var(--text-secondary); font-size:0.84rem;">
                                 <?= e($isBn ? $proj['type_bn'] : $proj['type_en']) ?>
-                            </td>
-                            <td style="padding:14px; font-size:0.82rem; color:var(--text-muted); font-weight:600;">
-                                <?= e($proj['lead']) ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -537,15 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Year tab clicks
     yearTabs.forEach(tab => {
         tab.addEventListener('click', function() {
-            yearTabs.forEach(t => {
-                t.style.background = 'var(--bg-subtle)';
-                t.style.color = 'var(--text-secondary)';
-                t.style.borderColor = 'var(--border-medium)';
-                t.classList.remove('active');
-            });
-            this.style.background = 'var(--primary-deep)';
-            this.style.color = '#ffffff';
-            this.style.borderColor = 'var(--primary-deep)';
+            yearTabs.forEach(t => t.classList.remove('active'));
             this.classList.add('active');
 
             currentYear = this.getAttribute('data-year');
@@ -556,13 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Category pill clicks
     catPills.forEach(pill => {
         pill.addEventListener('click', function() {
-            catPills.forEach(p => {
-                p.style.background = '#ffffff';
-                p.style.color = 'var(--text-secondary)';
-                p.classList.remove('active');
-            });
-            this.style.background = '#f1f5f9';
-            this.style.color = '#1e293b';
+            catPills.forEach(p => p.classList.remove('active'));
             this.classList.add('active');
 
             currentCat = this.getAttribute('data-cat');
@@ -589,12 +559,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset tab styles
             yearTabs.forEach((t, i) => {
                 if (i === 0) {
-                    t.style.background = 'var(--primary-deep)';
-                    t.style.color = '#ffffff';
                     t.classList.add('active');
                 } else {
-                    t.style.background = 'var(--bg-subtle)';
-                    t.style.color = 'var(--text-secondary)';
                     t.classList.remove('active');
                 }
             });
@@ -602,12 +568,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Reset pill styles
             catPills.forEach((p, i) => {
                 if (i === 0) {
-                    p.style.background = '#f1f5f9';
-                    p.style.color = '#1e293b';
                     p.classList.add('active');
                 } else {
-                    p.style.background = '#ffffff';
-                    p.style.color = 'var(--text-secondary)';
                     p.classList.remove('active');
                 }
             });

@@ -6,7 +6,7 @@ $currentLocale = current_locale();
 $isBn = $currentLocale === 'bn';
 
 $postTitle = $isBn ? ($post['title_bn'] ?? $post['title_en']) : ($post['title_en'] ?? $post['title_bn']);
-$postContent = $isBn ? ($post['content_bn'] ?? $post['content_en']) : ($post['content_en'] ?? $post['content_bn']);
+$postContent = \App\Core\HtmlSanitizer::clean($isBn ? ($post['content_bn'] ?? $post['content_en']) : ($post['content_en'] ?? $post['content_bn']));
 $postExcerpt = $isBn ? ($post['excerpt_bn'] ?? $post['excerpt_en']) : ($post['excerpt_en'] ?? $post['excerpt_bn']);
 $pubDate = $post['published_at'] ?? $post['created_at'];
 $dateFormatted = date('d F Y', strtotime($pubDate));
@@ -110,7 +110,7 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                             <div class="share-group-right">
                                 <!-- Interactive Like Button -->
                                 <form action="<?= url('/blog/' . $post['slug'] . '/like', $currentLocale) ?>" method="POST" id="likeForm" style="margin:0;">
-                                    <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+                                    <?= csrf_field() ?>
                                     <button type="submit" class="btn-like-interactive <?= $hasLiked ? 'liked' : '' ?>" id="likeBtn">
                                         <span class="like-heart"><?= $hasLiked ? '❤️' : '🤍' ?></span>
                                         <span class="like-label"><?= $isBn ? 'লাইক' : 'Like' ?></span>
@@ -197,7 +197,10 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                         </div>
                         <div class="form-input-col">
                             <form action="<?= url('/blog/' . $post['slug'] . '/comment', $currentLocale) ?>" method="POST" id="commentPostForm">
-                                <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+                                <?= csrf_field() ?>
+                                <div style="display:none!important;" aria-hidden="true">
+                                    <input type="text" name="_hp_website" value="" tabindex="-1" autocomplete="off">
+                                </div>
                                 
                                 <div class="comment-author-fields">
                                     <div class="field-item">
@@ -246,7 +249,13 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                             </div>
                         <?php else: ?>
                             <?php foreach ($comments as $cmt): 
-                                $cmtAuthor = $cmt['author_name'] ?? 'পাঠক';
+                                $isRaw = !empty($cmt['raw']);
+                                $cmtAuthor = (string)($cmt['author_name'] ?? 'পাঠক');
+                                $cmtContent = (string)($cmt['content'] ?? '');
+                                if (!$isRaw) {
+                                    $cmtAuthor = htmlspecialchars_decode($cmtAuthor, ENT_QUOTES);
+                                    $cmtContent = htmlspecialchars_decode($cmtContent, ENT_QUOTES);
+                                }
                                 $cmtAvatar = $cmt['author_avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($cmtAuthor));
                                 $cmtRole = $cmt['author_role'] ?? 'visitor';
                                 $cmtDate = date('d M Y, h:i A', strtotime($cmt['created_at'] ?? 'now'));
@@ -270,7 +279,7 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                                                 <?php endif; ?>
                                             </div>
                                             <div class="cmt-text">
-                                                <?= nl2br(e($cmt['content'] ?? '')) ?>
+                                                <?= nl2br(e($cmtContent)) ?>
                                             </div>
                                         </div>
 
@@ -323,7 +332,8 @@ $viewsCount = (int)($post['views_count'] ?? 0);
                         </h3>
                     </div>
                     <div class="widget-body text-center">
-                        <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Desk" class="sidebar-profile-img">
+                        <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Desk" class="sidebar-profile-img brand-mark-dark">
+                        <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS Desk" class="sidebar-profile-img brand-mark-light">
                         <h4 class="sidebar-profile-name"><?= $isBn ? 'সনাতন বিদ্যার্থী সংসদ' : 'Sanatan Vidyarthi Sangsad' ?></h4>
                         <div class="sidebar-profile-role"><?= $isBn ? 'শাস্ত্র ও সাহিত্য পরিষদ' : 'Scripture & Literature Board' ?></div>
                         <p class="sidebar-profile-bio">
@@ -586,7 +596,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(action, {
                 method: 'POST',
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': '<?= csrf_token() ?>'
                 },
                 body: formData
             })
@@ -608,6 +619,35 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(() => {
                 // Fallback to normal form submit
                 likeForm.submit();
+            });
+        });
+    }
+
+    const commentForm = document.getElementById('commentPostForm');
+    if (commentForm) {
+        commentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const action = commentForm.getAttribute('action') + '?format=json';
+            const formData = new FormData(commentForm);
+
+            fetch(action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-Token': '<?= csrf_token() ?>'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    window.location.reload();
+                } else {
+                    commentForm.submit();
+                }
+            })
+            .catch(() => {
+                commentForm.submit();
             });
         });
     }

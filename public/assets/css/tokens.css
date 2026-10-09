@@ -9,22 +9,23 @@
   --bg-surface: #FFFFFF;        /* Pure editorial paper white */
   --bg-subtle: #F3EFEA;         /* Soft parchment for secondary containers */
   --bg-warm-tint: #FAF5EE;      /* Tinted reading panel */
-  --bg-dark: #1A1F1C;           /* Deep Charcoal for footer/contrast header */
-  --bg-dark-card: #242B27;      /* Dark card container */
-  --bg-overlay: rgba(26, 31, 28, 0.6);
+  --bg-dark: #121815;           /* Deep Charcoal for footer/contrast header */
+  --bg-dark-card: #1A221E;      /* Dark card container */
+  --bg-overlay: rgba(18, 24, 21, 0.65);
 
   /* Primary Brand Aliases */
   --primary: #C65A1E;
-  --primary-deep: #1A1F1C;
+  --primary-deep: #0F172A;      /* Deep ink navy-black for titles */
   --primary-hover: #A64713;
 
-  /* Ink & Typography */
-  --text-main: #1A1F1C;         /* Deep Charcoal primary text */
-  --text-body: #343D37;         /* Readable editorial body text */
-  --text-muted: #647067;        /* Supporting text, citations, timestamps */
-  --text-faint: #8E9991;        /* Muted icons and disabled labels */
-  --text-on-dark: #F7F5F0;      /* Parchment off-white text on dark */
-  --text-on-dark-muted: #B5BFB8;
+  /* Ink & Typography — WCAG AAA Ultra-Crisp Legibility on Light */
+  --text-main: #0F172A;         /* Deep high-contrast ink for headings (Slate-900) */
+  --text-body: #1E293B;         /* Razor-sharp readable editorial body text (Slate-800) */
+  --text-secondary: #334155;    /* Clear supporting text (Slate-700) */
+  --text-muted: #475569;        /* High-contrast citations & timestamps (Slate-600) */
+  --text-faint: #64748B;        /* Muted icons and legible subtle labels (Slate-500) */
+  --text-on-dark: #F8FAFC;      /* Crisp pure white text on dark */
+  --text-on-dark-muted: #CBD5E1; /* Crisp light slate secondary text on dark */
 
   /* Restrained Accents */
   --accent-saffron: #C65A1E;    /* Muted temple terracotta / saffron */
@@ -32,9 +33,9 @@
   --accent-saffron-tint: #FDF3EB;
   --accent-saffron-border: #E8B99D;
 
-  --accent-gold: #A37E36;       /* Antique manuscript gold */
-  --accent-gold-hover: #866424;
-  --accent-gold-tint: #FBF7EE;
+  --accent-gold: #966C24;       /* High-contrast antique manuscript gold */
+  --accent-gold-hover: #785419;
+  --accent-gold-tint: #FDF9EE;
   --accent-gold-border: #DFCE9F;
 
   --accent-brown: #5C4334;      /* Sandalwood / warm earth */
@@ -44,22 +45,22 @@
   --border-medium: #D6CCC0;     /* Card and structural borders */
   --border-strong: #A89D8C;     /* Focused and distinguished elements */
 
-  /* Semantic Status Indicators */
-  --status-success: #286846;
-  --status-success-bg: #EDF7F2;
-  --status-success-border: #BCDBCB;
+  /* Semantic Status Indicators — High contrast dark text on light tints */
+  --status-success: #166534;
+  --status-success-bg: #DCFCE7;
+  --status-success-border: #86EFAC;
 
-  --status-warning: #9E6B15;
-  --status-warning-bg: #FEF8ED;
-  --status-warning-border: #F3DCAC;
+  --status-warning: #92400E;
+  --status-warning-bg: #FEF3C7;
+  --status-warning-border: #FDE68A;
 
-  --status-danger: #9B2D26;
-  --status-danger-bg: #FDF2F1;
-  --status-danger-border: #F1BDB8;
+  --status-danger: #991B1B;
+  --status-danger-bg: #FEE2E2;
+  --status-danger-border: #FCA5A5;
 
-  --status-info: #2A5A72;
-  --status-info-bg: #EFF6FA;
-  --status-info-border: #BCD5E6;
+  --status-info: #075985;
+  --status-info-bg: #E0F2FE;
+  --status-info-border: #BAE6FD;
 
   /* Typography Stacks */
   --font-bn-sans: 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -97,12 +98,107 @@
   --shadow-lg: 0 16px 36px rgba(26, 31, 28, 0.10);
 
   /* Layout Widths */
-  --container-max: 1240px;
+  --container-max: 1280px;
   --container-reading: 780px;
   --header-height: 80px;
   --header-height-mobile: 68px;
 
+  /* Window Size Class Breakpoints (Google & Apple HIG Standard) */
+  --bp-mobile-max: 599px;        /* Compact: < 600px */
+  --bp-tablet-min: 600px;        /* Medium: 600px - 839px */
+  --bp-tablet-max: 839px;
+  --bp-expanded-min: 840px;      /* Expanded: 840px - 1199px */
+  --bp-expanded-max: 1199px;
+  --bp-desktop-min: 1200px;      /* Large: 1200px - 1599px */
+  --bp-desktop-max: 1599px;
+  --bp-large-desktop-min: 1600px; /* Extra Large: 1600px+ */
+
+  /* Touch Target Minimum (Apple HIG & WCAG Standard) */
+  --touch-target-min: 44px;
+
   /* Transitions */
   --transition-fast: 0.15s ease-in-out;
   --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Dark Theme Tokens — Sleek Charcoal & Mint Neo-Dashboard Palette
+   ========================================================================== */
+:root[data-theme="dark"],
+html[data-theme="dark"],
+body.dark-theme {
+  /* Surfaces & Backgrounds */
+  --bg-canvas: #090B10;         /* Deep canvas black from design swatch (#090B10) */
+  --bg-surface: #101522;        /* Primary container & card surface (#101522) */
+  --bg-subtle: #151B2B;         /* Secondary dark containers & toolbar */
+  --bg-surface-elevated: #171D2D; /* Raised / hovered card layers */
+  --bg-warm-tint: #131929;      /* Dark reading & quote panel */
+  --bg-dark: #06080C;           /* Footer and deepest contrast layer */
+  --bg-dark-card: #101522;      /* Explicit dark card container */
+  --bg-input: #131826;          /* Form inputs & search bar */
+  --bg-track: #1F2937;          /* Track background (#1F2937) */
+  --bg-overlay: rgba(5, 7, 12, 0.82);
+
+  /* Primary Brand Aliases — Modern Radiant Terracotta Accent (#e25a1e) */
+  --primary: #e25a1e;           /* Vibrant terracotta primary brand */
+  --primary-deep: #F9FAFB;      /* Headings crisp pure white */
+  --primary-hover: #c84a12;     /* Terracotta hover deep */
+  --gradient-primary: linear-gradient(135deg, #e25a1e 0%, #c84a12 100%);
+
+  /* Ink & Typography — WCAG AAA Ultra-Crisp Luminous Hierarchy */
+  --text-main: #F9FAFB;         /* Pure crisp luminous white for headings (#F9FAFB) */
+  --text-body: #E2E8F0;         /* Soft readable off-white body text */
+  --text-secondary: #9CA3AF;    /* Crisp light slate supporting text */
+  --text-muted: #6B7280;        /* Muted slate from color swatch (#6B7280) */
+  --text-faint: #4B5563;        /* Subtle hints, inactive icons */
+  --text-on-dark: #F9FAFB;      /* Crisp white text */
+  --text-on-dark-muted: #CBD5E1; /* Secondary slate on dark */
+
+  /* Restrained & Vibrant Accents */
+  --accent-saffron: #e25a1e;    /* Primary highlight turns to radiant #e25a1e */
+  --accent-saffron-hover: #c84a12;
+  --accent-saffron-tint: rgba(226, 90, 30, 0.14);
+  --accent-saffron-border: rgba(226, 90, 30, 0.35);
+
+  --accent-gold: #F59E0B;       /* Radiant Amber / Gold from reference */
+  --accent-gold-hover: #FBBF24;
+  --accent-gold-tint: rgba(245, 158, 11, 0.12);
+  --accent-gold-border: rgba(245, 158, 11, 0.35);
+
+  --accent-brown: #3C3E56;      /* Muted violet-slate from UI kit */
+  --accent-mint: #e25a1e;       /* Saffron/Terracotta focal tone */
+  --accent-mint-deep: #c84a12;
+  --accent-mint-glow: rgba(226, 90, 30, 0.28);
+  --accent-slate-purple: #3C3E56;
+  --accent-slate-light: #5B5E7E;
+
+  /* Borders & Dividers */
+  --border-subtle: rgba(255, 255, 255, 0.08); /* Hairline edge highlight */
+  --border-medium: rgba(255, 255, 255, 0.14); /* Container structural outline */
+  --border-strong: rgba(226, 90, 30, 0.4);   /* Focused & active indicators */
+
+  /* Semantic Status Indicators */
+  --status-success: #10B981;
+  --status-success-bg: rgba(16, 185, 129, 0.12);
+  --status-success-border: rgba(16, 185, 129, 0.35);
+
+  --status-warning: #FBBF24;
+  --status-warning-bg: rgba(251, 191, 36, 0.12);
+  --status-warning-border: rgba(251, 191, 36, 0.35);
+
+  --status-danger: #F87171;
+  --status-danger-bg: rgba(248, 113, 113, 0.14);
+  --status-danger-border: rgba(248, 113, 113, 0.35);
+
+  --status-info: #38BDF8;
+  --status-info-bg: rgba(56, 189, 248, 0.12);
+  --status-info-border: rgba(56, 189, 248, 0.35);
+
+  /* Elevation & Neomorphic Ambient Depth */
+  --shadow-hairline: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.65);
+  --shadow-md: 0 14px 34px -6px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-lg: 0 22px 50px -10px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-glow: 0 0 28px rgba(226, 90, 30, 0.25);
+  --shadow-mint-btn: 0 6px 20px -2px rgba(226, 90, 30, 0.38);
 }
