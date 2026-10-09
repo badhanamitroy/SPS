@@ -761,10 +761,12 @@
             "assigned_by": "Constitution",
             "created_at": "2026-01-01 10:00:00",
             "username": "anik",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$M21CQmc5TzZnY1FET1NwRg$mxqr23u7+iLIUdxLPLTmO1i0rwxNOcSRAu7GCl1f5+s",
             "phone": "+8801711112233",
             "bio": "সিস্টেম আর্কিটেক্ট ও চিফ এডমিনিস্ট্রেটর।",
-            "updated_at": "2026-09-28 02:51:50"
+            "updated_at": "2026-10-09 16:29:28",
+            "auth_version": 8,
+            "password_changed_at": "2026-10-09 16:28:16"
         },
         {
             "id": "usr_robin",
@@ -782,7 +784,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "robin",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$ZVFDUFMyTDlQZUgyN3F0Zg$fNpkvjbiuvInEv9lmwc1\/p4bmrJ2VZ1fUBGVKC++Q6Y"
         },
         {
             "id": "usr_likhon",
@@ -800,7 +802,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "likhon",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$QUowYzF4dFZ3U2JIZ3I4UQ$vJNedswBsrByixzBZUi\/ciPW\/jOwwtYESzWRpQbsZns"
         },
         {
             "id": "usr_joy",
@@ -809,7 +811,7 @@
             "name_en": "Joy Chakraborty",
             "designation_bn": "কোষাধ্যক্ষ",
             "designation_en": "Treasurer",
-            "email": "treasurer@sps.org",
+            "email": "badhanamitroy2nd@gmail.com",
             "avatar": "assets\/images\/executives\/joy-chakraborty.png",
             "role": "finance_officer",
             "adminship": "Finance-Admin",
@@ -818,7 +820,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "joy",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$UWh0R25LakhZRTZjRWVCMA$P2RoG\/4mYqc9jI1ebgeE5jkti6wlWE3CaooKtgeONfk"
         },
         {
             "id": "usr_pranto",
@@ -835,9 +837,9 @@
             "status": "active",
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
-            "updated_at": "2026-09-28 00:56:37",
+            "updated_at": "2026-10-09 16:29:28",
             "username": "pranto",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$WERUNFhNQ0MvYnhULnVFag$KwBLS0MgjJEum0qMHIWmRYcQZ6ecAD8wDKcPh3a9DNg",
             "custom_permissions": []
         },
         {
@@ -856,12 +858,12 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "goutam",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$VW85VmRHeDJwLmJsaHZKdQ$GtpO0TB9FgOCCloVuxPCq1lV+aJ8FOz2DSlzWHfOosM",
             "custom_permissions": [
                 "blog.publish",
                 "library.manage"
             ],
-            "updated_at": "2026-09-28 00:56:37"
+            "updated_at": "2026-10-09 16:29:35"
         },
         {
             "id": "usr_rahul",
@@ -879,16 +881,17 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "rahul",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$WHhUbHF4N0ZoUFRFS0NNcA$iAv6ix21eIFpu8jzLOImfVa67YCzwunifVRK\/m6GIhg",
             "custom_permissions": [
                 "activities.create",
                 "volunteers.assign"
             ],
-            "updated_at": "2026-09-28 00:56:38"
+            "updated_at": "2026-10-09 16:29:35"
         },
         {
             "id": "usr_badhan",
             "google_id": "google_sps_16",
+            "google_email": "badhanamitroy571@gmail.com",
             "name_bn": "বাঁধন রায়",
             "name_en": "Badhan Roy",
             "designation_bn": "প্রকাশনা সম্পাদক-১",
@@ -902,7 +905,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "badhan",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$ZFVnSTZvZEpXekl2NjkyLg$pB5\/r6UtNu5V1pjMcZhyOzbXwWkDPBz9tAmmAnbuMpM"
         },
         {
             "id": "usr_partha",
@@ -920,7 +923,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "partha",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$Q0h4UGxSOXpYOEdDdlN3RA$WzZ3nktAxXpsLvMnL4apy7Wqti0+LBw6rZltzpC\/+lw"
         },
         {
             "id": "usr_kallol",
@@ -938,7 +941,7 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "kallol",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$dWNXUnRJYzh3SWIyU09PMA$IJJTSd69N5\/kJf9Cg8\/isQe0JHt8423drT6QYGenA7U"
         },
         {
             "id": "usr_auditor",
@@ -956,7 +959,105 @@
             "assigned_by": "usr_anik",
             "created_at": "2026-01-01 10:00:00",
             "username": "auditor",
-            "password_hash": "$2y$10$1a\/wc5krXjJyxzBdUaWVuenuNQ9BXSazqnmaYM\/iPL4dkCuvhu4au"
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$Vld6bnRtSTZDUEZhQjhWTA$Ky5lOfjPvshFUWuuYJUQLuLOJR9VlH9hgpag5iVkR\/Y"
+        },
+        {
+            "id": "usr_officer6abc04",
+            "name_bn": "দেবদূত বন্দ্যোপাধ্যায়",
+            "name_en": "Debadutta Banerjee",
+            "designation_bn": "সহকারী সম্পাদক",
+            "designation_en": "Assistant Editor",
+            "email": "officer_6abc04@sps.org",
+            "phone": "",
+            "avatar": "assets\/images\/executives\/joy-chakraborty.png",
+            "role": "content_editor",
+            "adminship": "Admin Officer",
+            "scope": "General Administration",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-09-29 20:33:44",
+            "username": "officer_6abc04",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$cnc3NE5MdDdvRU1KQ29xVA$+QfjxTKi0zOdw4Xdw3Ded499ZMteDuDUVi9YaVnFdMM",
+            "must_change_password": false,
+            "is_otp": false,
+            "initial_otp": null,
+            "otp_created_at": "2026-09-29 20:33:44",
+            "bio": "এসপিএস পরিচালনা পর্ষদ কর্তৃক নিযুক্ত কর্মকর্তা।",
+            "updated_at": "2026-09-29 20:33:44",
+            "password_changed_at": "2026-09-29 20:33:44"
+        },
+        {
+            "id": "usr_officer6abc09",
+            "name_bn": "দেবদূত বন্দ্যোপাধ্যায়",
+            "name_en": "Debadutta Banerjee",
+            "designation_bn": "সহকারী সম্পাদক",
+            "designation_en": "Assistant Editor",
+            "email": "officer_6abc09@sps.org",
+            "phone": "",
+            "avatar": "assets\/images\/executives\/joy-chakraborty.png",
+            "role": "content_editor",
+            "adminship": "Admin Officer",
+            "scope": "General Administration",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-09-29 20:53:38",
+            "username": "officer_6abc09",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$alVDOGJCQU52VjVLV0JHVQ$wTeUvHdktwlncGL\/95vDtRHd8jpVc0\/j3xKYNSIbnV8",
+            "must_change_password": false,
+            "is_otp": false,
+            "initial_otp": null,
+            "otp_created_at": "2026-09-29 20:53:38",
+            "bio": "এসপিএস পরিচালনা পর্ষদ কর্তৃক নিযুক্ত কর্মকর্তা।",
+            "updated_at": "2026-09-29 20:53:38",
+            "password_changed_at": "2026-09-29 20:53:38"
+        },
+        {
+            "id": "usr_officer6abcd1",
+            "name_bn": "দেবদূত বন্দ্যোপাধ্যায়",
+            "name_en": "Debadutta Banerjee",
+            "designation_bn": "সহকারী সম্পাদক",
+            "designation_en": "Assistant Editor",
+            "email": "officer_6abcd1@sps.org",
+            "phone": "",
+            "avatar": "assets\/images\/executives\/joy-chakraborty.png",
+            "role": "content_editor",
+            "adminship": "Admin Officer",
+            "scope": "General Administration",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-09-30 11:07:23",
+            "username": "officer_6abcd1",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$NWF1cHcudXpQZ3lkdnAxMA$xPFmEVtX0qpM\/CSttRTfRxIy3FUkHexQTp114U0l90Q",
+            "must_change_password": false,
+            "is_otp": false,
+            "otp_created_at": "2026-09-30 11:07:23",
+            "bio": "এসপিএস পরিচালনা পর্ষদ কর্তৃক নিযুক্ত কর্মকর্তা।",
+            "updated_at": "2026-09-30 11:07:24",
+            "password_changed_at": "2026-09-30 11:07:24"
+        },
+        {
+            "id": "usr_officer6abcd2",
+            "name_bn": "দেবদূত বন্দ্যোপাধ্যায়",
+            "name_en": "Debadutta Banerjee",
+            "designation_bn": "সহকারী সম্পাদক",
+            "designation_en": "Assistant Editor",
+            "email": "officer_6abcd2@sps.org",
+            "phone": "",
+            "avatar": "assets\/images\/executives\/joy-chakraborty.png",
+            "role": "content_editor",
+            "adminship": "Admin Officer",
+            "scope": "General Administration",
+            "status": "active",
+            "assigned_by": "usr_anik",
+            "created_at": "2026-09-30 11:11:12",
+            "username": "officer_6abcd2",
+            "password_hash": "$argon2id$v=19$m=65536,t=4,p=2$QXp4Z3V5R0NLNm81ekplbQ$fF8MzJFrvDQ1dSwR1TV\/6Wt+7C\/2hqgOSXqBNdkbfc8",
+            "must_change_password": false,
+            "is_otp": false,
+            "otp_created_at": "2026-09-30 11:11:13",
+            "bio": "এসপিএস পরিচালনা পর্ষদ কর্তৃক নিযুক্ত কর্মকর্তা।",
+            "updated_at": "2026-09-30 11:11:13",
+            "password_changed_at": "2026-09-30 11:11:13"
         }
     ]
 }

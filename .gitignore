@@ -2,6 +2,10 @@
 /storage/logs/*.log
 /storage/uploads/*
 /storage/books/*
+*.lock
+.*.lock
+*.bak*
+*.tmp*
 !.gitkeep
 .env
 .DS_Store

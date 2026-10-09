@@ -398,15 +398,27 @@ $resBadLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/l
 assertCondition($resBadLogin->getStatusCode() === 302, "Invalid member login returns redirect");
 assertCondition(str_contains(\App\Core\Session::getFlash('error') ?? '', 'কোনো সদস্য রেকর্ড পাওয়া যায়নি'), "Invalid member login returns descriptive error flash");
 
-// 11.3 POST /bn/membership/login with valid Member Code
+// 11.3 POST /bn/membership/login with valid Member Code (initiates 2FA)
+// SETUP: Reset rate limits to ensure idempotent test runs
+\App\Core\RateLimiter::resetAttempts('login:member:ip:127.0.0.1');
+\App\Core\RateLimiter::resetAttempts('2fa:resend:member:SPS-000872');
+\App\Core\RateLimiter::resetAttempts('2fa:verify:member:SPS-000872:127.0.0.1');
 $resGoodCodeLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/login', [], ['identifier' => 'SPS-000872']));
-assertCondition($resGoodCodeLogin->getStatusCode() === 302, "Valid Member Code login redirects to dashboard");
+assertCondition($resGoodCodeLogin->getStatusCode() === 302, "Valid Member Code login redirects to 2FA");
+// Use static OTP capture (test-only) -- session no longer stores plaintext code
+$memberOtp = \App\Services\TwoFactorService::getLastMemberOtp();
+$res2faMem = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/2fa', [], ['code' => $memberOtp ?? '']));
+assertCondition($res2faMem->getStatusCode() === 302, "Valid Member Code 2FA redirects to dashboard");
 assertCondition(\App\Core\Session::get('current_member_code') === 'SPS-000872', "Session current_member_code is set to SPS-000872");
 assertCondition(str_contains(\App\Core\Session::getFlash('success') ?? '', 'অমিত সেন'), "Login flash acknowledges member by name");
 
-// 11.4 POST /bn/membership/login with valid Email
+// 11.4 POST /bn/membership/login with valid Email (initiates 2FA)
+\App\Core\Session::forget('current_member_code');
+\App\Core\RateLimiter::resetAttempts('2fa:resend:member:SPS-000872');
 $resGoodEmailLogin = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/login', [], ['identifier' => 'amit.sen@example.com']));
-assertCondition($resGoodEmailLogin->getStatusCode() === 302, "Valid Email login redirects to dashboard");
+assertCondition($resGoodEmailLogin->getStatusCode() === 302, "Valid Email login redirects to 2FA");
+$memberOtpEmail = \App\Services\TwoFactorService::getLastMemberOtp();
+$res2faEmail = $router->dispatch(new \App\Core\Request('POST', '/bn/membership/2fa', [], ['code' => $memberOtpEmail ?? '']));
 assertCondition(\App\Core\Session::get('current_member_code') === 'SPS-000872', "Email login sets correct member session");
 
 // 11.5 Member Logout

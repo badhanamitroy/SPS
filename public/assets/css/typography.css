@@ -150,6 +150,20 @@ h4, .h4 {
   color: var(--text-main);
 }
 
+h5, .h5 {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+h6, .h6 {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
 p {
   margin-bottom: var(--space-md);
   color: var(--text-body);

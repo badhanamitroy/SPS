@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\I18n;
+use App\Core\RateLimiter;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
+use App\Services\AuditService;
 use App\Services\AuthService;
 use App\Services\BlogService;
+use App\Services\MembershipService;
 
 class BlogController extends BaseController
 {
@@ -91,7 +94,7 @@ class BlogController extends BaseController
             BlogService::incrementViews($postSlug);
         }
 
-        $userIdentifier = Session::get('user_ip') ?: ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+        $userIdentifier = $this->getLikeIdentifier($request);
         $hasLiked = BlogService::hasLiked($postSlug, $userIdentifier);
 
         $popularPosts = BlogService::getPopularPosts(4);
@@ -127,8 +130,26 @@ class BlogController extends BaseController
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
 
-        // Check simulated or active session mode
-        $sessionMode = Session::get('member_mode') ?? 'paid_member';
+        $memberCode = Session::get('current_member_code');
+        $member = (!empty($memberCode) && !Session::get('member_logged_out')) 
+            ? MembershipService::getMemberById($memberCode) 
+            : null;
+
+        $isAdmin = AuthService::check();
+        $status = $member['status'] ?? '';
+        $isActiveMember = $member && (
+            in_array($status, ['Active', 'Lifetime Active'], true) 
+            || MembershipService::isActiveStatus($status)
+        );
+        $isPaidTier = $member && !in_array(($member['plan_id'] ?? ''), ['free', 'free_visitor'], true) && !in_array(($member['category_id'] ?? ''), ['free', 'free_visitor'], true);
+
+        if (!$isAdmin && (!$isActiveMember || !$isPaidTier)) {
+            Session::setFlash('error', $isBn 
+                ? 'দুঃখিত! ব্লগ লেখার সুবিধাটি শুধুমাত্র এসপিএস-এর অনুমোদিত পেইড ও আজীবন সদস্যদের জন্য সংরক্ষিত। অনুগ্রহ করে পেইড সদস্যপদে লগইন করুন।' 
+                : 'Access Denied: Writing blogs is an exclusive privilege reserved for SPS Paid & Lifetime Members. Please log in with a paid member account.');
+            return $this->redirect(url('/membership/login', $locale));
+        }
+
         $currentUser = AuthService::getCurrentUser();
 
         $title = $isBn 
@@ -139,7 +160,8 @@ class BlogController extends BaseController
             'metaTitle' => $title,
             'activeNav' => 'blog',
             'currentUser' => $currentUser,
-            'memberMode' => $sessionMode,
+            'member' => $member,
+            'memberMode' => 'paid_member',
             'categories' => BlogService::getCategories(),
             'canonicalUrl' => url('/blog/write', $locale),
             'alternateBn' => url('/blog/write', 'bn'),
@@ -155,11 +177,20 @@ class BlogController extends BaseController
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
 
-        // Membership Verification: only paid members can write
-        $membershipTier = (string)$request->getPost('membership_tier', 'paid_member');
-        $simulatedMode = (string)$request->getPost('simulate_mode', 'paid_member');
+        $memberCode = Session::get('current_member_code');
+        $member = (!empty($memberCode) && !Session::get('member_logged_out')) 
+            ? MembershipService::getMemberById($memberCode) 
+            : null;
 
-        if ($membershipTier === 'free_visitor' || $simulatedMode === 'free_visitor') {
+        $isAdmin = AuthService::check();
+        $status = $member['status'] ?? '';
+        $isActiveMember = $member && (
+            in_array($status, ['Active', 'Lifetime Active'], true) 
+            || MembershipService::isActiveStatus($status)
+        );
+        $isPaidTier = $member && !in_array(($member['plan_id'] ?? ''), ['free', 'free_visitor'], true) && !in_array(($member['category_id'] ?? ''), ['free', 'free_visitor'], true);
+
+        if (!$isAdmin && (!$isActiveMember || !$isPaidTier)) {
             Session::setFlash('error', $isBn 
                 ? 'দুঃখিত! ব্লগ লেখার সুবিধাটি শুধুমাত্র এসপিএস-এর অনুমোদিত পেইড ও আজীবন সদস্যদের জন্য সংরক্ষিত। অনুগ্রহ করে পেইড সদস্যপদে যুক্ত হোন।' 
                 : 'Access Denied: Writing blogs is an exclusive privilege reserved for SPS Paid & Lifetime Members. Please upgrade your membership.');
@@ -195,15 +226,28 @@ class BlogController extends BaseController
         }
 
         $authorUser = AuthService::getCurrentUser();
-        $authorData = [
-            'name_bn' => trim((string)$request->getPost('author_name_bn', $authorUser['name_bn'] ?? 'শ্রী সুমিত কুমার রায়')),
-            'name_en' => trim((string)$request->getPost('author_name_en', $authorUser['name_en'] ?? 'Sumit Kumar Roy')),
-            'role' => 'paid_member',
-            'tier_bn' => 'পেইড সদস্য ও লেখক',
-            'tier_en' => 'Paid Member & Author',
-            'avatar' => $authorUser['avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode((string)$request->getPost('author_name_en', 'author'))),
-            'email' => trim((string)$request->getPost('author_email', $authorUser['email'] ?? 'member@sps.org')),
-        ];
+        if ($member) {
+            $authorData = [
+                'name_bn' => $member['name_bn'] ?? ($member['name_en'] ?? 'পেইড সদস্য'),
+                'name_en' => $member['name_en'] ?? ($member['name_bn'] ?? 'Paid Member'),
+                'role' => 'paid_member',
+                'tier_bn' => ($member['status'] === 'Lifetime Active') ? 'আজীবন সদস্য' : 'পেইড সদস্য ও লেখক',
+                'tier_en' => ($member['status'] === 'Lifetime Active') ? 'Lifetime Member' : 'Paid Member & Author',
+                'avatar' => $member['avatar'] ?? ('https://api.dicebear.com/7.x/bottts/svg?seed=' . urlencode($member['member_code'])),
+                'email' => $member['email'] ?? 'member@sps.org',
+                'member_code' => $member['member_code'],
+            ];
+        } else {
+            $authorData = [
+                'name_bn' => $authorUser['name_bn'] ?? 'প্রশাসক',
+                'name_en' => $authorUser['name_en'] ?? 'Admin',
+                'role' => $authorUser['role'] ?? 'admin',
+                'tier_bn' => 'প্রশাসনিক লেখক',
+                'tier_en' => 'Admin Author',
+                'avatar' => $authorUser['avatar'] ?? 'https://api.dicebear.com/7.x/bottts/svg?seed=admin',
+                'email' => $authorUser['email'] ?? 'admin@sps.org',
+            ];
+        }
 
         $postData = [
             'title_bn' => $titleBn ?: $titleEn,
@@ -234,12 +278,7 @@ class BlogController extends BaseController
         $locale = I18n::getLocale();
         $postSlug = $slug ?: (string)$request->getParam('slug', '');
 
-        $userIdentifier = Session::get('user_ip') ?: ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
-        $currentUser = AuthService::getCurrentUser();
-        if ($currentUser) {
-            $userIdentifier = $currentUser['id'];
-        }
-
+        $userIdentifier = $this->getLikeIdentifier($request);
         $result = BlogService::toggleLike($postSlug, $userIdentifier);
 
         // Check if AJAX
@@ -258,6 +297,39 @@ class BlogController extends BaseController
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
         $postSlug = $slug ?: (string)$request->getParam('slug', '');
+
+        $ip = Session::getClientIp();
+        $rateKey = 'ratelimit:blog:comment:' . $ip;
+        if (RateLimiter::tooManyAttempts($rateKey, 5)) {
+            $sec = RateLimiter::availableIn($rateKey) ?: 60;
+            $msg = $isBn
+                ? "মন্তব্য করার অনুমোদিত সীমা অতিক্রম হয়েছে। অনুগ্রহ করে {$sec} সেকেন্ড পর আবার চেষ্টা করুন।"
+                : "Too many comments submitted. Please try again in {$sec} seconds.";
+            if ($request->isAjax() || $request->getQuery('format') === 'json') {
+                return (new Response())->json(['success' => false, 'error' => $msg], 429);
+            }
+            Session::setFlash('error', $msg);
+            return $this->redirect(url('/blog/' . $postSlug, $locale) . '#comment-box');
+        }
+        RateLimiter::hit($rateKey, 60);
+
+        // Honeypot check: reject silently-but-logged when filled
+        if (!empty($request->getPost('_hp_website'))) {
+            AuditService::log(
+                'honeypot.triggered',
+                'security',
+                'guest',
+                'bot',
+                [],
+                ['ip' => Session::getClientIp(), 'endpoint' => 'blog.comment'],
+                'Automated bot submission trapped by blog comment honeypot field'
+            );
+            if ($request->isAjax() || $request->getQuery('format') === 'json') {
+                return (new Response())->json(['success' => true]);
+            }
+            Session::setFlash('success', $isBn ? 'আপনার মন্তব্য সফলভাবে জমা হয়েছে!' : 'Your comment has been submitted successfully!');
+            return $this->redirect(url('/blog/' . $postSlug, $locale) . '#comments');
+        }
 
         $name = trim((string)$request->getPost('author_name', ''));
         $content = trim((string)$request->getPost('content', ''));
@@ -298,5 +370,20 @@ class BlogController extends BaseController
 
         Session::setFlash('success', $isBn ? 'আপনার মন্তব্য সফলভাবে প্রকাশিত হয়েছে!' : 'Your comment has been posted successfully!');
         return $this->redirect(url('/blog/' . $postSlug, $locale) . '#comments');
+    }
+
+    /**
+     * Get unique like identity: member code when logged in, else a hashed IP+UA fingerprint.
+     */
+    private function getLikeIdentifier(Request $request): string
+    {
+        $memberCode = Session::get('current_member_code');
+        if (!empty($memberCode) && !Session::get('member_logged_out')) {
+            return 'member:' . $memberCode;
+        }
+
+        $ip = (string)(Session::get('user_ip') ?: ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'));
+        $ua = (string)($request->getHeader('User-Agent') ?: ($_SERVER['HTTP_USER_AGENT'] ?? 'unknown'));
+        return 'anon:' . hash('sha256', $ip . '|' . $ua);
     }
 }

@@ -128,6 +128,8 @@ $lastCmt = end($blogAfter['comments']);
 assert_test("Comment: New comment persisted in storage", ($lastCmt['author_name'] ?? '') === 'বিজয় কুমার সরকার (পরীক্ষামূলক পাঠক)');
 
 // 4. Paid Member Authorship & Status Check
+Session::set('current_member_code', 'SPS-000872');
+Session::forget('member_logged_out');
 $resWrite = $router->dispatch(new Request('GET', '/bn/blog/write'));
 assert_test("Router: /bn/blog/write returns HTTP 200", $resWrite->getStatusCode() === 200);
 $bodyWrite = $resWrite->getContent();
@@ -135,6 +137,8 @@ assert_test("Write View: Contains author membership verification box", str_conta
 assert_test("Write View: Contains Image Attachment input & sample presets", str_contains($bodyWrite, 'featuredImageInput') && str_contains($bodyWrite, 'image-preset-bar'));
 
 // Test Unpaid/Visitor Submission Rejection
+Session::forget('current_member_code');
+Session::set('member_logged_out', true);
 $unpaidPostData = [
     'membership_tier' => 'free_visitor',
     'title_bn' => 'অননুমোদিত ব্লগ পোস্ট',
@@ -145,6 +149,8 @@ assert_test("Write Guard: Free visitor submission rejected with 302", $resUnpaid
 assert_test("Write Guard: Flash error indicates paid membership requirement", str_contains(Session::getFlash('error') ?? '', 'পেইড') || str_contains(Session::getFlash('error') ?? '', 'Paid'));
 
 // Test Paid Member Submission
+Session::set('current_member_code', 'SPS-000872');
+Session::forget('member_logged_out');
 $paidPostData = [
     'membership_tier' => 'paid_member',
     'title_bn' => 'সনাতন দর্শনে পঞ্চমহাযজ্ঞ ও পরিবেশ চেতনা',
@@ -260,6 +266,8 @@ $singleContent = $resSingleBn->getContent();
 assert_test("Container Width: /bn/blog/{slug} uses standard container class & max-width", 
     str_contains($singleContent, 'blog-page-container') && str_contains($singleContent, 'var(--container-max)'));
 
+Session::set('current_member_code', 'SPS-000872');
+Session::forget('member_logged_out');
 $resWriteBn = $router->dispatch(new Request('GET', '/bn/blog/write'));
 $writeContent = $resWriteBn->getContent();
 assert_test("Container Width: /bn/blog/write uses standard container class & max-width", 
@@ -282,6 +290,8 @@ assert_test("Word Counter UI: Contains live wordLimitAlert element",
     str_contains($writeContent, 'id="wordLimitAlert"'));
 
 // Test over-limit manuscript submission (> 10,000 words)
+Session::set('current_member_code', 'SPS-000872');
+Session::forget('member_logged_out');
 $longManuscript = str_repeat('বেদান্ত দর্শন শাশ্বত সত্য ও বিশ্বজনীন অহিংসার বাণী প্রচার করে। ', 1500); // ~12,000 words
 $overlimitPostData = [
     'membership_tier' => 'paid_member',

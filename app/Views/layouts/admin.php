@@ -12,11 +12,31 @@ $allUsers = \App\Services\RbacService::getUsers();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($metaTitle ?? 'SPS Admin Console') ?></title>
     <link rel="icon" type="image/svg+xml" href="<?= asset('favicon.svg') ?>">
+    <!-- FontAwesome 6 Pro/Free Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link rel="stylesheet" href="<?= asset('assets/css/tokens.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/reset.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/typography.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/components.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/main.css') ?>">
+
+    <!-- Immediate Anti-FOUC Theme Initializer -->
+    <script>
+    (function() {
+        try {
+            var stored = localStorage.getItem('sps_theme');
+            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = stored ? stored : (systemDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+        } catch(e) {}
+    })();
+    </script>
     <style>
         :root {
             --admin-sidebar-width: 270px;
@@ -262,7 +282,8 @@ $allUsers = \App\Services\RbacService::getUsers();
     <header class="admin-topbar">
         <div class="admin-brand-area">
             <a href="<?= url('/admin', $currentLocale) ?>" style="display:flex; align-items:center; gap:var(--space-sm); text-decoration:none;">
-                <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Logo" class="admin-brand-logo">
+                <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Logo" class="admin-brand-logo brand-mark-dark">
+                <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS Logo" class="admin-brand-logo brand-mark-light">
                 <div>
                     <h1 class="admin-brand-title"><?= $isBn ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার' : 'Sanatan Philosophy & Scripture' ?></h1>
                     <div class="admin-brand-subtitle"><?= $isBn ? 'প্রশাসনিক নিয়ন্ত্রণকক্ষ (Admin Console)' : 'SPS Administrative Control' ?></div>
@@ -371,6 +392,19 @@ $allUsers = \App\Services\RbacService::getUsers();
                 </ul>
             <?php endif; ?>
 
+            <!-- Website CMS & Front Page Control -->
+            <?php if (\App\Services\AuthService::canAny(['content.view', 'content.edit', 'roles.manage']) || \App\Services\AuthService::hasRole(['super_admin', 'admin', 'content_editor'])): ?>
+                <div class="sidebar-section-title"><?= $isBn ? 'ওয়েবসাইট ও ফ্রন্ট পেজ' : 'Website & Front Page' ?></div>
+                <ul class="sidebar-nav-list">
+                    <li class="sidebar-nav-item <?= ($activeNav ?? '') === 'admin.homepage' ? 'active' : '' ?>">
+                        <a href="<?= url('/admin/homepage', $currentLocale) ?>">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            <span><?= $isBn ? 'ফ্রন্ট পেজ সেকশন কনফিগ' : 'Front Page Sections' ?></span>
+                        </a>
+                    </li>
+                </ul>
+            <?php endif; ?>
+
             <!-- Membership Administration & Payment Verification (Finance Officer, Super Admin, Admin, Membership Officer) -->
             <?php if (\App\Services\AuthService::canAny(['members.view', 'members.manage', 'finance.view']) || \App\Services\AuthService::hasRole(['super_admin', 'admin', 'membership_officer', 'finance_officer'])): ?>
                 <div class="sidebar-section-title"><?= $isBn ? 'সদস্যপদ ও পেমেন্ট' : 'Members & Payments' ?></div>
@@ -458,5 +492,6 @@ $allUsers = \App\Services\RbacService::getUsers();
             ? 'সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS) — অভ্যন্তরীণ প্রশাসনিক নিয়ন্ত্রণ ব্যবস্থা • রোল-ভিত্তিক পারমিশন ও ক্রিপ্টোগ্রাফিক অডিট ট্রেইল' 
             : 'Sanatan Philosophy & Scripture (SPS) — Role-Based Administrative Control System • Cryptographic Audit Trail' ?>
     </footer>
+    <script src="<?= asset('assets/js/theme-toggle.js') ?>"></script>
 </body>
 </html>

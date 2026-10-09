@@ -35,12 +35,36 @@ $alternateEn = $alternateEn ?? url('/', 'en');
     <link rel="icon" type="image/png" sizes="64x64" href="<?= asset('favicon.png') ?>">
     <link rel="apple-touch-icon" href="<?= asset('favicon.png') ?>">
 
+    <!-- FontAwesome 6 Pro/Free Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- Design System Stylesheets -->
     <link rel="stylesheet" href="<?= asset('assets/css/tokens.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/reset.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/typography.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/components.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/main.css') ?>">
+
+    <!-- Google Identity Services (GIS) / OAuth 2.0 Web Client -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Immediate Anti-FOUC Theme Initializer (Syncs with Chrome/Device & localStorage) -->
+
+    <script>
+    (function() {
+        try {
+            var stored = localStorage.getItem('sps_theme');
+            var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            var theme = stored ? stored : (systemDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+        } catch(e) {}
+    })();
+    </script>
 </head>
 <body class="sps-body">
     <!-- Accessible Skip Link -->
@@ -61,8 +85,10 @@ $alternateEn = $alternateEn ?? url('/', 'en');
 
     <!-- Modal Elements & Drawers -->
     <?= \App\Core\View::component('search_modal') ?>
+    <?= \App\Core\View::component('floating_donation') ?>
 
     <!-- Client Scripts -->
+    <script src="<?= asset('assets/js/theme-toggle.js') ?>"></script>
     <script src="<?= asset('assets/js/i18n-toggle.js') ?>" defer></script>
     <script src="<?= asset('assets/js/components.js') ?>" defer></script>
     <script src="<?= asset('assets/js/main.js') ?>" defer></script>

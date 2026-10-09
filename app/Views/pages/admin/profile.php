@@ -188,13 +188,25 @@ $warning = \App\Core\Session::getFlash('warning');
 
                 <!-- Password Change Section (Optional) -->
                 <div style="border-top: 1px solid var(--border-subtle); padding-top: var(--space-xl); margin-bottom: var(--space-xl);">
-                    <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0 0 4px; display: flex; align-items: center; gap: 8px;">
-                        <span>🔒</span>
-                        <span><?= $isBn ? 'পাসওয়ার্ড পরিবর্তন (ঐচ্ছিক)' : 'Change Password (Optional)' ?></span>
-                    </h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-deep); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span>🔒</span>
+                            <span><?= $isBn ? 'পাসওয়ার্ড পরিবর্তন ও নিরাপত্তা (Password Security)' : 'Change Password & Security' ?></span>
+                        </h3>
+                        <span style="display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700;">
+                            🛡️ <?= $isBn ? 'ইমেইল 2FA সক্রিয়' : 'Email 2FA Active' ?>
+                        </span>
+                    </div>
                     <p style="font-size: 0.82rem; color: var(--text-muted); margin: 0 0 var(--space-lg);">
-                        <?= $isBn ? 'পাসওয়ার্ড অপরিবর্তিত রাখতে চাইলে নিচের ঘরগুলো খালি রাখুন।' : 'Leave these fields blank if you do not wish to change your password.' ?>
+                        <?= $isBn ? 'পাসওয়ার্ড পরিবর্তনের ক্ষেত্রে বর্তমান পাসওয়ার্ড প্রদান আবশ্যক। অপরিবর্তিত রাখতে চাইলে নিচের ঘরগুলো খালি রাখুন।' : 'Current password is required to set a new password. Leave blank to keep existing password.' ?>
                     </p>
+
+                    <div style="margin-bottom: var(--space-md);">
+                        <label for="admin_current_password" style="display: block; font-size: 0.82rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                            <?= $isBn ? 'বর্তমান পাসওয়ার্ড' : 'Current Password' ?>
+                        </label>
+                        <input type="password" id="admin_current_password" name="current_password" placeholder="<?= $isBn ? 'আপনার বর্তমান পাসওয়ার্ড দিন' : 'Enter your current password' ?>" style="width: 100%; max-width: 480px; padding: 9px 12px; border: 1px solid var(--border-medium); border-radius: var(--radius-sm); font-size: 0.9rem; box-sizing: border-box;">
+                    </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-md);">
                         <div>

@@ -11,9 +11,12 @@ use App\Core\Session;
 use App\Services\ActivityService;
 use App\Services\AuthService;
 use App\Services\BlogService;
+use App\Services\GoogleAuthService;
+use App\Services\HomepageService;
 use App\Services\LibraryService;
 use App\Services\MembershipService;
 use App\Services\RbacService;
+use App\Services\TwoFactorService;
 
 class AdminController extends BaseController
 {
@@ -31,6 +34,30 @@ class AdminController extends BaseController
             Session::set('auth_return_url', $request->getPath());
             return $this->redirect(url('/admin/login', $locale));
         }
+
+        // Force password change on initial login with temporary credential (Quarantine State)
+        if (AuthService::isQuarantined()) {
+            $locale = I18n::getLocale();
+            $path = $request->getPath();
+            $isForceChangeRoute = str_ends_with($path, '/admin/force-password-change') || str_contains($path, 'force-password-change');
+            $isLogoutRoute = str_ends_with($path, '/admin/logout') || str_contains($path, '/logout');
+
+            if (!$isForceChangeRoute && !$isLogoutRoute) {
+                if ($request->isAjax() || str_contains((string)$request->getHeader('Accept', ''), 'application/json')) {
+                    return $this->json([
+                        'success' => false,
+                        'error' => '403 Forbidden: Quarantine active. Password change required before accessing administrative endpoints.',
+                        'redirect' => url('/admin/force-password-change', $locale)
+                    ], 403);
+                }
+
+                Session::setFlash('warning', $locale === 'bn' 
+                    ? 'নিরাপত্তার স্বার্থে প্রশাসন কর্তৃক প্রদত্ত ওয়ান-টাইম পাসওয়ার্ড (OTP) পরিবর্তন করে আপনার নিজস্ব অনন্য পাসওয়ার্ড সেট করা আবশ্যক।' 
+                    : 'Security Notice: Please replace your one-time password (OTP) with your secret unique password to access the admin panel.');
+                return $this->redirect(url('/admin/force-password-change', $locale));
+            }
+        }
+
         return null;
     }
 
@@ -51,11 +78,82 @@ class AdminController extends BaseController
 
         return $this->render('admin/login', [
             'metaTitle' => $title,
+            'googleClientId' => GoogleAuthService::getClientId(),
+            'isGoogleConfigured' => GoogleAuthService::isConfigured(),
         ]);
     }
 
     /**
-     * Process Admin Login Credentials
+     * Verify Google ID Token for Administrative Sign-In (POST)
+     */
+    public function googleVerify(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        // Read credential from JSON body or POST parameter
+        $idToken = '';
+        $rawInput = file_get_contents('php://input');
+        if (!empty($rawInput)) {
+            $jsonData = json_decode($rawInput, true);
+            if (is_array($jsonData)) {
+                $idToken = (string)($jsonData['credential'] ?? ($jsonData['idToken'] ?? ''));
+            }
+        }
+        if (empty($idToken)) {
+            $idToken = (string)($request->getPost('credential') ?: $request->getPost('idToken', ''));
+        }
+
+        if (empty($idToken)) {
+            return $this->json([
+                'success' => false,
+                'error' => $isBn ? 'গুগল ক্রেডেনশিয়াল টোকেন পাওয়া যায়নি।' : 'Google credential token not received.'
+            ], 400);
+        }
+
+        // Cryptographically verify ID Token against Google
+        $profile = GoogleAuthService::verifyIdToken($idToken);
+        if (!$profile) {
+            return $this->json([
+                'success' => false,
+                'error' => $isBn 
+                    ? 'গুগল প্রমাণীকরণ ব্যর্থ হয়েছে বা টোকেনটির মেয়াদ শেষ হয়ে গেছে। অনুগ্রহ করে পুনরায় চেষ্টা করুন।' 
+                    : 'Google authentication failed or token has expired. Please try again.'
+            ], 401);
+        }
+
+        // Verify authorization against SPS Admin accounts
+        $authResult = GoogleAuthService::authenticateAdmin($profile);
+        if (!($authResult['success'] ?? false)) {
+            return $this->json([
+                'success' => false,
+                'error' => $authResult['error'] ?? ($isBn ? 'অননুমোদিত অ্যাক্সেস।' : 'Unauthorized administrator access.')
+            ], 403);
+        }
+
+        $user = $authResult['user'];
+        $userName = $isBn ? ($user['name_bn'] ?? $user['name_en']) : ($user['name_en'] ?? $user['name_bn']);
+        $welcomeMsg = $isBn 
+            ? "স্বাগতম, {$userName}! গুগল নিরাপত্তার মাধ্যমে সফলভাবে প্রশাসনিক পোর্টালে প্রবেশ করেছেন।" 
+            : "Welcome, {$userName}! Successfully signed into SPS Admin Console via Google.";
+
+        Session::setFlash('success', $welcomeMsg);
+
+        return $this->json([
+            'success' => true,
+            'message' => $welcomeMsg,
+            'redirect' => url('/admin', $locale),
+            'user' => [
+                'name' => $userName,
+                'email' => $user['email'] ?? $profile['email'],
+                'role' => $user['role'] ?? 'admin'
+            ]
+        ]);
+    }
+
+
+    /**
+     * Process Admin Login Credentials with 2FA
      */
     public function loginProcess(Request $request, string $lang = ''): Response
     {
@@ -70,15 +168,188 @@ class AdminController extends BaseController
             return $this->redirect(url('/admin/login', $locale));
         }
 
-        if (AuthService::attempt($identifier, $password)) {
-            $returnUrl = Session::get('auth_return_url');
-            Session::remove('auth_return_url');
-            Session::setFlash('success', $isBn ? 'সফলভাবে লগইন হয়েছে। প্রশাসনিক নিয়ন্ত্রণকক্ষে স্বাগতম!' : 'Successfully signed in. Welcome to the Admin Console!');
-            return $this->redirect($returnUrl ?: url('/admin', $locale));
+        $matchedUser = AuthService::validateCredentials($identifier, $password);
+        if (!$matchedUser) {
+            Session::setFlash('error', $isBn ? 'ভুল ইউজারনেম/ইমেইল অথবা পাসওয়ার্ড। অনুগ্রহ করে পুনরায় চেষ্টা করুন।' : 'Invalid username/email or password. Please try again.');
+            return $this->redirect(url('/admin/login', $locale));
         }
 
-        Session::setFlash('error', $isBn ? 'ভুল ইউজারনেম/ইমেইল অথবা পাসওয়ার্ড। অনুগ্রহ করে পুনরায় চেষ্টা করুন।' : 'Invalid username/email or password. Please try again.');
-        return $this->redirect(url('/admin/login', $locale));
+        // Two-Factor Authentication via Email
+        TwoFactorService::initiateAdminChallenge($matchedUser);
+        $userEmail = $matchedUser['email'] ?? 'admin@sps.org';
+        $parts = explode('@', $userEmail);
+        $namePart = $parts[0];
+        $domain = $parts[1] ?? 'sps.org';
+        $maskedEmail = (strlen($namePart) > 2 ? substr($namePart, 0, 2) . str_repeat('*', strlen($namePart) - 2) : $namePart) . '@' . $domain;
+
+        Session::setFlash('info', $isBn 
+            ? "দ্বিমুখী নিরাপত্তার জন্য ৬-সংখ্যার ভেরিফিকেশন কোড আপনার ইমেইল ({$maskedEmail})-এ পাঠানো হয়েছে।" 
+            : "A 6-digit two-factor verification code has been dispatched to your email ({$maskedEmail}).");
+
+        return $this->redirect(url('/admin/2fa', $locale));
+    }
+
+    /**
+     * Admin 2FA Code Verification Screen (GET)
+     */
+    public function twoFactorPage(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        if (AuthService::check()) {
+            return $this->redirect(url('/admin', $locale));
+        }
+
+        $challenge = TwoFactorService::getPendingAdminChallenge();
+        if (!$challenge) {
+            Session::setFlash('error', $isBn ? 'লগইন সেশন পাওয়া যায়নি। অনুগ্রহ করে পুনরায় লগইন করুন।' : 'No active login session. Please sign in again.');
+            return $this->redirect(url('/admin/login', $locale));
+        }
+
+        $title = $isBn ? 'দ্বিমুখী প্রমাণীকরণ (2FA) | এসপিএস অ্যাডমিন' : 'Two-Factor Authentication (2FA) | SPS Admin';
+
+        return $this->render('admin/2fa', [
+            'metaTitle' => $title,
+            'challenge' => $challenge,
+        ]);
+    }
+
+    /**
+     * Admin 2FA Verification Process (POST)
+     */
+    public function twoFactorVerify(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        $code = trim((string)$request->getPost('code', ''));
+        if (empty($code)) {
+            Session::setFlash('error', $isBn ? 'অনুগ্রহ করে ৬-সংখ্যার ভেরিফিকেশন কোডটি প্রদান করুন।' : 'Please enter the 6-digit verification code.');
+            return $this->redirect(url('/admin/2fa', $locale));
+        }
+
+        $result = TwoFactorService::verifyAdminChallenge($code);
+        if (!($result['success'] ?? false)) {
+            Session::setFlash('error', $result['message']);
+            return $this->redirect(url('/admin/2fa', $locale));
+        }
+
+        // 2FA passed! Establish admin session
+        AuthService::loginAs($result['user_id']);
+        $returnUrl = Session::get('auth_return_url');
+        Session::remove('auth_return_url');
+
+        Session::setFlash('success', $isBn 
+            ? 'দ্বিমুখী প্রমাণীকরণ সফল হয়েছে! প্রশাসনিক নিয়ন্ত্রণকক্ষে স্বাগতম।' 
+            : 'Two-factor authentication successful! Welcome to the Admin Console.');
+
+        return $this->redirect($returnUrl ?: url('/admin', $locale));
+    }
+
+    /**
+     * Resend Admin 2FA OTP Code
+     */
+    public function twoFactorResend(Request $request, string $lang = ''): Response
+    {
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        $challenge = TwoFactorService::getPendingAdminChallenge();
+        if (!$challenge) {
+            Session::setFlash('error', $isBn ? 'সেশন পাওয়া যায়নি। পুনরায় লগইন করুন।' : 'Session not found. Please log in.');
+            return $this->redirect(url('/admin/login', $locale));
+        }
+
+        $user = RbacService::getUser($challenge['user_id']);
+        if ($user) {
+            TwoFactorService::initiateAdminChallenge($user);
+            Session::setFlash('success', $isBn ? 'নতুন ভেরিফিকেশন কোড আপনার ইমেইলে পুনরায় পাঠানো হয়েছে।' : 'A fresh verification code has been re-sent to your email.');
+        }
+
+        return $this->redirect(url('/admin/2fa', $locale));
+    }
+
+    /**
+     * Admin Profile View (Self-Service)
+     */
+    public function profilePage(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+        $currentUser = AuthService::getCurrentUser();
+        $currentRole = $currentUser ? RbacService::getRole($currentUser['role'] ?? '') : null;
+
+        $title = $isBn ? 'আমার প্রোফাইল ও নিরাপত্তা ব্যবস্থাপনা | এসপিএস' : 'My Profile & Security | SPS';
+
+        return $this->render('admin/profile', [
+            'metaTitle' => $title,
+            'activeNav' => 'admin.profile',
+            'currentUser' => $currentUser,
+            'currentRole' => $currentRole,
+        ], 'admin');
+    }
+
+    /**
+     * Update Admin Profile & Password
+     */
+    public function updateProfile(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+        $currentUser = AuthService::getCurrentUser();
+        $userId = $currentUser['id'] ?? '';
+
+        $profileData = [
+            'name_bn' => (string)$request->getPost('name_bn', ''),
+            'name_en' => (string)$request->getPost('name_en', ''),
+            'email' => (string)$request->getPost('email', ''),
+            'phone' => (string)$request->getPost('phone', ''),
+            'designation_bn' => (string)$request->getPost('designation_bn', ''),
+            'designation_en' => (string)$request->getPost('designation_en', ''),
+            'bio' => (string)$request->getPost('bio', ''),
+        ];
+
+        // Check if password change was requested
+        $currentPassword = (string)$request->getPost('current_password', '');
+        $newPassword = (string)$request->getPost('new_password', '');
+        $confirmPassword = (string)$request->getPost('confirm_password', '');
+
+        if (!empty($newPassword) || !empty($currentPassword)) {
+            if (empty($currentPassword)) {
+                Session::setFlash('error', $isBn ? 'পাসওয়ার্ড পরিবর্তনের জন্য বর্তমান পাসওয়ার্ড দেওয়া আবশ্যক।' : 'Current password is required to change password.');
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+            if ($newPassword !== $confirmPassword) {
+                Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ড ও নিশ্চিতকরণ পাসওয়ার্ড মিলছে না।' : 'New password and confirmation password do not match.');
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+            if (mb_strlen($newPassword) < 6) {
+                Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।' : 'New password must be at least 6 characters.');
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+
+            $pwdResult = AuthService::updateAdminPassword($userId, $currentPassword, $newPassword);
+            if (!($pwdResult['success'] ?? false)) {
+                Session::setFlash('error', $pwdResult['message']);
+                return $this->redirect(url('/admin/profile', $locale));
+            }
+        }
+
+        $res = RbacService::updateUserProfile($userId, $profileData);
+        if ($res['success'] ?? false) {
+            Session::setFlash('success', $isBn 
+                ? 'আপনার অ্যাডমিন প্রোফাইল ও নিরাপত্তা তথ্য সফলভাবে সংরক্ষিত হয়েছে।' 
+                : 'Your admin profile and security information have been successfully saved.');
+        } else {
+            Session::setFlash('error', $res['message'] ?? 'Profile update failed.');
+        }
+
+        return $this->redirect(url('/admin/profile', $locale));
     }
 
     /**
@@ -90,6 +361,7 @@ class AdminController extends BaseController
         $isBn = $locale === 'bn';
 
         AuthService::logout();
+        TwoFactorService::clearChallenges();
         Session::setFlash('success', $isBn ? 'আপনি সফলভাবে লগআউট হয়েছেন।' : 'You have been successfully logged out.');
         return $this->redirect(url('/admin/login', $locale));
     }
@@ -270,6 +542,11 @@ class AdminController extends BaseController
      */
     public function switchUser(Request $request, string $lang = ''): Response
     {
+        $isDebug = (bool)(\App\Core\Env::get('APP_DEBUG', \App\Core\App::config('app.debug', false)));
+        if (!$isDebug) {
+            return new Response('403 Forbidden: User impersonation is disabled.', 403, ['Content-Type' => 'text/plain']);
+        }
+
         if ($guard = $this->requireAuth($request)) return $guard;
 
         $locale = I18n::getLocale();
@@ -306,6 +583,7 @@ class AdminController extends BaseController
         
         $books = LibraryService::getBooks();
         $requests = LibraryService::getRequests();
+        $downloadRequests = LibraryService::getDownloadRequests();
         $currentRole = LibraryService::getCurrentRole();
 
         $title = $isBn 
@@ -318,11 +596,109 @@ class AdminController extends BaseController
             'activeNav' => 'admin.library',
             'books' => $books,
             'requests' => $requests,
+            'downloadRequests' => $downloadRequests,
             'currentRole' => $currentRole,
             'canonicalUrl' => url('/admin/library', $locale),
             'alternateBn' => url('/admin/library', 'bn'),
             'alternateEn' => url('/admin/library', 'en'),
         ], 'admin');
+    }
+
+    /**
+     * Update library book configuration (reading access, scope, download permissions, metadata).
+     */
+    public function updateLibraryBook(Request $request, string $lang = '', string $slug = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $targetSlug = !empty($slug) ? $slug : $lang;
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        if (!AuthService::can('library.view')) {
+            return $this->forbidden($request, 'library.view');
+        }
+
+        $book = LibraryService::getBook($targetSlug);
+        if (!$book) {
+            Session::setFlash('error', $isBn ? 'গ্রন্থটি পাওয়া যায়নি।' : 'Book not found.');
+            return $this->redirect(url('/admin/library', $locale));
+        }
+
+        $updateData = [
+            'title_bn' => $request->post('title_bn', $book['title_bn']),
+            'title_en' => $request->post('title_en', $book['title_en']),
+            'author_bn' => $request->post('author_bn', $book['author_bn']),
+            'author_en' => $request->post('author_en', $book['author_en']),
+            'publisher_bn' => $request->post('publisher_bn', $book['publisher_bn'] ?? ''),
+            'publisher_en' => $request->post('publisher_en', $book['publisher_en'] ?? ''),
+            'category_bn' => $request->post('category_bn', $book['category_bn']),
+            'category_en' => $request->post('category_en', $book['category_en']),
+            'publication_year' => $request->post('publication_year', $book['publication_year']),
+            'reading_access' => $request->post('reading_access', $book['reading_access'] ?? 'paid_members'),
+            'reading_scope' => $request->post('reading_scope', $book['reading_scope'] ?? 'full'),
+            'preview_start' => $request->post('preview_start', $book['preview_start'] ?? 1),
+            'preview_end' => $request->post('preview_end', $book['preview_end'] ?? 20),
+            'download_permission' => $request->post('download_permission', $book['download_permission'] ?? 'admin_approval_required'),
+            'allow_download_request' => $request->post('allow_download_request') === '1' || $request->post('allow_download_request') === 'on',
+            'synopsis_bn' => $request->post('synopsis_bn', $book['synopsis_bn']),
+            'synopsis_en' => $request->post('synopsis_en', $book['synopsis_en']),
+        ];
+
+        LibraryService::updateBook($targetSlug, $updateData);
+
+        Session::setFlash('success', $isBn 
+            ? "গ্রন্থ '{$updateData['title_bn']}'-এর এক্সেস ও কনফিগারেশন সফলভাবে হালনাগাদ করা হয়েছে।" 
+            : "Publication '{$updateData['title_en']}' access configuration updated successfully.");
+
+        return $this->redirect(url('/admin/library', $locale));
+    }
+
+    /**
+     * Update download request status (approve, reject, revoke).
+     */
+    public function updateDownloadRequest(Request $request, string $lang = '', string $id = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+
+        $targetId = !empty($id) ? $id : $lang;
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        if (!AuthService::can('library.approve_request') && !AuthService::can('library.view')) {
+            return $this->forbidden($request, 'library.approve_request');
+        }
+
+        $action = $request->getPost('action', 'approve');
+        $adminNote = $request->getPost('admin_note', '');
+        $expiryDays = (int)$request->getPost('expiry_days', 2);
+        if ($expiryDays < 1) $expiryDays = 2;
+
+        if ($action === 'approve') {
+            LibraryService::updateDownloadRequestStatus(
+                $targetId, 
+                'approved', 
+                $adminNote ?: ($isBn ? "প্রশাসক কর্তৃক অনুমোদিত ({$expiryDays} দিনের সাময়িক ডাউনলোড পাস)" : "Approved by Admin ({$expiryDays}-day temporary pass)"),
+                $expiryDays
+            );
+            Session::setFlash('success', $isBn ? 'ডাউনলোড আবেদনটি অনুমোদিত হয়েছে এবং সাময়িক সিকিউর টোকেন জেনারেট করা হয়েছে।' : 'Download request approved. Temporary signed token issued.');
+        } elseif ($action === 'reject') {
+            LibraryService::updateDownloadRequestStatus(
+                $targetId, 
+                'rejected', 
+                $adminNote ?: ($isBn ? 'বর্তমান নীতি অনুযায়ী অফলাইন ডাউনলোড অনুমতি দেওয়া সম্ভব নয়।' : 'Declined per institutional copyright policy.')
+            );
+            Session::setFlash('warning', $isBn ? 'ডাউনলোড আবেদনটি প্রত্যাখ্যান করা হয়েছে।' : 'Download request rejected.');
+        } elseif ($action === 'revoke') {
+            LibraryService::updateDownloadRequestStatus(
+                $targetId, 
+                'revoked', 
+                $adminNote ?: ($isBn ? 'প্রশাসক কর্তৃক ডাউনলোড প্রবেশাধিকার বাতিল করা হয়েছে।' : 'Download token revoked by Admin.')
+            );
+            Session::setFlash('warning', $isBn ? 'ডাউনলোড পাসটি সফলভাবে বাতিল (Revoke) করা হয়েছে।' : 'Download pass revoked successfully.');
+        }
+
+        return $this->redirect(url('/admin/library', $locale));
     }
 
     /**
@@ -361,7 +737,7 @@ class AdminController extends BaseController
     /**
      * Standard 403 Forbidden response.
      */
-    protected function forbidden(Request $request, string $requiredPermission): Response
+    protected function forbidden(Request $request, string $requiredPermission = ''): Response
     {
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
@@ -970,86 +1346,193 @@ class AdminController extends BaseController
     }
 
     /**
-     * Admin Profile Self-Service Page
+     * Homepage Sections Management Page (Super Admin, Admin, Content Editor)
      */
-    public function profilePage(Request $request, string $lang = ''): Response
+    public function homepageSections(Request $request, string $lang = ''): Response
     {
-        if ($guard = $this->requireAuth($request)) return $guard;
+        if ($res = $this->requireAuth($request)) {
+            return $res;
+        }
 
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
-        $currentUser = AuthService::getCurrentUser();
-        $currentRole = RbacService::getRole($currentUser['role'] ?? '');
+
+        $sections = HomepageService::getSections();
 
         $title = $isBn 
-            ? 'আমার প্রোফাইল | সনাতন ফিলোসফি এন্ড স্ক্রিপচার' 
-            : 'My Admin Profile | SPS';
+            ? 'ফ্রন্ট পেজ সেকশন কনফিগারেশন | অ্যাডমিন পোর্টাল' 
+            : 'Front Page Sections Configuration | Admin Portal';
 
-        return $this->render('admin/profile', [
+        return $this->render('admin/homepage', [
             'metaTitle' => $title,
-            'activeNav' => 'admin.profile',
-            'currentUser' => $currentUser,
-            'currentRole' => $currentRole,
-            'roles' => RbacService::getRoles(),
+            'activeNav' => 'admin.homepage',
+            'sections' => $sections,
         ]);
     }
 
     /**
-     * Update Admin Profile Details (Self-Service)
+     * Update Homepage Sections (Enabled/Disabled, Order)
      */
-    public function updateProfile(Request $request, string $lang = ''): Response
+    public function updateHomepageSections(Request $request, string $lang = ''): Response
     {
-        if ($guard = $this->requireAuth($request)) return $guard;
+        if ($res = $this->requireAuth($request)) {
+            return $res;
+        }
 
         $locale = I18n::getLocale();
         $isBn = $locale === 'bn';
+
+        $sectionsInput = $request->getPost('sections', []);
         $currentUser = AuthService::getCurrentUser();
 
-        $nameBn = trim((string)$request->getPost('name_bn', ''));
-        $nameEn = trim((string)$request->getPost('name_en', ''));
-        $email = trim((string)$request->getPost('email', ''));
-        $phone = trim((string)$request->getPost('phone', ''));
-        $bio = trim((string)$request->getPost('bio', ''));
-        $newPassword = (string)$request->getPost('new_password', '');
-        $confirmPassword = (string)$request->getPost('confirm_password', '');
-
-        if (empty($nameBn) && empty($nameEn)) {
-            Session::setFlash('error', $isBn ? 'অনুগ্রহ করে অন্তত একটি ভাষায় আপনার নাম প্রদান করুন।' : 'Please provide your name.');
-            return $this->redirect(url('/admin/profile', $locale));
+        if (is_array($sectionsInput)) {
+            HomepageService::updateSections($sectionsInput, $currentUser);
+            Session::setFlash('success', $isBn 
+                ? 'ফ্রন্ট পেজের সেকশনগুলোর স্ট্যাটাস ও ক্রমবিন্যাস সফলভাবে সংরক্ষিত হয়েছে।' 
+                : 'Homepage sections configuration and ordering have been saved successfully.');
+        } else {
+            Session::setFlash('error', $isBn ? 'কোনো তথ্য পরিবর্তন করা হয়নি।' : 'No data was provided.');
         }
 
-        $profileData = [
-            'name_bn' => $nameBn ?: ($currentUser['name_bn'] ?? ''),
-            'name_en' => $nameEn ?: ($currentUser['name_en'] ?? ''),
-            'email' => $email ?: ($currentUser['email'] ?? ''),
-            'phone' => $phone,
-            'bio' => $bio,
+        return $this->redirect(url('/admin/homepage', $locale));
+    }
+
+    /**
+     * Admin First-Login Force Password Change Screen (GET)
+     */
+    public function forcePasswordChangePage(Request $request, string $lang = ''): Response
+    {
+        if (!AuthService::check()) {
+            return $this->redirect(url('/admin/login', I18n::getLocale()));
+        }
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+        $title = $isBn ? 'অনন্য পাসওয়ার্ড নির্ধারণ | এসপিএস অ্যাডমিন' : 'Set Unique Password | SPS Admin';
+
+        return $this->render('admin/force_password_change', [
+            'metaTitle' => $title,
+        ]);
+    }
+
+    /**
+     * Process Admin First-Login Force Password Change (POST)
+     */
+    public function forcePasswordChangeSubmit(Request $request, string $lang = ''): Response
+    {
+        if (!AuthService::check()) {
+            return $this->redirect(url('/admin/login', I18n::getLocale()));
+        }
+
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        // Enforce CSRF check
+        if (!$this->validateCsrf($request)) {
+            Session::setFlash('error', $isBn ? 'নিরাপত্তা টোকেন অকার্যকর। অনুগ্রহ করে ফর্মটি পুনরায় সাবমিট করুন।' : 'Invalid security token (CSRF). Please resubmit.');
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        $currentPassword = (string)$request->getPost('current_password', '');
+        $newPassword = (string)$request->getPost('new_password', '');
+        $newPasswordConfirmation = (string)$request->getPost('new_password_confirmation', '');
+
+        if (empty($currentPassword) || empty($newPassword)) {
+            Session::setFlash('error', $isBn ? 'বর্তমান সাময়িক পাসওয়ার্ড এবং নতুন পাসওয়ার্ড উভয়টি দেওয়া আবশ্যক।' : 'Both current temporary password and new password are required.');
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        if ($newPassword !== $newPasswordConfirmation) {
+            Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ড এবং নিশ্চিতকরণ পাসওয়ার্ড মিলছে না।' : 'New password and confirmation do not match.');
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        if (mb_strlen($newPassword) < 10) {
+            Session::setFlash('error', $isBn ? 'নতুন নিজস্ব পাসওয়ার্ড কমপক্ষে ১০ অক্ষরের হতে হবে।' : 'New password must be at least 10 characters.');
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        if ($newPassword === $currentPassword) {
+            Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ডটি সাময়িক পাসওয়ার্ড থেকে ভিন্ন হতে হবে।' : 'New password must differ from temporary password.');
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        $user = AuthService::getCurrentUser();
+        $result = AuthService::completeInitialPasswordChange($user['id'], $currentPassword, $newPassword);
+
+        if (!($result['success'] ?? false)) {
+            Session::setFlash('error', $result['message']);
+            return $this->redirect(url('/admin/force-password-change', $locale));
+        }
+
+        Session::setFlash('success', $isBn 
+            ? 'আপনার নিজস্ব অনন্য পাসওয়ার্ড সফলভাবে নির্ধারিত হয়েছে! প্রশাসনিক ড্যাশবোর্ডে স্বাগতম।' 
+            : 'Your unique personal password has been successfully established! Welcome to the Admin Console.');
+
+        return $this->redirect(url('/admin', $locale));
+    }
+
+    /**
+     * Super Admin: Create a new admin officer with a generated One-Time Password (OTP) (POST)
+     */
+    public function createAdminUser(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        if (!AuthService::isSuperAdmin()) {
+            Session::setFlash('error', $isBn ? 'শুধুমাত্র সুপার অ্যাডমিন নতুন প্রশাসনিক কর্মকর্তা যুক্ত করতে পারেন।' : 'Only Super Admin can create admin users.');
+            return $this->redirect(url('/admin/users', $locale));
+        }
+
+        $currentAdmin = AuthService::getCurrentUser();
+        $userData = [
+            'name_bn' => trim((string)$request->getPost('name_bn', '')),
+            'name_en' => trim((string)$request->getPost('name_en', '')),
+            'username' => trim((string)$request->getPost('username', '')),
+            'email' => trim((string)$request->getPost('email', '')),
+            'phone' => trim((string)$request->getPost('phone', '')),
+            'role' => (string)$request->getPost('role', 'moderator'),
+            'designation_bn' => trim((string)$request->getPost('designation_bn', '')),
+            'designation_en' => trim((string)$request->getPost('designation_en', '')),
+            'scope' => trim((string)$request->getPost('scope', '')),
         ];
 
-        // Password change handling (optional)
-        if (!empty($newPassword)) {
-            if (strlen($newPassword) < 6) {
-                Session::setFlash('error', $isBn ? 'নতুন পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।' : 'New password must be at least 6 characters.');
-                return $this->redirect(url('/admin/profile', $locale));
-            }
-            if ($newPassword !== $confirmPassword) {
-                Session::setFlash('error', $isBn ? 'পাসওয়ার্ড এবং নিশ্চিতকরণ পাসওয়ার্ড মেলেনি।' : 'New password and confirmation do not match.');
-                return $this->redirect(url('/admin/profile', $locale));
-            }
-            $profileData['password'] = $newPassword;
-        }
-
-        $res = RbacService::updateUserProfile($currentUser['id'], $profileData);
-
-        if ($res['success'] ?? false) {
-            Session::setFlash('success', $isBn 
-                ? 'আপনার অ্যাডমিন প্রোফাইল সফলভাবে হালনাগাদ করা হয়েছে।' 
-                : 'Your admin profile has been successfully updated.');
+        $res = \App\Services\RbacService::createAdminUserWithOtp($userData, $currentAdmin['id']);
+        if ($res['success']) {
+            Session::setFlash('success', $res['message']);
         } else {
-            Session::setFlash('error', $res['message'] ?? ($isBn ? 'প্রোফাইল আপডেট ব্যর্থ হয়েছে।' : 'Failed to update profile.'));
+            Session::setFlash('error', $res['message']);
         }
 
-        return $this->redirect(url('/admin/profile', $locale));
+        return $this->redirect(url('/admin/users', $locale));
+    }
+
+    /**
+     * Super Admin: Reset an officer's password to a fresh One-Time Password (OTP) (POST)
+     */
+    public function resetAdminOtp(Request $request, string $lang = ''): Response
+    {
+        if ($guard = $this->requireAuth($request)) return $guard;
+        $locale = I18n::getLocale();
+        $isBn = $locale === 'bn';
+
+        if (!AuthService::isSuperAdmin()) {
+            Session::setFlash('error', $isBn ? 'শুধুমাত্র সুপার অ্যাডমিন পাসওয়ার্ড রিসেট করতে পারেন।' : 'Only Super Admin can reset admin passwords.');
+            return $this->redirect(url('/admin/users', $locale));
+        }
+
+        $targetUserId = (string)$request->getPost('target_user_id', '');
+        $currentAdmin = AuthService::getCurrentUser();
+
+        $res = \App\Services\RbacService::resetAdminOtp($targetUserId, $currentAdmin['id']);
+        if ($res['success']) {
+            Session::setFlash('success', $res['message']);
+        } else {
+            Session::setFlash('error', $res['message']);
+        }
+
+        return $this->redirect(url('/admin/users', $locale));
     }
 }
-

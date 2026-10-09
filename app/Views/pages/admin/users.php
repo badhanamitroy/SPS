@@ -163,9 +163,17 @@ $allowanceModules = [
                 <?= $isBn ? 'এসপিএস নির্বাহী কর্মকর্তা ও প্রশাসক তালিকা' : 'SPS Executive Officers & Administrators' ?>
             </h3>
         </div>
-        <span style="font-size:0.82rem; font-weight:700; color:var(--text-muted); background:var(--bg-surface); padding:4px 12px; border-radius:var(--radius-full);">
-            <?= $isBn ? 'মোট কর্মকর্তা:' : 'Total Officers:' ?> <?= count($users) ?>
-        </span>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.82rem; font-weight:700; color:var(--text-muted); background:var(--bg-surface); padding:4px 12px; border-radius:var(--radius-full);">
+                <?= $isBn ? 'মোট কর্মকর্তা:' : 'Total Officers:' ?> <?= count($users) ?>
+            </span>
+            <?php if ($canAssignRoles): ?>
+                <button type="button" onclick="openCreateOfficerModal()" class="btn btn-sm btn-primary" style="font-weight:800; display:inline-flex; align-items:center; gap:6px; background:linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);">
+                    <span>➕</span>
+                    <span><?= $isBn ? 'নতুন কর্মকর্তা যুক্ত করুন (OTP সহ)' : 'Add Officer (with OTP)' ?></span>
+                </button>
+            <?php endif; ?>
+        </div>
     </div>
 
     <div style="overflow-x:auto;">
@@ -176,6 +184,7 @@ $allowanceModules = [
                     <th style="padding:12px 14px;"><?= $isBn ? 'নিযুক্ত ভূমিকা (Role)' : 'Assigned Role' ?></th>
                     <th style="padding:12px 14px;"><?= $isBn ? 'কাজের বিভাগ / কার্যপরিধি' : 'Assigned Tasks & Scope' ?></th>
                     <th style="padding:12px 14px;"><?= $isBn ? 'বিশেষ কাজের অনুমতি (Allowances)' : 'Task Allowances' ?></th>
+                    <th style="padding:12px 14px; text-align:center;"><?= $isBn ? 'পাসওয়ার্ড নিরাপত্তা' : 'Auth & OTP' ?></th>
                     <th style="padding:12px 14px; text-align:center;"><?= $isBn ? 'স্ট্যাটাস' : 'Status' ?></th>
                     <th style="padding:12px 16px; text-align:right;"><?= $isBn ? 'সুপার অ্যাডমিন অ্যাকশন' : 'Super Admin Action' ?></th>
                 </tr>
@@ -278,6 +287,24 @@ $allowanceModules = [
                             <?php endif; ?>
                         </td>
 
+                        <!-- Auth & OTP Status -->
+                        <td style="padding:12px 14px; text-align:center;">
+                            <?php if (!empty($u['must_change_password'])): ?>
+                                <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:#b45309; background:#fffbeb; font-weight:800; padding:3px 8px; border-radius:var(--radius-full); border:1px solid #fde68a;" title="<?= $isBn ? 'কর্মকর্তা ওয়ান-টাইম পাসওয়ার্ড ব্যবহার করছেন, প্রথমবার লগইনে পরিবর্তন আবশ্যক' : 'OTP Active, must change on first login' ?>">
+                                    ⏳ <?= $isBn ? 'OTP সক্রিয় (প্রথম লগইন)' : 'OTP (Initial)' ?>
+                                </span>
+                                <?php if (!empty($u['initial_otp'])): ?>
+                                    <div style="font-size:0.68rem; font-family:monospace; color:#92400e; margin-top:2px;">
+                                        <?= e($u['initial_otp']) ?>
+                                    </div>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.72rem; color:#15803d; background:#f0fdf4; font-weight:800; padding:3px 8px; border-radius:var(--radius-full); border:1px solid #86efac;">
+                                    ✓ <?= $isBn ? 'অনন্য পাসওয়ার্ড' : 'Unique Password' ?>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+
                         <!-- Status -->
                         <td style="padding:12px 14px; text-align:center;">
                             <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#15803d; background:#dcfce7; font-weight:800; padding:2px 8px; border-radius:var(--radius-full); border:1px solid #86efac;">
@@ -288,14 +315,23 @@ $allowanceModules = [
                         <!-- Super Admin Actions -->
                         <td style="padding:12px 16px; text-align:right;">
                             <?php if ($canAssignRoles): ?>
-                                <button type="button" 
-                                        onclick="openAssignmentModal(<?= $userJson ?>)"
-                                        class="btn btn-sm btn-primary" 
-                                        style="font-size:0.78rem; font-weight:800; padding:5px 12px; display:inline-flex; align-items:center; gap:6px;"
-                                        title="<?= $isBn ? 'সুপার অ্যাডমিন হিসেবে রোল, কাজের পরিধি ও বিশেষ অনুমতি নির্ধারণ করুন' : 'Assign role, tasks scope & allowances' ?>">
-                                    <span>⚙️</span>
-                                    <span><?= $isBn ? 'দায়িত্ব ও ক্ষমতা নির্ধারণ' : 'Assign Role & Tasks' ?></span>
-                                </button>
+                                <div style="display:inline-flex; gap:6px; align-items:center;">
+                                    <button type="button" 
+                                            onclick="openAssignmentModal(<?= $userJson ?>)"
+                                            class="btn btn-sm btn-primary" 
+                                            style="font-size:0.78rem; font-weight:800; padding:5px 10px; display:inline-flex; align-items:center; gap:5px;"
+                                            title="<?= $isBn ? 'দায়িত্ব ও কাজের পরিধি নির্ধারণ' : 'Assign role, tasks scope & allowances' ?>">
+                                        <span>⚙️</span>
+                                        <span><?= $isBn ? 'দায়িত্ব' : 'Role' ?></span>
+                                    </button>
+                                    <form action="<?= url('/admin/users/reset-otp', $currentLocale) ?>" method="POST" style="margin:0; display:inline;" onsubmit="return confirm('Reset this officer password to a new OTP?');">
+                                        <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+                                        <input type="hidden" name="target_user_id" value="<?= e($u['id']) ?>">
+                                        <button type="submit" class="btn btn-sm btn-secondary" style="font-size:0.74rem; font-weight:700; padding:5px 8px; color:#b45309; border-color:#fde68a; background:#fffbeb;" title="<?= $isBn ? 'নতুন ওয়ান-টাইম পাসওয়ার্ড (OTP) তৈরি করুন' : 'Reset with OTP' ?>">
+                                            🔑 OTP
+                                        </button>
+                                    </form>
+                                </div>
                             <?php else: ?>
                                 <span style="font-size:0.75rem; color:#94a3b8; font-style:italic;">
                                     🔒 <?= $isBn ? 'সুপার অ্যাডমিন এক্তিয়ার' : 'Super Admin only' ?>
@@ -516,4 +552,121 @@ window.addEventListener('keydown', function(e) {
         closeAssignmentModal();
     }
 });
+</script>
+
+
+<!-- ========================================================================= -->
+<!-- SUPER ADMIN CREATE OFFICER WITH OTP MODAL                                 -->
+<!-- ========================================================================= -->
+<div id="createOfficerModal" style="display:none; position:fixed; inset:0; background:rgba(15, 23, 42, 0.75); z-index:9999; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); overflow-y:auto;">
+    <div style="background:#ffffff; border-radius:var(--radius-xl); max-width:620px; width:100%; max-height:92vh; display:flex; flex-direction:column; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); border:1px solid var(--border-medium); overflow:hidden;">
+        
+        <div style="background:linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); color:#ffffff; padding:18px 24px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span style="font-size:1.6rem;">➕</span>
+                <div>
+                    <h3 style="margin:0; font-size:1.15rem; font-weight:800; color:#ffffff;">
+                        <?= $isBn ? 'নতুন প্রশাসনিক কর্মকর্তা যুক্তকরণ (OTP সহ)' : 'Create Admin Officer with OTP' ?>
+                    </h3>
+                    <div style="font-size:0.75rem; color:#bfdbfe; margin-top:2px;">
+                        <?= $isBn ? 'কর্মকর্তাকে একটি ওয়ান-টাইম পাসওয়ার্ড দেওয়া হবে যা প্রথম লগইনে পরিবর্তন করতে হবে' : 'Officer will receive an OTP, mandatory password change on first login' ?>
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeCreateOfficerModal()" style="background:none; border:none; font-size:1.6rem; color:#ffffff; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+
+        <form action="<?= url('/admin/users/create', $currentLocale) ?>" method="POST" style="overflow-y:auto; padding:20px 24px; margin:0; flex:1;">
+            <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'নাম (বাংলা) *' : 'Name (Bangla) *' ?>
+                    </label>
+                    <input type="text" name="name_bn" required placeholder="উদাঃ অমিত রায়" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'নাম (ইংরেজি) *' : 'Name (English) *' ?>
+                    </label>
+                    <input type="text" name="name_en" required placeholder="e.g. Amit Roy" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'ইউজারনেম (Login ID) *' : 'Username *' ?>
+                    </label>
+                    <input type="text" name="username" required placeholder="e.g. amitroy" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'ইমেইল ঠিকানা *' : 'Email Address *' ?>
+                    </label>
+                    <input type="email" name="email" required placeholder="officer@sps.org" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'মোবাইল নম্বর' : 'Phone Number' ?>
+                    </label>
+                    <input type="tel" name="phone" placeholder="+8801XXXXXXXXX" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'পদবি (Designation)' : 'Designation' ?>
+                    </label>
+                    <input type="text" name="designation_bn" placeholder="উদাঃ সহকারী অর্থ সম্পাদক" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'প্রশাসনিক ভূমিকা (Role) *' : 'Role *' ?>
+                    </label>
+                    <select name="role" required style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box; background:#ffffff;">
+                        <?php foreach ($roles as $r): ?>
+                            <option value="<?= e($r['id']) ?>" <?= $r['id'] === 'moderator' ? 'selected' : '' ?>>
+                                <?= e($isBn ? ($r['name_bn'] ?? $r['id']) : ($r['name_en'] ?? $r['id'])) ?> (Level <?= $r['level'] ?? 50 ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div>
+                    <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--primary-deep); margin-bottom:4px;">
+                        <?= $isBn ? 'কার্যপরিধি (Assigned Scope)' : 'Scope' ?>
+                    </label>
+                    <input type="text" name="scope" placeholder="উদাঃ হিসাব ও যাচাইকরণ" style="width:100%; padding:9px 12px; border:1px solid var(--border-medium); border-radius:var(--radius-md); font-size:0.9rem; box-sizing:border-box;">
+                </div>
+            </div>
+
+            <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:10px 12px; font-size:0.78rem; color:#92400e; margin-bottom:16px;">
+                🔑 <strong><?= $isBn ? 'স্বয়ংক্রিয় ওয়ান-টাইম পাসওয়ার্ড:' : 'Automatic OTP Notice:' ?></strong>
+                <?= $isBn ? 'যুক্ত করার পর সিস্টেম স্বয়ংক্রিয়ভাবে একটি ইউনিক ওয়ান-টাইম পাসওয়ার্ড (OTP) তৈরি করবে যা স্ক্রিনে প্রদর্শিত হবে। কর্মকর্তা প্রথমবার লগইনের পর তা পরিবর্তন করবেন।' : 'The system will generate an OTP displayed upon creation. The officer will be forced to change it to their unique password on first login.' ?>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" onclick="closeCreateOfficerModal()" class="btn btn-sm btn-ghost" style="border:1px solid var(--border-medium);">
+                    <?= $isBn ? 'বাতিল' : 'Cancel' ?>
+                </button>
+                <button type="submit" class="btn btn-sm btn-primary" style="background:#1e40af; font-weight:800;">
+                    ✓ <?= $isBn ? 'কর্মকর্তা সংরক্ষণ ও OTP তৈরি' : 'Save Officer & Generate OTP' ?>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openCreateOfficerModal() {
+    document.getElementById('createOfficerModal').style.display = 'flex';
+}
+function closeCreateOfficerModal() {
+    document.getElementById('createOfficerModal').style.display = 'none';
+}
 </script>

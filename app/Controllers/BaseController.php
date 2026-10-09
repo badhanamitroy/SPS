@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\I18n;
+use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
 
@@ -33,4 +34,44 @@ abstract class BaseController
         $response = new Response('', $statusCode, ['Location' => $url]);
         return $response;
     }
+
+    protected function json(array $data, int $statusCode = 200): Response
+    {
+        $response = new Response();
+        return $response->json($data, $statusCode);
+    }
+
+    /**
+     * Validate CSRF token from POST parameters or HTTP headers.
+     */
+    protected function validateCsrf(Request $request): bool
+    {
+        $token = (string)($request->getPost('_csrf') 
+            ?: $request->getPost('_token') 
+            ?: ($request->getHeader('X-CSRF-TOKEN') ?? $request->getHeader('X-XSRF-TOKEN') ?? ''));
+
+        return \App\Core\Session::validateCsrfToken($token);
+    }
+
+    /**
+     * Standardized 403 Forbidden response.
+     */
+    protected function forbidden(Request $request, string $reason = ''): Response
+    {
+        $locale = I18n::getLocale();
+        if ($request->isAjax() || str_contains((string)$request->getHeader('Accept', ''), 'application/json')) {
+            return $this->json([
+                'success' => false,
+                'error' => '403 Forbidden: ' . ($reason ?: 'Unauthorized access.')
+            ], 403);
+        }
+
+        $res = $this->render('errors/403', [
+            'metaTitle' => '403 Forbidden | ' . config('app.short_name', 'SPS'),
+            'permission' => $reason,
+        ], 'admin');
+        $res->setStatusCode(403);
+        return $res;
+    }
 }
+

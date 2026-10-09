@@ -4,7 +4,8 @@
     "type": "project",
     "license": "Proprietary",
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "phpmailer/phpmailer": "^7.1"
     },
     "autoload": {
         "psr-4": {

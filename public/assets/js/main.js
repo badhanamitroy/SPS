@@ -32,5 +32,44 @@
     }
   });
 
+  // Double-submit protection for key forms
+  function initDoubleSubmitProtection() {
+    var selectors = [
+      '#membershipApplyForm',
+      '#dashPaymentForm',
+      'form[action*="/membership/apply"]',
+      'form[action*="/membership/payment"]',
+      'form[action*="/donation/submit"]',
+      'form[action*="/admin/activities/create"]',
+      'form[action*="/blog/write"]',
+      '#blogWriteForm'
+    ];
+
+    document.querySelectorAll(selectors.join(',')).forEach(function (form) {
+      form.addEventListener('submit', function (e) {
+        if (form.dataset.submitting === 'true') {
+          e.preventDefault();
+          return false;
+        }
+        if (typeof form.checkValidity === 'function' && !form.checkValidity()) {
+          return;
+        }
+        form.dataset.submitting = 'true';
+        var submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (submitBtn) {
+          setTimeout(function () {
+            submitBtn.disabled = true;
+          }, 10);
+        }
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDoubleSubmitProtection);
+  } else {
+    initDoubleSubmitProtection();
+  }
+
   console.info('SPS Platform Engine initialized. Locale: ' + (document.documentElement.lang || 'bn'));
 })();

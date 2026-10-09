@@ -46,6 +46,9 @@ $selectedPlan = $selectedPlan ?? 'STUDENT_MONTHLY';
 
         <form action="<?= url('/membership/apply', $currentLocale) ?>" method="POST" enctype="multipart/form-data" id="membershipApplyForm" style="background: #ffffff; border: 1px solid var(--border-medium); border-radius: var(--radius-xl); padding: var(--space-2xl); box-shadow: var(--shadow-sm);">
             <?= \App\Core\Session::getCsrfToken() ? '<input type="hidden" name="_csrf" value="'.\App\Core\Session::getCsrfToken().'">' : '' ?>
+            <div style="display:none!important;" aria-hidden="true">
+                <input type="text" name="_hp_website" value="" tabindex="-1" autocomplete="off">
+            </div>
 
             <!-- Step 1: Category Selection -->
             <div style="margin-bottom: var(--space-2xl);">
@@ -169,26 +172,288 @@ $selectedPlan = $selectedPlan ?? 'STUDENT_MONTHLY';
                     </div>
                 </div>
 
+                <!-- Zilla / Upazila Searchable Dropdowns -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-md);">
+
+                    <!-- Zilla -->
                     <div>
                         <label style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                            <?= $isBn ? 'জেলা' : 'District' ?>
+                            <?= $isBn ? 'জেলা *' : 'District (Zilla) *' ?>
                         </label>
-                        <input type="text" name="district" placeholder="<?= $isBn ? 'উদাঃ ঢাকা / চট্টগ্রাম' : 'e.g. Dhaka' ?>" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
+                        <div style="position: relative;" id="zilla-wrapper">
+                            <input type="text" id="zillaSearch" autocomplete="off"
+                                   placeholder="<?= $isBn ? 'জেলা খুঁজুন বা নির্বাচন করুন...' : 'Search or select district...' ?>"
+                                   class="form-input"
+                                   style="width: 100%; padding: 10px 14px 10px 36px; border: 1.5px solid var(--border-medium); border-radius: var(--radius-md); box-sizing: border-box; cursor: pointer;"
+                                   oninput="filterZilla(this.value)"
+                                   onfocus="openZillaDropdown()"
+                                   readonly
+                                   onclick="this.removeAttribute('readonly'); this.select(); openZillaDropdown();">
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:0.95rem; pointer-events:none;">🗺️</span>
+                            <input type="hidden" name="district" id="zillaHidden">
+                            <div id="zillaDropdown"
+                                 style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #cbd5e1; border-radius: var(--radius-md); max-height:220px; overflow-y:auto; z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+                            </div>
+                        </div>
                     </div>
+
+                    <!-- Upazila -->
                     <div>
                         <label style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
-                            <?= $isBn ? 'উপজেলা / এলাকা' : 'Upazila / Area' ?>
+                            <?= $isBn ? 'উপজেলা *' : 'Upazila *' ?>
                         </label>
-                        <input type="text" name="upazila" placeholder="<?= $isBn ? 'উদাঃ ধানমন্ডি' : 'e.g. Dhanmondi' ?>" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
+                        <div style="position: relative;" id="upazila-wrapper">
+                            <input type="text" id="upazilaSearch" autocomplete="off"
+                                   placeholder="<?= $isBn ? 'আগে জেলা নির্বাচন করুন...' : 'Select district first...' ?>"
+                                   class="form-input"
+                                   style="width: 100%; padding: 10px 14px 10px 36px; border: 1.5px solid var(--border-medium); border-radius: var(--radius-md); box-sizing: border-box; cursor: not-allowed; background:#f8fafc;"
+                                   oninput="filterUpazila(this.value)"
+                                   onfocus="openUpazilaDropdown()"
+                                   readonly
+                                   onclick="if(!this.disabled){ this.removeAttribute('readonly'); this.select(); openUpazilaDropdown(); }"
+                                   disabled>
+                            <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:0.95rem; pointer-events:none;">📍</span>
+                            <input type="hidden" name="upazila" id="upazilaHidden">
+                            <div id="upazilaDropdown"
+                                 style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1.5px solid #cbd5e1; border-radius: var(--radius-md); max-height:220px; overflow-y:auto; z-index:999; box-shadow:0 8px 24px rgba(0,0,0,0.12);">
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <script>
+                /* ============================================================
+                   Bangladesh Zilla → Upazila Data
+                   ============================================================ */
+                const BD_ZILLA_UPAZILA = {
+                    "ঢাকা": ["ধামরাই","দোহার","কেরানীগঞ্জ","নবাবগঞ্জ","সাভার"],
+                    "ফরিদপুর": ["আলফাডাঙ্গা","ভাঙ্গা","বোয়ালমারী","চরভদ্রাসন","ফরিদপুর সদর","মধুখালী","নগরকান্দা","সদরপুর","সালথা"],
+                    "গাজীপুর": ["কালিয়াকৈর","কালীগঞ্জ","কাপাসিয়া","গাজীপুর সদর","শ্রীপুর"],
+                    "গোপালগঞ্জ": ["গোপালগঞ্জ সদর","কাশিয়ানী","কোটালীপাড়া","মুকসুদপুর","টুঙ্গিপাড়া"],
+                    "কিশোরগঞ্জ": ["অষ্টগ্রাম","বাজিতপুর","ভৈরব","হোসেনপুর","ইটনা","করিমগঞ্জ","কটিয়াদী","কিশোরগঞ্জ সদর","কুলিয়ারচর","মিঠামইন","নিকলী","পাকুন্দিয়া","তাড়াইল"],
+                    "মাদারীপুর": ["কালকিনি","মাদারীপুর সদর","রাজৈর","শিবচর","ডাসার"],
+                    "মানিকগঞ্জ": ["দৌলতপুর","ঘিওর","হরিরামপুর","মানিকগঞ্জ সদর","সাটুরিয়া","শিবালয়","সিংগাইর"],
+                    "মুন্সীগঞ্জ": ["গজারিয়া","লৌহজং","মুন্সীগঞ্জ সদর","সিরাজদিখান","শ্রীনগর","টংগীবাড়ী"],
+                    "নারায়ণগঞ্জ": ["আড়াইহাজার","বন্দর","নারায়ণগঞ্জ সদর","রূপগঞ্জ","সোনারগাঁ"],
+                    "নরসিংদী": ["বেলাবো","মনোহরদী","নরসিংদী সদর","পলাশ","রায়পুরা","শিবপুর"],
+                    "রাজবাড়ী": ["বালিয়াকান্দি","গোয়ালন্দ","কালুখালী","পাংশা","রাজবাড়ী সদর"],
+                    "শরীয়তপুর": ["ভেদরগঞ্জ","ডামুড্যা","গোসাইরহাট","নড়িয়া","শরীয়তপুর সদর","জাজিরা"],
+                    "টাঙ্গাইল": ["বাসাইল","ভূঞাপুর","দেলদুয়ার","ধনবাড়ী","ঘাটাইল","গোপালপুর","কালিহাতী","মধুপুর","মির্জাপুর","নাগরপুর","সখীপুর","টাঙ্গাইল সদর"],
+                    "বান্দরবান": ["আলীকদম","বান্দরবান সদর","লামা","নাইক্ষ্যংছড়ি","রোয়াংছড়ি","রুমা","থানচি"],
+                    "ব্রাহ্মণবাড়িয়া": ["আখাউড়া","আশুগঞ্জ","বাঞ্ছারামপুর","বিজয়নগর","ব্রাহ্মণবাড়িয়া সদর","কসবা","নবীনগর","নাসিরনগর","সরাইল"],
+                    "চাঁদপুর": ["চাঁদপুর সদর","ফরিদগঞ্জ","হাজীগঞ্জ","হাইমচর","কচুয়া","মতলব দক্ষিণ","মতলব উত্তর","শাহরাস্তি"],
+                    "চট্টগ্রাম": ["আনোয়ারা","বাঁশখালী","বোয়ালখালী","চন্দনাইশ","ফটিকছড়ি","হাটহাজারী","কর্ণফুলী","লোহাগাড়া","মীরসরাই","পটিয়া","রাঙ্গুনিয়া","রাউজান","সন্দ্বীপ","সাতকানিয়া","সীতাকুণ্ড"],
+                    "কুমিল্লা": ["বরুড়া","ব্রাহ্মণপাড়া","বুড়িচং","চান্দিনা","চৌদ্দগ্রাম","কুমিল্লা আদর্শ সদর","কুমিল্লা সদর দক্ষিণ","দাউদকান্দি","দেবিদ্বার","হোমনা","লাকসাম","লালমাই","মনোহরগঞ্জ","মেঘনা","মুরাদনগর","নাঙ্গলকোট","তিতাস"],
+                    "কক্সবাজার": ["চকরিয়া","কক্সবাজার সদর","কুতুবদিয়া","মহেশখালী","পেকুয়া","রামু","টেকনাফ","উখিয়া"],
+                    "ফেনী": ["ছাগলনাইয়া","দাগনভূঞা","ফেনী সদর","ফুলগাজী","পরশুরাম","সোনাগাজী"],
+                    "খাগড়াছড়ি": ["দীঘিনালা","খাগড়াছড়ি সদর","লক্ষীছড়ি","মহালছড়ি","মানিকছড়ি","মাটিরাঙ্গা","পানছড়ি","রামগড়"],
+                    "লক্ষ্মীপুর": ["কমলনগর","লক্ষ্মীপুর সদর","রামগঞ্জ","রামগতি","রায়পুর"],
+                    "নোয়াখালী": ["বেগমগঞ্জ","কোম্পানীগঞ্জ","চাটখিল","হাতিয়া","কবিরহাট","সেনবাগ","সোনাইমুড়ী","সুবর্ণচর","নোয়াখালী সদর"],
+                    "রাঙ্গামাটি": ["বাঘাইছড়ি","বরকল","বিলাইছড়ি","জুরাছড়ি","কাপ্তাই","কাউখালী","লংগদু","নানিয়ারচর","রাজস্থলী","রাঙ্গামাটি সদর"],
+                    // ── খুলনা বিভাগ ──
+                    "বাগেরহাট": ["চিতলমারী","ফকিরহাট","কচুয়া","মোল্লাহাট","মোংলা","মোরেলগঞ্জ","রামপাল","শরণখোলা","বাগেরহাট সদর"],
+                    "চুয়াডাঙ্গা": ["আলমডাঙ্গা","চুয়াডাঙ্গা সদর","দামুড়হুদা","জীবননগর"],
+                    "যশোর": ["মণিরামপুর","অভয়নগর","বাঘারপাড়া","চৌগাছা","ঝিকরগাছা","কেশবপুর","যশোর সদর","শার্শা"],
+                    "ঝিনাইদহ": ["হরিণাকুন্ডু","ঝিনাইদহ সদর","কালীগঞ্জ","কোটচাঁদপুর","মহেশপুর","শৈলকুপা"],
+                    "খুলনা": ["বটিয়াঘাটা","দাকোপ","ডুমুরিয়া","কয়রা","পাইকগাছা","ফুলতলা","দিঘলিয়া","রূপসা","তেরখাদা"],
+                    "কুষ্টিয়া": ["কুষ্টিয়া সদর","কুমারখালী","খোকসা","মিরপুর","দৌলতপুর","ভেড়ামারা"],
+                    "মাগুরা": ["শালিখা","শ্রীপুর","মাগুরা সদর","মহম্মদপুর"],
+                    "মেহেরপুর": ["মুজিবনগর","মেহেরপুর সদর","গাংনী"],
+                    "নড়াইল": ["নড়াইল সদর","লোহাগড়া","কালিয়া"],
+                    "সাতক্ষীরা": ["আশাশুনি","দেবহাটা","কলারোয়া","সাতক্ষীরা সদর","শ্যামনগর","তালা","কালিগঞ্জ"],
+                    // ── রাজশাহী বিভাগ ──
+                    "বগুড়া": ["আদমদিঘী","বগুড়া সদর","ধুনট","দুপচাঁচিয়া","গাবতলী","কাহালু","নন্দীগ্রাম","সারিয়াকান্দি","শাজাহানপুর","শেরপুর","শিবগঞ্জ","সোনাতলা"],
+                    "জয়পুরহাট": ["আক্কেলপুর","কালাই","ক্ষেতলাল","পাঁচবিবি","জয়পুরহাট সদর"],
+                    "নওগাঁ": ["মহাদেবপুর","বদলগাছী","পত্নীতলা","ধামইরহাট","নিয়ামতপুর","মান্দা","আত্রাই","রাণীনগর","নওগাঁ সদর","পোরশা","সাপাহার"],
+                    "নাটোর": ["নাটোর সদর","সিংড়া","বড়াইগ্রাম","বাগাতিপাড়া","লালপুর","গুরুদাসপুর","নলডাঙ্গা"],
+                    "চাঁপাইনবাবগঞ্জ": ["চাঁপাইনবাবগঞ্জ সদর","গোমস্তাপুর","নাচোল","ভোলাহাট","শিবগঞ্জ"],
+                    "পাবনা": ["সুজানগর","ঈশ্বরদী","ভাঙ্গুড়া","পাবনা সদর","বেড়া","আটঘরিয়া","চাটমোহর","সাঁথিয়া","ফরিদপুর"],
+                    "রাজশাহী": ["পবা","দুর্গাপুর","মোহনপুর","চারঘাট","পুঠিয়া","বাঘা","গোদাগাড়ী","তানোর","বাগমারা"],
+                    "সিরাজগঞ্জ": ["বেলকুচি","চৌহালী","কামারখন্দ","কাজীপুর","রায়গঞ্জ","শাহজাদপুর","সিরাজগঞ্জ সদর","তাড়াশ","উল্লাপাড়া"],
+                    // ── বরিশাল বিভাগ ──
+                    "বরগুনা": ["আমতলী","বামনা","বরগুনা সদর","বেতাগী","পাথরঘাটা","তালতলী"],
+                    "বরিশাল": ["আগৈলঝাড়া","বাবুগঞ্জ","বাকেরগঞ্জ","বানারীপাড়া","গৌরনদী","হিজলা","বরিশাল সদর","মেহেন্দিগঞ্জ","মুলাদী","উজিরপুর"],
+                    "ভোলা": ["ভোলা সদর","বোরহানউদ্দিন","চরফ্যাশন","দৌলতখান","লালমোহন","মনপুরা","তজুমদ্দিন"],
+                    "ঝালকাঠি": ["ঝালকাঠি সদর","কাঠালিয়া","নলছিটি","রাজাপুর"],
+                    "পটুয়াখালী": ["বাউফল","পটুয়াখালী সদর","দুমকি","দশমিনা","কলাপাড়া","মির্জাগঞ্জ","গলাচিপা","রাঙ্গাবালী"],
+                    "পিরোজপুর": ["পিরোজপুর সদর","নাজিরপুর","কাউখালী","ভান্ডারিয়া","মঠবাড়িয়া","নেছারাবাদ","ইন্দুরকানী"],
+                    // ── সিলেট বিভাগ ──
+                    "হবিগঞ্জ": ["আজমিরীগঞ্জ","বাহুবল","বানিয়াচং","চুনারুঘাট","হবিগঞ্জ সদর","লাখাই","মাধবপুর","নবীগঞ্জ","শায়েস্তাগঞ্জ"],
+                    "মৌলভীবাজার": ["বড়লেখা","কমলগঞ্জ","কুলাউড়া","মৌলভীবাজার সদর","রাজনগর","শ্রীমঙ্গল","জুড়ী"],
+                    "সুনামগঞ্জ": ["সুনামগঞ্জ সদর","দক্ষিণ সুনামগঞ্জ","বিশ্বম্ভরপুর","ছাতক","জগন্নাথপুর","দোয়ারাবাজার","তাহিরপুর","ধর্মপাশা","জামালগঞ্জ","শাল্লা","দিরাই","মধ্যনগর"],
+                    "সিলেট": ["বালাগঞ্জ","বিয়ানীবাজার","বিশ্বনাথ","কোম্পানীগঞ্জ","দক্ষিণ সুরমা","ফেঞ্চুগঞ্জ","গোলাপগঞ্জ","গোয়াইনঘাট","জৈন্তাপুর","কানাইঘাট","সিলেট সদর","জকিগঞ্জ","ওসমানীনগর"],
+                    // ── রংপুর বিভাগ ──
+                    "দিনাজপুর": ["বিরামপুর","বীরগঞ্জ","বিরল","বোচাগঞ্জ","চিরিরবন্দর","ফুলবাড়ী","ঘোড়াঘাট","হাকিমপুর","কাহারোল","খানসামা","নবাবগঞ্জ","পার্বতীপুর","দিনাজপুর সদর"],
+                    "গাইবান্ধা": ["সাদুল্লাপুর","গাইবান্ধা সদর","পলাশবাড়ী","সাঘাটা","গোবিন্দগঞ্জ","সুন্দরগঞ্জ","ফুলছড়ি"],
+                    "কুড়িগ্রাম": ["কুড়িগ্রাম সদর","নাগেশ্বরী","ভূরুঙ্গামারী","ফুলবাড়ী","রাজারহাট","উলিপুর","চিলমারী","রৌমারী","চর রাজিবপুর"],
+                    "লালমনিরহাট": ["লালমনিরহাট সদর","কালীগঞ্জ","হাতীবান্ধা","পাটগ্রাম","আদিতমারী"],
+                    "নীলফামারী": ["সৈয়দপুর","ডোমার","ডিমলা","জলঢাকা","কিশোরগঞ্জ","নীলফামারী সদর"],
+                    "পঞ্চগড়": ["আটোয়ারী","বোদা","দেবীগঞ্জ","পঞ্চগড় সদর","তেঁতুলিয়া"],
+                    "রংপুর": ["বদরগঞ্জ","কাউনিয়া","রংপুর সদর","মিঠাপুকুর","পীরগাছা","পীরগঞ্জ","তারাগঞ্জ","গংগাচড়া"],
+                    "ঠাকুরগাঁও": ["পীরগঞ্জ","বালিয়াডাঙ্গী","হরিপুর","রাণীশংকৈল","ঠাকুরগাঁও সদর","রুহিয়া"],
+                    // ── ময়মনসিংহ বিভাগ ──
+                    "জামালপুর": ["বকশীগঞ্জ","দেওয়ানগঞ্জ","ইসলামপুর","জামালপুর সদর","মাদারগঞ্জ","মেলান্দহ","সরিষাবাড়ী"],
+                    "ময়মনসিংহ": ["ভালুকা","ধোবাউড়া","ফুলবাড়ীয়া","ফুলপুর","গফরগাঁও","গৌরীপুর","হালুয়াঘাট","ঈশ্বরগঞ্জ","মুক্তাগাছা","ময়মনসিংহ সদর","নান্দাইল","ত্রিশাল","তারাকান্দা"],
+                    "নেত্রকোণা": ["আটপাড়া","বারহাট্টা","দুর্গাপুর","কলমাকান্দা","কেন্দুয়া","খালিয়াজুড়ি","মদন","মোহনগঞ্জ","নেত্রকোণা সদর","পূর্বধলা"],
+                    "শেরপুর": ["শেরপুর সদর","নালিতাবাড়ী","শ্রীবরদী","নকলা","ঝিনাইগাতী"]
+                };
+
+                const allZillas = Object.keys(BD_ZILLA_UPAZILA);
+                let currentZilla = null;
+
+                /* ---- Dropdown item style helper ---- */
+                function ddItem(label, onclick) {
+                    return `<div onclick="${onclick}" style="padding:9px 14px; cursor:pointer; font-size:0.88rem; border-bottom:1px solid #f1f5f9; transition:background 0.15s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='#fff'">${label}</div>`;
+                }
+
+                /* ---- ZILLA ---- */
+                function openZillaDropdown() {
+                    renderZillaList(allZillas);
+                    document.getElementById('zillaDropdown').style.display = 'block';
+                }
+
+                function filterZilla(q) {
+                    const filtered = allZillas.filter(z => z.includes(q.trim()));
+                    renderZillaList(filtered);
+                    document.getElementById('zillaDropdown').style.display = 'block';
+                }
+
+                function renderZillaList(list) {
+                    const dd = document.getElementById('zillaDropdown');
+                    if (!list.length) {
+                        dd.innerHTML = '<div style="padding:10px 14px; color:#94a3b8; font-size:0.85rem;">কোনো জেলা পাওয়া যায়নি</div>';
+                        return;
+                    }
+                    dd.innerHTML = list.map(z => ddItem(z, `selectZilla('${z}')`)).join('');
+                }
+
+                function selectZilla(zilla) {
+                    currentZilla = zilla;
+                    document.getElementById('zillaSearch').value = zilla;
+                    document.getElementById('zillaHidden').value = zilla;
+                    document.getElementById('zillaDropdown').style.display = 'none';
+                    document.getElementById('zillaSearch').setAttribute('readonly', true);
+
+                    // Enable & reset upazila
+                    const uInput = document.getElementById('upazilaSearch');
+                    uInput.disabled = false;
+                    uInput.style.cursor = 'pointer';
+                    uInput.style.background = '#fff';
+                    uInput.placeholder = '<?= $isBn ? 'উপজেলা নির্বাচন করুন...' : 'Select upazila...' ?>';
+                    uInput.value = '';
+                    document.getElementById('upazilaHidden').value = '';
+                    renderUpazilaList(BD_ZILLA_UPAZILA[zilla] || []);
+                }
+
+                /* ---- UPAZILA ---- */
+                function openUpazilaDropdown() {
+                    if (!currentZilla) return;
+                    renderUpazilaList(BD_ZILLA_UPAZILA[currentZilla] || []);
+                    document.getElementById('upazilaDropdown').style.display = 'block';
+                }
+
+                function filterUpazila(q) {
+                    if (!currentZilla) return;
+                    const filtered = (BD_ZILLA_UPAZILA[currentZilla] || []).filter(u => u.includes(q.trim()));
+                    renderUpazilaList(filtered);
+                    document.getElementById('upazilaDropdown').style.display = 'block';
+                }
+
+                function renderUpazilaList(list) {
+                    const dd = document.getElementById('upazilaDropdown');
+                    if (!list.length) {
+                        dd.innerHTML = '<div style="padding:10px 14px; color:#94a3b8; font-size:0.85rem;">কোনো উপজেলা পাওয়া যায়নি</div>';
+                        return;
+                    }
+                    dd.innerHTML = list.map(u => ddItem(u, `selectUpazila('${u}')`)).join('');
+                }
+
+                function selectUpazila(upazila) {
+                    document.getElementById('upazilaSearch').value = upazila;
+                    document.getElementById('upazilaHidden').value = upazila;
+                    document.getElementById('upazilaDropdown').style.display = 'none';
+                    document.getElementById('upazilaSearch').setAttribute('readonly', true);
+                }
+
+                /* ---- Close on outside click ---- */
+                document.addEventListener('click', function(e) {
+                    if (!document.getElementById('zilla-wrapper').contains(e.target)) {
+                        document.getElementById('zillaDropdown').style.display = 'none';
+                        if (document.getElementById('zillaHidden').value)
+                            document.getElementById('zillaSearch').setAttribute('readonly', true);
+                    }
+                    if (!document.getElementById('upazila-wrapper').contains(e.target)) {
+                        document.getElementById('upazilaDropdown').style.display = 'none';
+                        if (document.getElementById('upazilaHidden').value)
+                            document.getElementById('upazilaSearch').setAttribute('readonly', true);
+                    }
+                });
+
+                /* Pre-populate if page reloaded with old POST values */
+                (function() {
+                    const pz = "<?= e($_POST['district'] ?? '') ?>", pu = "<?= e($_POST['upazila'] ?? '') ?>";
+                    if (pz) { selectZilla(pz); if (pu) setTimeout(() => selectUpazila(pu), 0); }
+                })();
+                </script>
 
                 <div>
                     <label style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
                         <?= $isBn ? 'বর্তমান ঠিকানা' : 'Address' ?>
                     </label>
                     <input type="text" name="address" placeholder="<?= $isBn ? 'বাসা/রোড/এলাকার বিবরণ' : 'Full address' ?>" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);">
+                </div>
+
+                <!-- Profile Picture / DP Upload (Optional) -->
+                <div style="margin-top: var(--space-md); background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-md); padding: 14px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+                    <div style="width: 64px; height: 64px; border-radius: var(--radius-md); background: #ffffff; border: 2px solid #e2e8f0; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <img id="applyAvatarPreview" src="<?= asset('media/dp/Default-DP.png') ?>" alt="Default DP" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='<?= asset('media/dp/Default-DP.png') ?>';">
+                    </div>
+                    <div style="flex: 1; min-width: 240px;">
+                        <label for="apply_avatar_file" style="display: block; font-size: 0.88rem; font-weight: 800; color: var(--primary-deep); margin-bottom: 4px;">
+                            📷 <?= $isBn ? 'প্রোফাইল ছবি / সদস্য ছবি (ঐচ্ছিক)' : 'Profile Picture / Member Photo (Optional)' ?>
+                        </label>
+                        <p style="font-size: 0.76rem; color: var(--text-muted); margin: 0 0 6px;">
+                            <?= $isBn 
+                                ? 'স্পষ্ট পাসপোর্ট সাইজ ছবি দিন (PNG, JPG, WebP)। ছবি না দিলে এসপিএস-এর অফিসিয়াল ডিফল্ট ডিপি যুক্ত হবে; কখনোই অন্য কোনো সদস্যের ছবি দেখানো হবে না।' 
+                                : 'Upload a portrait photo (PNG, JPG, WebP). If omitted, official SPS default DP is assigned without reusing another member image.' ?>
+                        </p>
+                        <input type="file" id="apply_avatar_file" name="avatar_file" accept="image/png, image/jpeg, image/webp" style="font-size: 0.84rem;" onchange="previewApplyAvatar(this)">
+                    </div>
+                </div>
+
+                <!-- Account Security & Member Login Password (Set during registration) -->
+                <div style="margin-top: var(--space-xl); background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border: 1.5px solid #cbd5e1; border-radius: var(--radius-lg); padding: var(--space-lg); box-shadow: var(--shadow-sm);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
+                        <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--primary-deep); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span>🔐</span>
+                            <span><?= $isBn ? 'লগইন পাসওয়ার্ড নির্ধারণ (Set Account Password)' : 'Account Login Password' ?></span>
+                        </h4>
+                        <span style="font-size: 0.75rem; background: #e0f2fe; color: #0369a1; padding: 2px 10px; border-radius: var(--radius-full); font-weight: 800;">
+                            <?= $isBn ? 'অনুমোদনের পর লগইনের জন্য আবশ্যক' : 'Required for Login After Approval' ?>
+                        </span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0 0 var(--space-md); line-height: 1.5;">
+                        <?= $isBn 
+                            ? 'নিবন্ধন সম্পন্ন হওয়ার পর আপনার আবেদনটি অর্থায়ন অনুমোদনের জন্য অপেক্ষমাণ থাকবে। কোষাধ্যক্ষ ও প্রশাসন কর্তৃক আবেদন অনুমোদিত হওয়ার পর এই পাসওয়ার্ডটি ব্যবহার করে আপনি আপনার সদস্য ড্যাশবোর্ডে লগইন করে প্রোফাইল তথ্য ও ছবি হালনাগাদ করতে পারবেন।' 
+                            : 'Set your secret login password. Your application will be pending finance verification upon registration. Once approved, you will use this password to log in and update your full member profile.' ?>
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md);">
+                        <div>
+                            <label for="apply_password" style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                <?= $isBn ? 'লগইন পাসওয়ার্ড সেট করুন *' : 'Set Login Password *' ?>
+                            </label>
+                            <input type="password" id="apply_password" name="password" required minlength="6" placeholder="••••••••" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);" autocomplete="new-password">
+                            <span style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-top: 4px;"><?= $isBn ? 'কমপক্ষে ৬ অক্ষরের গোপনীয় পাসওয়ার্ড দিন' : 'Minimum 6 characters' ?></span>
+                        </div>
+                        <div>
+                            <label for="apply_password_confirmation" style="display: block; font-size: 0.88rem; font-weight: 700; color: var(--primary-deep); margin-bottom: 4px;">
+                                <?= $isBn ? 'পাসওয়ার্ড নিশ্চিত করুন *' : 'Confirm Password *' ?>
+                            </label>
+                            <input type="password" id="apply_password_confirmation" name="password_confirmation" required minlength="6" placeholder="••••••••" class="form-input" style="width: 100%; padding: 10px 14px; border: 1px solid var(--border-medium); border-radius: var(--radius-md);" autocomplete="new-password">
+                            <span style="font-size: 0.74rem; color: var(--text-muted); display: block; margin-top: 4px;"><?= $isBn ? 'একই পাসওয়ার্ড পুনরায় টাইপ করুন' : 'Retype password' ?></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -610,6 +875,17 @@ function setPresetScreenshot(url, method) {
     if (select && select.value !== method) select.value = method;
 }
 
+function previewApplyAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('applyAvatarPreview');
+            if (preview) preview.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 function onPaymentMethodChange(val) {
     const badge = document.getElementById('ss_required_badge');
     if (val === 'bKash') {
@@ -632,6 +908,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const appForm = document.querySelector('form');
     if (appForm) {
         appForm.addEventListener('submit', function(e) {
+            const pass = document.getElementById('apply_password') ? document.getElementById('apply_password').value : '';
+            const passConf = document.getElementById('apply_password_confirmation') ? document.getElementById('apply_password_confirmation').value : '';
+            if (!pass || pass.length < 6) {
+                alert('অনুগ্রহ করে কমপক্ষে ৬ অক্ষরের একটি লগইন পাসওয়ার্ড নির্ধারণ করুন।');
+                e.preventDefault();
+                if (document.getElementById('apply_password')) document.getElementById('apply_password').focus();
+                return false;
+            }
+            if (pass !== passConf) {
+                alert('পাসওয়ার্ড এবং পাসওয়ার্ড নিশ্চিতকরণ মিলছে না!');
+                e.preventDefault();
+                if (document.getElementById('apply_password_confirmation')) document.getElementById('apply_password_confirmation').focus();
+                return false;
+            }
+
             const method = document.getElementById('payment_method_select').value;
             const trx = document.getElementById('trx_id_input').value.trim();
             const fileInput = document.getElementById('paymentScreenshotInput');

@@ -12,6 +12,16 @@ if (php_sapi_name() === 'cli-server') {
     if ($requestedPath !== '/' && is_file($filePath)) {
         return false;
     }
+    // Also support root-level Media folder if requested directly via /media/...
+    if (str_starts_with(strtolower($requestedPath), '/media/')) {
+        $rootMediaPath = dirname(__DIR__) . '/Media' . substr($requestedPath, 6);
+        if (is_file($rootMediaPath)) {
+            $mime = mime_content_type($rootMediaPath) ?: 'application/octet-stream';
+            header("Content-Type: {$mime}");
+            readfile($rootMediaPath);
+            exit;
+        }
+    }
 }
 
 // Load Composer Autoloader

@@ -55,6 +55,9 @@ if (!function_exists('url')) {
 if (!function_exists('asset')) {
     function asset(string $path): string
     {
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
         return '/' . ltrim($path, '/');
     }
 }
@@ -89,6 +92,7 @@ if (!function_exists('csrf_token')) {
 if (!function_exists('csrf_field')) {
     function csrf_field(): string
     {
-        return '<input type="hidden" name="_token" value="' . e(csrf_token()) . '">';
+        $token = e(csrf_token());
+        return '<input type="hidden" name="_csrf" value="' . $token . '"><input type="hidden" name="_token" value="' . $token . '">';
     }
 }

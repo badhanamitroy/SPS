@@ -17,7 +17,63 @@ class AuditService
     }
 
     /**
-     * Appends an immutable audit log entry.
+     * Keys strictly forbidden from being logged in audit logs.
+     */
+    private const SENSITIVE_KEY_PATTERN = '/^(password|passwd|new_password|current_password|confirm_password|password_hash|hash|token|reset_token|otp|code|initial_otp|secret|pepper|key|auth_token|access_token|id_token|session_id|credential)$/i';
+
+    /**
+     * Recursively redact sensitive values from audit dictionaries.
+     */
+    public static function redactSensitiveData(?array $data): ?array
+    {
+        if ($data === null) {
+            return null;
+        }
+
+        $clean = [];
+        foreach ($data as $key => $val) {
+            if (is_string($key) && preg_match(self::SENSITIVE_KEY_PATTERN, $key)) {
+                $clean[$key] = '[REDACTED]';
+                continue;
+            }
+
+            if (is_array($val)) {
+                $clean[$key] = self::redactSensitiveData($val);
+            } elseif (is_string($val)) {
+                // Redact values containing password hashes or secrets
+                if (str_starts_with($val, '$argon2') || str_starts_with($val, '$2y$') || str_starts_with($val, '$2a$')) {
+                    $clean[$key] = '[REDACTED_HASH]';
+                } elseif (strlen($val) === 64 && ctype_xdigit($val) && (str_contains(strtolower((string)$key), 'key') || str_contains(strtolower((string)$key), 'pepper') || str_contains(strtolower((string)$key), 'token'))) {
+                    $clean[$key] = '[REDACTED_SECRET]';
+                } else {
+                    $clean[$key] = $val;
+                }
+            } else {
+                $clean[$key] = $val;
+            }
+        }
+
+        return $clean;
+    }
+
+    /**
+     * Sanitize note string against accidental secret leakage.
+     */
+    public static function redactNoteText(?string $notes): ?string
+    {
+        if ($notes === null || $notes === '') {
+            return $notes;
+        }
+
+        // Redact Argon2 or Bcrypt hash representations from free-text notes
+        $notes = preg_replace('/\$argon2[^\s]+/i', '[REDACTED_HASH]', $notes);
+        $notes = preg_replace('/\$2[yab]\$[^\s]+/i', '[REDACTED_HASH]', $notes);
+
+        return $notes;
+    }
+
+    /**
+     * Appends an immutable audit log entry with strict credential redaction.
      */
     public static function log(
         string $action,
@@ -43,10 +99,10 @@ class AuditService
             'resource' => $resource,
             'target_id' => $targetId,
             'target_name' => $targetName,
-            'old_values' => $oldValues,
-            'new_values' => $newValues,
-            'notes' => $notes,
-            'ip_address' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            'old_values' => self::redactSensitiveData($oldValues),
+            'new_values' => self::redactSensitiveData($newValues),
+            'notes' => self::redactNoteText($notes),
+            'ip_address' => \App\Core\Session::getClientIp(),
             'user_agent' => substr($_SERVER['HTTP_USER_AGENT'] ?? 'Internal Agent/CLI', 0, 200),
             'created_at' => date('Y-m-d H:i:s'),
         ];
@@ -64,7 +120,7 @@ class AuditService
             mkdir($dir, 0755, true);
         }
 
-        file_put_contents($path, json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+        file_put_contents($path, json_encode($logs, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), LOCK_EX);
         return $entry;
     }
 
@@ -101,6 +157,6 @@ class AuditService
      */
     public static function deleteLogs(): void
     {
-        throw new \SecurityException("Audit log deletion is strictly prohibited by SPS Security Policy.");
+        throw new \RuntimeException("Audit log deletion is strictly prohibited by SPS Security Policy.");
     }
 }

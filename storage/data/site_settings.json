@@ -1,0 +1,91 @@
+{
+    "statistics": [
+        {
+            "id": "stat_members",
+            "number": "1,250+",
+            "number_bn": "১,২৫০+",
+            "label_bn": "সদস্য ও গবেষক",
+            "label_en": "Members & Scholars",
+            "icon": "👥",
+            "order": 1
+        },
+        {
+            "id": "stat_books",
+            "number": "450+",
+            "number_bn": "৪৫০+",
+            "label_bn": "গ্রন্থ ও পাণ্ডুলিপি",
+            "label_en": "Scriptures & Manuscripts",
+            "icon": "📜",
+            "order": 2
+        },
+        {
+            "id": "stat_beneficiaries",
+            "number": "18,000+",
+            "number_bn": "১৮,০০০+",
+            "label_bn": "সেবা-প্রাপ্ত মানুষ",
+            "label_en": "Beneficiaries Served",
+            "icon": "🤝",
+            "order": 3
+        },
+        {
+            "id": "stat_centers",
+            "number": "5",
+            "number_bn": "৫",
+            "label_bn": "চলমান পাঠশালা কেন্দ্র",
+            "label_en": "Active Vidyapeeth Centers",
+            "icon": "🏫",
+            "order": 4
+        }
+    ],
+    "social_links": {
+        "facebook_page": "https://www.facebook.com/bewithsps?utm_source=chatgpt.com",
+        "facebook_group": "https://www.facebook.com/groups/278337526756568?utm_source=chatgpt.com",
+        "youtube": "https://www.youtube.com/@spsofficial1529",
+        "blogspot": "https://sanatanphilosophyandscripture.blogspot.com"
+    },
+    "featured_scripture": {
+        "source_book_bn": "শ্রীমদ্ভগবদ্গীতা",
+        "source_book_en": "Srimad Bhagavad Gita",
+        "verse_no": "২.৪৭ (Chapter 2, Verse 47)",
+        "sanskrit_devanagari": "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन ।\nमा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि ॥",
+        "sanskrit_bengali": "কর্মণ্যেবাধিকারস্তে মা ফলেষু কদাচন ।\nমা কর্মফলহেতুর্ভূর্মা তে সঙ্গোঽস্ত্বকর্মাণি ॥",
+        "translation_bn": "কর্মে তোমার অধিকার আছে, কিন্তু তার ফলে কখনো নয়। কর্মফলের প্রতি যেন তোমার আসক্তি না থাকে, আবার কর্মত্যাগেও যেন প্রবৃত্তি না হয়।",
+        "translation_en": "You have a right only to work, never to its fruits; let not the fruits of action be your motive, nor let there be any attachment to inaction.",
+        "exegesis_bn": "নিষ্কাম কর্মযোগের মূল ভিত্তি। ফলাফল বা ব্যক্তিগত লাভের প্রত্যাশা ত্যাগ করে নৈতিক ও আধ্যাত্মিক দায়িত্ব পালনের আহ্বান, যা এসপিএস-এর সকল সেবাকর্মের মূল প্রেরণা।",
+        "exegesis_en": "The foundational principle of Nishkama Karma Yoga—selfless action devoid of ego and desire for reward, which forms the ethical heartbeat of SPS humanitarian initiatives."
+    },
+    "transparency": {
+        "total_received_bn": "৳ ৪৫,৮০,০০০",
+        "total_received_en": "৳ 4,580,000",
+        "total_spent_bn": "৳ ৩৮,১০,০০০",
+        "total_spent_en": "৳ 3,810,000",
+        "emergency_reserve_bn": "৳ ৭,৭০,০০০",
+        "emergency_reserve_en": "৳ 770,000",
+        "allocations": [
+            {
+                "name_bn": "শিক্ষা ও পাঠশালা",
+                "name_en": "Education & Vidyapeeth",
+                "percentage": 35,
+                "color": "var(--accent-saffron)"
+            },
+            {
+                "name_bn": "স্বাস্থ্যসেবা ও পুনর্বাসন",
+                "name_en": "Healthcare & Relief",
+                "percentage": 28,
+                "color": "var(--status-success)"
+            },
+            {
+                "name_bn": "শাস্ত্রীয় গবেষণা ও লাইব্রেরি",
+                "name_en": "Scriptures & Library",
+                "percentage": 24,
+                "color": "var(--accent-gold)"
+            },
+            {
+                "name_bn": "প্রশাসন ও পরিচালনা",
+                "name_en": "Administration & Operations",
+                "percentage": 13,
+                "color": "var(--accent-brown)"
+            }
+        ]
+    }
+}

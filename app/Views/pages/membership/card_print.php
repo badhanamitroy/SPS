@@ -4,24 +4,26 @@ $isBn = $currentLocale === 'bn';
 $member = $member ?? [];
 $category = $category ?? [];
 $plan = $plan ?? [];
+$allMembers = $allMembers ?? [];
 ?>
 <!DOCTYPE html>
 <html lang="<?= $currentLocale ?>" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($metaTitle ?? 'Digital Member Card Print') ?></title>
+    <title><?= e($metaTitle ?? 'Digital Member Card Print | Sanatan Philosophy & Scripture') ?></title>
     <link rel="icon" type="image/png" href="<?= asset('favicon.png') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=JetBrains+Mono:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --card-w: 420px;
-            --card-h: 260px;
-            --primary-bg: #0f172a;
-            --accent-gold: #d97706;
+            --card-w: 480px;
+            --card-h: 302px;
+            --gold-border: #bfa054;
+            --gold-accent: #d4af37;
+            --neon-blue: #0284c7;
         }
         * {
             box-sizing: border-box;
@@ -29,54 +31,91 @@ $plan = $plan ?? [];
             padding: 0;
         }
         body {
-            font-family: 'Noto Sans Bengali', 'Plus Jakarta Sans', sans-serif;
-            background: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Bengali', sans-serif;
+            background: #cbd5e1;
+            background-image: 
+                radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, #dbe2e8 0%, #cbd5e1 100%);
+            background-size: 20px 20px, 100% 100%;
             color: #1e293b;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 30px 15px;
+            padding: 26px 16px;
         }
 
         /* Non-printable Control Toolbar */
         .print-toolbar {
             width: 100%;
-            max-width: 880px;
+            max-width: 1010px;
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 14px 20px;
+            border-radius: 14px;
+            padding: 14px 22px;
             margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            gap: 14px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+        .toolbar-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toolbar-title h2 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 2px;
+        }
+        .toolbar-title p {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin: 0;
+        }
+        .toolbar-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .member-select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #f8fafc;
+            color: #0f172a;
+            cursor: pointer;
         }
         .btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 20px;
+            padding: 9px 18px;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             cursor: pointer;
             text-decoration: none;
             transition: all 0.2s ease;
             font-family: inherit;
         }
         .btn-print {
-            background: #c65a1e;
+            background: linear-gradient(135deg, #c65a1e 0%, #a64713 100%);
             color: #ffffff;
-            border: 1px solid #a64713;
-            box-shadow: 0 2px 8px rgba(198,90,30,0.3);
+            border: 1px solid #8c360b;
+            box-shadow: 0 2px 8px rgba(198, 90, 30, 0.35);
         }
         .btn-print:hover {
-            background: #a64713;
+            background: #8c360b;
+            transform: translateY(-1px);
         }
         .btn-back {
             background: #f8fafc;
@@ -87,157 +126,239 @@ $plan = $plan ?? [];
             background: #e2e8f0;
         }
 
-        /* Two Cards Preview Layout (Front & Back) */
+        /* Two Cards Layout Container (Front & Back) */
         .cards-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 30px;
+            gap: 32px;
             justify-content: center;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 28px;
+            perspective: 1000px;
         }
 
         /* The Card Physical Box */
         .id-card {
             width: var(--card-w);
             height: var(--card-h);
-            border-radius: 16px;
+            border-radius: 18px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
-            border: 1.5px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.42), 0 4px 14px rgba(0, 0, 0, 0.28);
+            border: 2px solid var(--gold-border);
             color: #ffffff;
             page-break-inside: avoid;
+            break-inside: avoid;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 22px;
+            background: 
+                radial-gradient(ellipse 120% 70% at 50% 35%, rgba(56, 189, 248, 0.08) 0%, transparent 65%),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.012) 0px, rgba(255, 255, 255, 0.012) 1px, transparent 1px, transparent 3px),
+                linear-gradient(175deg, #091723 0%, #122838 30%, #19354a 50%, #102332 70%, #07131d 100%) !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
         }
 
-        /* Front Card */
+        /* ---------------- FRONT CARD ---------------- */
         .card-front {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #090d16 100%) !important;
-            padding: 18px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+            position: relative;
         }
+        .card-watermark {
+            position: absolute;
+            right: 14px;
+            top: 52%;
+            transform: translateY(-50%);
+            width: 180px;
+            height: 180px;
+            opacity: 0.13;
+            pointer-events: none;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-watermark img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: brightness(1.2) contrast(1.1);
+            display: block;
+        }
+
+        /* Front Header */
         .front-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            position: relative;
+            z-index: 2;
         }
         .brand-block {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
         .brand-logo {
             height: 38px;
             width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
         }
         .brand-title-bn {
-            font-size: 0.88rem;
-            font-weight: 800;
+            font-size: 1.05rem;
+            font-weight: 700;
             color: #ffffff;
+            line-height: 1.25;
             letter-spacing: 0.3px;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
         }
         .brand-title-en {
-            font-size: 0.62rem;
-            color: #94a3b8;
-            letter-spacing: 0.6px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
             font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .card-chip {
-            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-            width: 32px;
-            height: 24px;
-            border-radius: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.4);
+            margin-top: 1px;
         }
 
-        .front-body {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin: 8px 0;
-        }
-        .member-photo {
-            width: 72px;
-            height: 72px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 2.5px solid #fbbf24;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-            background: #334155;
+        /* EMV Golden Chip */
+        .card-chip-wrap {
+            width: 44px;
+            height: 34px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.2rem;
+            border: 0.5px solid rgba(255, 255, 255, 0.25);
+        }
+
+        /* Front Body: Photo & Member Details */
+        .front-body {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin: 8px 0;
+            position: relative;
+            z-index: 2;
+        }
+        .member-photo-frame {
+            width: 82px;
+            height: 82px;
+            border-radius: 13px;
+            border: 2.5px solid #c59b27;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+            background: #1e293b;
             flex-shrink: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .member-photo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .member-photo-placeholder {
+            font-size: 2.4rem;
+            color: #cbd5e1;
         }
         .member-meta {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             overflow: hidden;
         }
         .member-name-bn {
-            font-size: 1.15rem;
+            font-size: 1.35rem;
             font-weight: 800;
             color: #ffffff;
             line-height: 1.2;
+            letter-spacing: 0.2px;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
         }
         .member-name-en {
-            font-size: 0.8rem;
-            color: #cbd5e1;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #e2e8f0;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            margin-bottom: 4px;
+            margin-top: 3px;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
         }
-        .member-code-badge {
-            display: inline-block;
-            font-family: monospace;
+        .member-id-pill {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            background: #9fc6e2;
+            color: #082136;
+            font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace;
             font-size: 0.95rem;
             font-weight: 800;
-            color: #38bdf8;
-            background: rgba(56, 189, 248, 0.12);
-            padding: 1px 8px;
-            border-radius: 4px;
-            border: 1px solid rgba(56, 189, 248, 0.3);
+            letter-spacing: 0.5px;
+            padding: 3px 13px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 10px rgba(159, 198, 226, 0.35);
         }
 
+        /* Front Footer: Category, Validity & QR */
         .front-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-top: 1px solid rgba(255,255,255,0.12);
-            padding-top: 10px;
+            position: relative;
+            z-index: 2;
         }
-        .cat-plan-pill {
-            font-size: 0.72rem;
-            color: #e2e8f0;
-            line-height: 1.3;
+        .front-footer-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
         }
-        .validity-tag {
-            color: #4ade80;
+        .member-category-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .member-validity-title {
+            font-size: 0.95rem;
             font-weight: 800;
-            font-size: 0.78rem;
+            color: #22c55e;
+            letter-spacing: 0.5px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
-        .qr-box {
+        .card-qr-box {
             background: #ffffff;
             padding: 4px;
             border-radius: 8px;
-            width: 52px;
-            height: 52px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            width: 62px;
+            height: 62px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-sizing: border-box;
             flex-shrink: 0;
             overflow: hidden;
+            box-sizing: border-box;
         }
-        .qr-box img {
+        .card-qr-box img {
             width: 100%;
             height: 100%;
             object-fit: contain;
@@ -245,62 +366,130 @@ $plan = $plan ?? [];
             border-radius: 4px;
         }
 
-        /* Back Card */
+        /* ---------------- BACK CARD ---------------- */
         .card-back {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
-            padding: 18px 20px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        .back-stripe {
-            height: 32px;
-            background: #020617;
-            margin: -18px -20px 10px -20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        .back-header {
+            text-align: center;
+            margin-bottom: 2px;
         }
-        .back-declaration {
-            font-size: 0.72rem;
+        .back-brand-bn {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.4px;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+        }
+        .back-brand-en {
+            font-size: 0.8rem;
+            font-weight: 600;
             color: #cbd5e1;
-            line-height: 1.4;
-            background: rgba(255,255,255,0.04);
-            padding: 8px 10px;
-            border-radius: 6px;
-            border-left: 3px solid #fbbf24;
-            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin-top: 1px;
         }
-        .back-meta-grid {
+
+        /* Neon Cyan Border Certification Box */
+        .back-cert-box {
+            background: rgba(6, 17, 27, 0.75);
+            border: 1.5px solid var(--neon-blue);
+            border-radius: 8px;
+            padding: 9px 14px;
+            box-shadow: 0 0 16px rgba(2, 132, 199, 0.4), inset 0 0 8px rgba(2, 132, 199, 0.12);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 400;
+            line-height: 1.45;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            text-align: left;
+            margin: 6px 0 8px;
+        }
+
+        /* Information Grid */
+        .back-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            row-gap: 5px;
+            column-gap: 16px;
+            font-size: 0.85rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin-bottom: 2px;
+        }
+        .info-cell {
+            display: flex;
+            align-items: center;
             gap: 6px;
-            font-size: 0.72rem;
-            color: #94a3b8;
+            white-space: nowrap;
         }
-        .back-meta-grid strong {
-            color: #f1f5f9;
+        .info-label {
+            color: #cbd5e1;
+            font-weight: 500;
         }
+        .info-value {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* Glowing Cyan Divider Line */
+        .back-divider-line {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.3) 20%, rgba(56, 189, 248, 0.7) 50%, rgba(56, 189, 248, 0.3) 80%, transparent 100%);
+            margin: 6px 0;
+        }
+
+        /* Back Footer: Issued / Verify & Signatory */
         .back-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            border-top: 1px solid rgba(255,255,255,0.12);
-            padding-top: 8px;
+            padding-top: 2px;
         }
-        .signature-box {
+        .back-footer-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .issued-date {
+            font-size: 0.76rem;
+            color: #94a3b8;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .verify-code {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.4px;
+        }
+        .back-footer-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
         }
-        .sign-line {
+        .signatory-name {
             font-family: 'Cinzel', serif;
-            font-size: 0.72rem;
-            color: #f59e0b;
+            font-size: 0.85rem;
             font-weight: 700;
-            border-bottom: 1px dashed rgba(255,255,255,0.3);
+            color: var(--gold-accent);
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.6);
             padding-bottom: 2px;
             margin-bottom: 2px;
+            width: 100%;
+            text-align: center;
         }
-        .sign-title {
-            font-size: 0.58rem;
+        .signatory-title {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 600;
             color: #94a3b8;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
         }
 
@@ -309,7 +498,7 @@ $plan = $plan ?? [];
             margin: 10mm;
         }
 
-        /* Strict Print Media Styles */
+        /* Strict Print Styles */
         @media print {
             html, body {
                 display: block !important;
@@ -343,7 +532,7 @@ $plan = $plan ?? [];
             }
             .id-card {
                 box-shadow: none !important;
-                border: 1px solid #334155 !important;
+                border: 2px solid #bfa054 !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 -webkit-print-color-adjust: exact !important;
@@ -357,18 +546,31 @@ $plan = $plan ?? [];
 
     <!-- Control Toolbar (Not Printed) -->
     <div class="print-toolbar no-print">
-        <div>
-            <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 2px;">
-                🪪 <?= $isBn ? 'ডিজিটাল সদস্য পরিচয়পত্র (ID Card Print Desk)' : 'Digital Membership Card Print' ?>
-            </h2>
-            <p style="font-size: 0.8rem; color: #64748b; margin: 0;">
-                <?= $isBn 
-                    ? 'প্রিন্ট অপশনে "Background graphics" অন রেখে A4 পেপার বা PVC কার্ডে প্রিন্ট করুন।' 
-                    : 'Enable "Background graphics" in print dialog to print exact colors.' ?>
-            </p>
+        <div class="toolbar-title">
+            <div>
+                <h2>🪪 <?= $isBn ? 'ডিজিটাল সদস্য পরিচয়পত্র (Official Member Card Desk)' : 'Digital Membership Card Print Desk' ?></h2>
+                <p>
+                    <?= $isBn 
+                        ? 'প্রিন্ট অপশনে "Background graphics" অন রেখে A4 পেপার বা PVC প্লাস্টিক কার্ডে প্রিন্ট করুন।' 
+                        : 'Enable "Background graphics" in your print dialog for exact color and metallic gradient output.' ?>
+                </p>
+            </div>
         </div>
 
-        <div style="display: flex; gap: 8px; align-items: center;">
+        <div class="toolbar-actions">
+            <!-- Member Switcher -->
+            <?php if (!empty($allMembers)): ?>
+                <form method="GET" action="<?= url('/membership/card/print', $currentLocale) ?>" style="margin: 0;">
+                    <select name="code" class="member-select" onchange="this.form.submit()" title="Switch Member for Live Preview">
+                        <?php foreach ($allMembers as $m): ?>
+                            <option value="<?= e($m['member_code']) ?>" <?= ($member['member_code'] ?? '') === $m['member_code'] ? 'selected' : '' ?>>
+                                <?= e($m['member_code']) ?> — <?= e($m['name_bn']) ?> (<?= e($m['category_id']) ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php endif; ?>
+
             <a href="<?= url('/membership/dashboard', $currentLocale) ?>" class="btn btn-back">
                 ← <?= $isBn ? 'ড্যাশবোর্ডে ফিরুন' : 'Back to Dashboard' ?>
             </a>
@@ -383,6 +585,11 @@ $plan = $plan ?? [];
         
         <!-- CARD FRONT -->
         <div class="id-card card-front" id="card-front">
+            <!-- Background Watermark Logo -->
+            <div class="card-watermark" aria-hidden="true">
+                <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS Emblem Watermark">
+            </div>
+
             <!-- Header -->
             <div class="front-header">
                 <div class="brand-block">
@@ -392,68 +599,110 @@ $plan = $plan ?? [];
                         <div class="brand-title-en">SANATAN PHILOSOPHY & SCRIPTURE</div>
                     </div>
                 </div>
-                <div class="card-chip" title="Smart Card Hologram Chip"></div>
+                
+                <!-- Smart EMV Gold Chip -->
+                <div class="card-chip-wrap" title="Smart Card EMV Chip">
+                    <svg width="44" height="34" viewBox="0 0 44 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="chipGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#f5d77f" />
+                                <stop offset="35%" stop-color="#d4af37" />
+                                <stop offset="70%" stop-color="#aa771c" />
+                                <stop offset="100%" stop-color="#e6c86e" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="44" height="34" rx="5" fill="url(#chipGoldGrad)" stroke="#8f6b1e" stroke-width="0.8" />
+                        <rect x="2" y="2" width="40" height="30" rx="3.5" fill="none" stroke="#7a5512" stroke-width="0.7" opacity="0.65" />
+                        <rect x="14" y="9" width="16" height="16" rx="3" fill="none" stroke="#7a5512" stroke-width="0.75" />
+                        <line x1="2" y1="17" x2="42" y2="17" stroke="#7a5512" stroke-width="0.75" />
+                        <line x1="14" y1="2" x2="14" y2="32" stroke="#7a5512" stroke-width="0.75" />
+                        <line x1="30" y1="2" x2="30" y2="32" stroke="#7a5512" stroke-width="0.75" />
+                    </svg>
+                </div>
             </div>
 
             <!-- Body with Photo & Meta -->
             <div class="front-body">
-                <?php if (!empty($member['avatar'])): ?>
-                    <img src="<?= asset($member['avatar']) ?>" alt="<?= e($member['name_en'] ?? '') ?>" class="member-photo" onerror="this.onerror=null; this.src='<?= asset('assets/images/members/member_SPS_000872.jpg') ?>';">
-                <?php else: ?>
-                    <div class="member-photo">👤</div>
-                <?php endif; ?>
+                <div class="member-photo-frame">
+                    <?php 
+                        $memberAvatar = \App\Services\MembershipService::getMemberAvatar($member);
+                    ?>
+                    <img src="<?= asset($memberAvatar) ?>" alt="<?= e($member['name_en'] ?? '') ?>" class="member-photo-img" onerror="this.onerror=null; this.src='<?= asset(\App\Services\MembershipService::DEFAULT_ORGANIZATION_DP) ?>';">
+                </div>
                 
                 <div class="member-meta">
                     <div class="member-name-bn"><?= e($member['name_bn']) ?></div>
                     <div class="member-name-en"><?= e($member['name_en']) ?></div>
-                    <div class="member-code-badge">ID: <?= e($member['member_code']) ?></div>
+                    <div class="member-id-pill">
+                        <span>ID : <?= e($member['member_code']) ?></span>
+                    </div>
                 </div>
             </div>
 
             <!-- Footer & QR -->
             <div class="front-footer">
-                <div>
-                    <div class="cat-plan-pill">
-                        <strong><?= e($isBn ? ($category['name_bn'] ?? $member['category_id']) : ($category['name_en'] ?? $member['category_id'])) ?></strong>
+                <div class="front-footer-meta">
+                    <div class="member-category-title">
+                        <?= e($category['name_en'] ?? ($member['category_id'] === 'STUDENT' ? 'Student Member' : 'Earning Member')) ?>
                     </div>
-                    <div class="validity-tag">
-                        <?= empty($member['expiry_date']) ? 'LIFETIME ACTIVE' : 'VALID: ' . e($member['expiry_date']) ?>
+                    <div class="member-validity-title">
+                        <?= empty($member['expiry_date']) ? 'VALID: LIFETIME' : 'VALID: ' . e($member['expiry_date']) ?>
                     </div>
                 </div>
 
-                <!-- Verified Authentic Scannable QR Code with Center SPS Logo -->
-                <div class="qr-box" title="<?= $isBn ? 'অনলাইন সদস্য ভেরিফিকেশন কিউআর কোড (ক্যামেরা দিয়ে স্ক্যান করুন)' : 'Scan with camera for live online verification' ?>">
-                    <img id="printCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR Code" style="width: 100%; height: 100%; object-fit: contain; display: block; border-radius: 4px;">
+                <!-- Verified Authentic Scannable QR Code -->
+                <div class="card-qr-box" title="<?= $isBn ? 'অনলাইন সদস্য ভেরিফিকেশন কিউআর কোড (ক্যামেরা দিয়ে স্ক্যান করুন)' : 'Scan with camera for live online verification' ?>">
+                    <img id="printCardQrImg" class="sps-qr-code-img" src="" alt="SPS Verified QR Code">
                 </div>
             </div>
         </div>
 
         <!-- CARD BACK -->
         <div class="id-card card-back" id="card-back">
-            <div class="back-stripe"></div>
-
-            <div class="back-declaration">
-                <?= $isBn 
-                    ? 'এই পরিচয়পত্রটি ‘সনাতন ফিলোসফি এন্ড স্ক্রিপচার (SPS)’-এর একজন নিবন্ধিত ও সম্মানিত সদস্যের প্রমাণপত্র। কার্ডধারী ব্যক্তি এসপিএস-এর ডিজিটাল লাইব্রেরি, গীতাপাঠ ও সমাজকল্যাণ কার্যক্রমে সদস্য সুবিধার অধিকারী।'
-                    : 'This card certifies that the cardholder is a registered and bonafide member of Sanatan Philosophy & Scripture (SPS).' ?>
+            <!-- Header -->
+            <div class="back-header">
+                <div class="back-brand-bn">সনাতন ফিলোসফি এন্ড স্ক্রিপচার</div>
+                <div class="back-brand-en">SANATAN PHILOSOPHY & SCRIPTURE</div>
             </div>
 
-            <div class="back-meta-grid">
-                <div><?= $isBn ? 'রক্তের গ্রুপ:' : 'Blood Group:' ?> <strong><?= e($member['blood_group'] ?? 'N/A') ?></strong></div>
-                <div><?= $isBn ? 'জেলা:' : 'District:' ?> <strong><?= e($member['district'] ?? 'বাংলাদেশ') ?></strong></div>
-                <div><?= $isBn ? 'জরুরি যোগাযোগ:' : 'Emergency:' ?> <strong>+880 1736-360041</strong></div>
-                <div><?= $isBn ? 'ওয়েবসাইট:' : 'Web:' ?> <strong>www.sps.org</strong></div>
+            <!-- Glowing Neon Blue Box -->
+            <div class="back-cert-box">
+                This card certifies that the cardholder is a registered and bonafide member of Sanatan Philosophy & Scripture (SPS).
             </div>
 
+            <!-- Back Meta Grid -->
+            <div class="back-info-grid">
+                <div class="info-cell">
+                    <span class="info-label">Blood Group:</span>
+                    <span class="info-value"><?= e($member['blood_group'] ?? 'N/A') ?></span>
+                </div>
+                <div class="info-cell">
+                    <span class="info-label">District:</span>
+                    <span class="info-value"><?= e($member['district'] ?? 'Sylhet') ?></span>
+                </div>
+                <div class="info-cell">
+                    <span class="info-label">Emergency:</span>
+                    <span class="info-value">+880 1736-360041</span>
+                </div>
+                <div class="info-cell">
+                    <span class="info-label">Web:</span>
+                    <span class="info-value">www.sps.org</span>
+                </div>
+            </div>
+
+            <!-- Glowing Divider Line -->
+            <div class="back-divider-line"></div>
+
+            <!-- Back Footer -->
             <div class="back-footer">
-                <div>
-                    <div style="font-size:0.58rem; color:#94a3b8;"><?= $isBn ? 'ইস্যু তারিখ:' : 'Issued:' ?> <?= e($member['join_date'] ?? '2024-01-01') ?></div>
-                    <div style="font-size:0.58rem; color:#94a3b8; font-family:monospace;">VERIFY: SPS-ONLINE-AUTHENTIC</div>
+                <div class="back-footer-left">
+                    <div class="issued-date">Issued: <?= e($member['join_date'] ?? '2026-09-27') ?></div>
+                    <div class="verify-code">VERIFY: SPS-ONLINE-AUTHENTIC</div>
                 </div>
 
-                <div class="signature-box">
-                    <div class="sign-line">Dr. B. K. Roy</div>
-                    <div class="sign-title"><?= $isBn ? 'সাধারণ সম্পাদক / কার্যনির্বাহী' : 'Authorized Signatory' ?></div>
+                <div class="back-footer-right">
+                    <div class="signatory-name">DR. B. K. ROY</div>
+                    <div class="signatory-title">AUTHORISED SIGNATORY</div>
                 </div>
             </div>
         </div>
@@ -461,10 +710,10 @@ $plan = $plan ?? [];
     </div>
 
     <!-- Helpful Browser Notice -->
-    <div class="no-print" style="text-align: center; color: #64748b; font-size: 0.82rem; max-width: 600px; line-height: 1.5;">
+    <div class="no-print" style="text-align: center; color: #475569; font-size: 0.84rem; max-width: 680px; line-height: 1.6; margin-top: 8px;">
         <?= $isBn 
-            ? '💡 আপনি চাইলে কার্ডটি প্রিন্ট করে ল্যামিনেটিং বা পিভিসি কার্ড আকারে ব্যবহার করতে পারেন। কার্ডের পেছনের কিউআর কোড স্ক্যান করে যে কেউ তাৎক্ষণিক অনলাইন ভেরিফিকেশন দেখতে পাবেন।' 
-            : 'You can print and laminate this card for official physical use. Scanning the QR code links directly to authentic online verification.' ?>
+            ? '💡 আপনি চাইলে কার্ডটি স্ট্যান্ডার্ড CR-80 পিভিসি প্লাস্টিক কার্ড বা ফটো পেপারে প্রিন্ট করে ল্যামিনেটিং আকারে ব্যবহার করতে পারেন। কার্ডের কিউআর কোড স্ক্যান করে যে কেউ তাৎক্ষণিক অনলাইন ভেরিফিকেশন দেখতে পাবেন।' 
+            : 'You can print this card directly on standard CR-80 PVC plastic ID card stock or photo paper. Scanning the QR code links directly to authentic live online verification.' ?>
     </div>
 
     <script src="<?= asset('assets/js/qrcode.min.js') ?>"></script>

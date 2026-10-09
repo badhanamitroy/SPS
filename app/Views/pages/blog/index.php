@@ -263,7 +263,8 @@ $isBn = $currentLocale === 'bn';
                         </h3>
                     </div>
                     <div class="widget-body text-center">
-                        <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Desk" class="sidebar-profile-img">
+                        <img src="<?= asset('assets/images/brand/sps-logo.png') ?>" alt="SPS Desk" class="sidebar-profile-img brand-mark-dark">
+                        <img src="<?= asset('assets/images/brand/sps-logo-white.png') ?>" alt="SPS Desk" class="sidebar-profile-img brand-mark-light">
                         <h4 class="sidebar-profile-name"><?= $isBn ? 'সনাতন বিদ্যার্থী সংসদ' : 'Sanatan Vidyarthi Sangsad' ?></h4>
                         <div class="sidebar-profile-role"><?= $isBn ? 'শাস্ত্র ও সাহিত্য পরিষদ' : 'Scripture & Literature Board' ?></div>
                         <p class="sidebar-profile-bio">
